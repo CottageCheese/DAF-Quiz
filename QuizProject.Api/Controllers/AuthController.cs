@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
+using QuizProject.Api.Models.Domain;
 using QuizProject.Api.Services;
 
 namespace QuizProject.Api.Controllers;
@@ -12,8 +13,8 @@ namespace QuizProject.Api.Controllers;
 [ApiController]
 [Route("api/auth")]
 public class AuthController(
-    UserManager<IdentityUser> userManager,
-    SignInManager<IdentityUser> signInManager,
+    UserManager<ApplicationUser> userManager,
+    SignInManager<ApplicationUser> signInManager,
     ITokenService tokenService,
     IOptions<JwtSettings> jwtOptions) : ControllerBase
 {
@@ -34,7 +35,12 @@ public class AuthController(
         if (existing is not null)
             return Conflict(new { message = "An account with that email already exists." });
 
-        var user = new IdentityUser { UserName = request.Email, Email = request.Email };
+        var user = new ApplicationUser
+        {
+            UserName = request.Email,
+            Email = request.Email,
+            DisplayName = request.DisplayName
+        };
         var result = await userManager.CreateAsync(user, request.Password);
 
         if (!result.Succeeded)
@@ -129,6 +135,9 @@ public sealed record RegisterRequest
 
     [Required, StringLength(100, MinimumLength = 8)]
     public string Password { get; init; } = string.Empty;
+
+    [Required, StringLength(50, MinimumLength = 2)]
+    public string DisplayName { get; init; } = string.Empty;
 }
 
 public sealed record LoginRequest

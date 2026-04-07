@@ -21,12 +21,12 @@ public sealed class JwtSettings
 
 public sealed class TokenService(
     IOptions<JwtSettings> jwtOptions,
-    UserManager<IdentityUser> userManager,
+    UserManager<ApplicationUser> userManager,
     IRepository<RefreshToken> refreshTokenRepo) : ITokenService
 {
     private readonly JwtSettings _jwt = jwtOptions.Value;
 
-    public async Task<string> GenerateAccessTokenAsync(IdentityUser user)
+    public async Task<string> GenerateAccessTokenAsync(ApplicationUser user)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.SecretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -38,6 +38,7 @@ public sealed class TokenService(
             new(JwtRegisteredClaimNames.Sub, user.Id),
             new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new("display_name", user.DisplayName),
         };
 
         foreach (var role in roles)
@@ -53,7 +54,7 @@ public sealed class TokenService(
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public async Task<string> CreateRefreshTokenAsync(IdentityUser user)
+    public async Task<string> CreateRefreshTokenAsync(ApplicationUser user)
     {
         var rawToken = GenerateRawToken();
         var entity = new RefreshToken

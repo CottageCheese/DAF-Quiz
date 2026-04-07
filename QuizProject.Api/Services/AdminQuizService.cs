@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using QuizProject.Api.Models.Domain;
 using QuizProject.Api.Models.ViewModels;
 using QuizProject.Api.Repositories;
@@ -8,11 +9,13 @@ namespace QuizProject.Api.Services;
 public class AdminQuizService(
     IRepository<Quiz> quizzes,
     IRepository<Question> questions,
-    IRepository<Answer> answers) : IAdminQuizService
+    IRepository<Answer> answers,
+    IMemoryCache cache) : IAdminQuizService
 {
-    public async Task<List<AdminQuizListViewModel>> GetAllQuizzesAsync()
+    public async Task<List<AdminQuizListViewModel>> GetAllQuizzesAsync(CancellationToken ct = default)
     {
         return await quizzes.Query()
+            .AsNoTracking()
             .Select(q => new AdminQuizListViewModel
             {
                 Id = q.Id,
@@ -25,15 +28,16 @@ public class AdminQuizService(
                 QuestionCount = q.Questions.Count
             })
             .OrderByDescending(q => q.CreatedAt)
-            .ToListAsync();
+            .ToListAsync(ct);
     }
 
-    public async Task<AdminQuizDetailViewModel?> GetQuizDetailAsync(int quizId)
+    public async Task<AdminQuizDetailViewModel?> GetQuizDetailAsync(int quizId, CancellationToken ct = default)
     {
         var quiz = await quizzes.Query()
+            .AsNoTracking()
             .Include(q => q.Questions.OrderBy(qu => qu.DisplayOrder))
             .ThenInclude(q => q.Answers)
-            .FirstOrDefaultAsync(q => q.Id == quizId);
+            .FirstOrDefaultAsync(q => q.Id == quizId, ct);
 
         if (quiz is null) return null;
 
@@ -41,7 +45,7 @@ public class AdminQuizService(
     }
 
     public async Task<AdminQuizDetailViewModel> CreateQuizAsync(
-        CreateQuizRequest request, string userId, string userEmail)
+        CreateQuizRequest request, string userId, string userEmail, CancellationToken ct = default)
     {
         var quiz = new Quiz
         {
@@ -58,12 +62,12 @@ public class AdminQuizService(
         return MapToDetail(quiz);
     }
 
-    public async Task<AdminQuizDetailViewModel?> UpdateQuizAsync(int quizId, UpdateQuizRequest request)
+    public async Task<AdminQuizDetailViewModel?> UpdateQuizAsync(int quizId, UpdateQuizRequest request, CancellationToken ct = default)
     {
         var quiz = await quizzes.Query()
             .Include(q => q.Questions.OrderBy(qu => qu.DisplayOrder))
             .ThenInclude(q => q.Answers)
-            .FirstOrDefaultAsync(q => q.Id == quizId);
+            .FirstOrDefaultAsync(q => q.Id == quizId, ct);
 
         if (quiz is null) return null;
 
@@ -74,20 +78,24 @@ public class AdminQuizService(
         quizzes.Update(quiz);
         await quizzes.SaveChangesAsync();
 
+        cache.Remove(QuizService.ActiveQuizzesCacheKey);
+
         return MapToDetail(quiz);
     }
 
-    public async Task<bool> DeleteQuizAsync(int quizId)
+    public async Task<bool> DeleteQuizAsync(int quizId, CancellationToken ct = default)
     {
-        var quiz = await quizzes.Query().FirstOrDefaultAsync(q => q.Id == quizId);
+        var quiz = await quizzes.Query().FirstOrDefaultAsync(q => q.Id == quizId, ct);
         if (quiz is null) return false;
 
         quizzes.Remove(quiz);
         await quizzes.SaveChangesAsync();
+
+        cache.Remove(QuizService.ActiveQuizzesCacheKey);
         return true;
     }
 
-    public async Task<AdminQuestionViewModel> AddQuestionAsync(int quizId, UpsertQuestionRequest request)
+    public async Task<AdminQuestionViewModel> AddQuestionAsync(int quizId, UpsertQuestionRequest request, CancellationToken ct = default)
     {
         var question = new Question
         {
@@ -104,14 +112,16 @@ public class AdminQuizService(
         await questions.AddAsync(question);
         await questions.SaveChangesAsync();
 
+        cache.Remove(QuizService.ActiveQuizzesCacheKey);
+
         return MapToQuestion(question);
     }
 
-    public async Task<AdminQuestionViewModel?> UpdateQuestionAsync(int questionId, UpsertQuestionRequest request)
+    public async Task<AdminQuestionViewModel?> UpdateQuestionAsync(int questionId, UpsertQuestionRequest request, CancellationToken ct = default)
     {
         var question = await questions.Query()
             .Include(q => q.Answers)
-            .FirstOrDefaultAsync(q => q.Id == questionId);
+            .FirstOrDefaultAsync(q => q.Id == questionId, ct);
 
         if (question is null) return null;
 
@@ -132,16 +142,20 @@ public class AdminQuizService(
         questions.Update(question);
         await questions.SaveChangesAsync();
 
+        cache.Remove(QuizService.ActiveQuizzesCacheKey);
+
         return MapToQuestion(question);
     }
 
-    public async Task<bool> DeleteQuestionAsync(int questionId)
+    public async Task<bool> DeleteQuestionAsync(int questionId, CancellationToken ct = default)
     {
-        var question = await questions.Query().FirstOrDefaultAsync(q => q.Id == questionId);
+        var question = await questions.Query().FirstOrDefaultAsync(q => q.Id == questionId, ct);
         if (question is null) return false;
 
         questions.Remove(question);
         await questions.SaveChangesAsync();
+
+        cache.Remove(QuizService.ActiveQuizzesCacheKey);
         return true;
     }
 

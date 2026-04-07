@@ -34,7 +34,7 @@ public class AccountController(IApiClient apiClient, ITokenStorageService tokenS
         if (!ModelState.IsValid)
             return View(model);
 
-        var tokens = await apiClient.RegisterAsync(model.Email, model.Password);
+        var tokens = await apiClient.RegisterAsync(model.Email, model.Password, model.DisplayName);
         if (tokens is null)
         {
             ModelState.AddModelError(string.Empty,
@@ -109,6 +109,7 @@ public class AccountController(IApiClient apiClient, ITokenStorageService tokenS
         var userId = jwt.Subject;
         var email = jwt.Claims.FirstOrDefault(c =>
             c.Type is JwtRegisteredClaimNames.Email or "email")?.Value ?? string.Empty;
+        var displayName = jwt.Claims.FirstOrDefault(c => c.Type == "display_name")?.Value ?? email;
 
         // Extract role claims from the JWT so User.IsInRole() works in MVC
         var roleClaims = jwt.Claims
@@ -119,7 +120,7 @@ public class AccountController(IApiClient apiClient, ITokenStorageService tokenS
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, userId),
-            new(ClaimTypes.Name, email),
+            new(ClaimTypes.Name, displayName),  // used by User.Identity.Name (navbar display)
             new(ClaimTypes.Email, email),
         };
 

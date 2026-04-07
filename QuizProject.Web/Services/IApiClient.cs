@@ -6,7 +6,7 @@ public interface IApiClient
 {
     // Auth
     Task<AuthTokens?> LoginAsync(string email, string password);
-    Task<AuthTokens?> RegisterAsync(string email, string password);
+    Task<AuthTokens?> RegisterAsync(string email, string password, string displayName);
     Task RevokeTokenAsync(string refreshToken);
 
     // Quizzes

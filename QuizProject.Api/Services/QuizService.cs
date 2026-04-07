@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using QuizProject.Api.Models.Domain;
 using QuizProject.Api.Models.ViewModels;
 using QuizProject.Api.Repositories;
@@ -8,15 +9,22 @@ namespace QuizProject.Api.Services;
 public class QuizService(
     IRepository<Quiz> quizzes,
     IRepository<Question> questions,
-    IRepository<Answer> answers,
     IRepository<QuizAttempt> attempts,
-    IRepository<QuizAttemptAnswer> attemptAnswers)
+    IRepository<QuizAttemptAnswer> attemptAnswers,
+    IMemoryCache cache)
     : IQuizService
 {
-    public async Task<List<QuizListViewModel>> GetActiveQuizzesAsync()
+    internal const string ActiveQuizzesCacheKey = "quizzes:active";
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
+
+    public async Task<List<QuizListViewModel>> GetActiveQuizzesAsync(CancellationToken ct = default)
     {
+        if (cache.TryGetValue(ActiveQuizzesCacheKey, out List<QuizListViewModel>? cached))
+            return cached!;
+
         var now = DateTime.UtcNow;
-        return await quizzes.Query()
+        var result = await quizzes.Query()
+            .AsNoTracking()
             .Where(q => q.PublishedAt != null && q.PublishedAt <= now)
             .Select(q => new QuizListViewModel
             {
@@ -28,17 +36,21 @@ public class QuizService(
                 CreatedAt = q.CreatedAt
             })
             .OrderBy(q => q.Title)
-            .ToListAsync();
+            .ToListAsync(ct);
+
+        cache.Set(ActiveQuizzesCacheKey, result, CacheDuration);
+        return result;
     }
 
-    public async Task<TakeQuizViewModel?> StartAttemptAsync(int quizId, string userId)
+    public async Task<TakeQuizViewModel?> StartAttemptAsync(int quizId, string userId, CancellationToken ct = default)
     {
         var now = DateTime.UtcNow;
         var quiz = await quizzes.Query()
+            .AsNoTracking()
             .Where(q => q.Id == quizId && q.PublishedAt != null && q.PublishedAt <= now)
             .Include(q => q.Questions.OrderBy(qu => qu.DisplayOrder))
             .ThenInclude(q => q.Answers)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(ct);
 
         if (quiz is null) return null;
 
@@ -52,8 +64,6 @@ public class QuizService(
 
         await attempts.AddAsync(attempt);
         await attempts.SaveChangesAsync();
-
-        var rng = new Random();
 
         return new TakeQuizViewModel
         {
@@ -69,7 +79,7 @@ public class QuizService(
                     Text = q.Text,
                     DisplayOrder = q.DisplayOrder,
                     Answers = q.Answers
-                        .OrderBy(_ => rng.Next())
+                        .OrderBy(_ => Random.Shared.Next())
                         .Select(a => new QuizAnswerViewModel
                         {
                             AnswerId = a.Id,
@@ -81,20 +91,21 @@ public class QuizService(
         };
     }
 
-    public async Task<QuizResultViewModel?> SubmitAttemptAsync(SubmitQuizViewModel submission, string userId)
+    public async Task<QuizResultViewModel?> SubmitAttemptAsync(SubmitQuizViewModel submission, string userId, CancellationToken ct = default)
     {
         var attempt = await attempts.Query()
             .Where(a => a.Id == submission.AttemptId && a.UserId == userId && a.CompletedAt == null)
             .Include(a => a.Quiz)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(ct);
 
         if (attempt is null) return null;
 
         var questionIds = submission.Selections.Select(s => s.QuestionId).ToList();
         var questionList = await questions.Query()
+            .AsNoTracking()
             .Where(q => questionIds.Contains(q.Id) && q.QuizId == attempt.QuizId)
             .Include(q => q.Answers)
-            .ToListAsync();
+            .ToListAsync(ct);
 
         var attemptAnswerList = new List<QuizAttemptAnswer>();
         var score = 0;
@@ -124,45 +135,42 @@ public class QuizService(
         await attemptAnswers.AddRangeAsync(attemptAnswerList);
         await attemptAnswers.SaveChangesAsync();
 
-        return await BuildResultViewModelAsync(attempt.Id);
+        return await BuildResultViewModelAsync(attempt.Id, ct);
     }
 
-    public async Task<QuizResultViewModel?> GetResultAsync(int attemptId, string userId)
+    public async Task<QuizResultViewModel?> GetResultAsync(int attemptId, string userId, CancellationToken ct = default)
     {
         var exists = await attempts.Query()
-            .AnyAsync(a => a.Id == attemptId && a.UserId == userId && a.CompletedAt != null);
+            .AnyAsync(a => a.Id == attemptId && a.UserId == userId && a.CompletedAt != null, ct);
 
         if (!exists) return null;
 
-        return await BuildResultViewModelAsync(attemptId);
+        return await BuildResultViewModelAsync(attemptId, ct);
     }
 
-    private async Task<QuizResultViewModel> BuildResultViewModelAsync(int attemptId)
+    private async Task<QuizResultViewModel> BuildResultViewModelAsync(int attemptId, CancellationToken ct)
     {
+        // Single query — no N+1. Question.Answers loaded so correct answer is resolved in memory.
         var attempt = await attempts.Query()
+            .AsNoTracking()
             .Include(a => a.Quiz)
             .Include(a => a.AttemptAnswers)
-            .ThenInclude(aa => aa.Question)
+                .ThenInclude(aa => aa.Question)
+                    .ThenInclude(q => q.Answers)
             .Include(a => a.AttemptAnswers)
-            .ThenInclude(aa => aa.SelectedAnswer)
-            .FirstAsync(a => a.Id == attemptId);
+                .ThenInclude(aa => aa.SelectedAnswer)
+            .FirstAsync(a => a.Id == attemptId, ct);
 
-        var answerDetails = new List<ResultAnswerViewModel>();
-        foreach (var aa in attempt.AttemptAnswers.OrderBy(a => a.Question.DisplayOrder))
-        {
-            var correctAnswer = await answers.Query()
-                .Where(a => a.QuestionId == aa.QuestionId && a.IsCorrect)
-                .Select(a => a.Text)
-                .FirstOrDefaultAsync() ?? string.Empty;
-
-            answerDetails.Add(new ResultAnswerViewModel
+        var answerDetails = attempt.AttemptAnswers
+            .OrderBy(aa => aa.Question.DisplayOrder)
+            .Select(aa => new ResultAnswerViewModel
             {
                 QuestionText = aa.Question.Text,
                 SelectedAnswerText = aa.SelectedAnswer.Text,
-                CorrectAnswerText = correctAnswer,
+                CorrectAnswerText = aa.Question.Answers.FirstOrDefault(a => a.IsCorrect)?.Text ?? string.Empty,
                 IsCorrect = aa.IsCorrect
-            });
-        }
+            })
+            .ToList();
 
         return new QuizResultViewModel
         {

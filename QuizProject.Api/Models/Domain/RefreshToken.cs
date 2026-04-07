@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Identity;
-
 namespace QuizProject.Api.Models.Domain;
 
 public class RefreshToken
@@ -10,7 +8,7 @@ public class RefreshToken
     public string TokenHash { get; set; } = string.Empty;
 
     public string UserId { get; set; } = string.Empty;
-    public IdentityUser User { get; set; } = null!;
+    public ApplicationUser User { get; set; } = null!;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime ExpiresAt { get; set; }

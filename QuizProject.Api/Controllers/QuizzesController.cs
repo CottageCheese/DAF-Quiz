@@ -16,9 +16,9 @@ public class QuizzesController(IQuizService quizService) : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(List<QuizListViewModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetQuizzes()
+    public async Task<IActionResult> GetQuizzes(CancellationToken ct)
     {
-        var quizzes = await quizService.GetActiveQuizzesAsync();
+        var quizzes = await quizService.GetActiveQuizzesAsync(ct);
         return Ok(quizzes);
     }
 
@@ -27,12 +27,12 @@ public class QuizzesController(IQuizService quizService) : ControllerBase
     [ProducesResponseType(typeof(TakeQuizViewModel), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> StartAttempt(int quizId)
+    public async Task<IActionResult> StartAttempt(int quizId, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId is null) return Unauthorized();
 
-        var model = await quizService.StartAttemptAsync(quizId, userId);
+        var model = await quizService.StartAttemptAsync(quizId, userId, ct);
         if (model is null) return NotFound(new { message = "Quiz not found or inactive." });
 
         return Ok(model);
@@ -44,7 +44,7 @@ public class QuizzesController(IQuizService quizService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> SubmitAttempt(int attemptId, [FromBody] List<QuestionAnswerSelection> selections)
+    public async Task<IActionResult> SubmitAttempt(int attemptId, [FromBody] List<QuestionAnswerSelection> selections, CancellationToken ct)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
@@ -52,7 +52,7 @@ public class QuizzesController(IQuizService quizService) : ControllerBase
         if (userId is null) return Unauthorized();
 
         var submission = new SubmitQuizViewModel { AttemptId = attemptId, Selections = selections };
-        var result = await quizService.SubmitAttemptAsync(submission, userId);
+        var result = await quizService.SubmitAttemptAsync(submission, userId, ct);
 
         if (result is null) return NotFound(new { message = "Attempt not found or already completed." });
 
@@ -64,12 +64,12 @@ public class QuizzesController(IQuizService quizService) : ControllerBase
     [ProducesResponseType(typeof(QuizResultViewModel), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetResult(int attemptId)
+    public async Task<IActionResult> GetResult(int attemptId, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId is null) return Unauthorized();
 
-        var result = await quizService.GetResultAsync(attemptId, userId);
+        var result = await quizService.GetResultAsync(attemptId, userId, ct);
         if (result is null) return NotFound(new { message = "Result not found." });
 
         return Ok(result);

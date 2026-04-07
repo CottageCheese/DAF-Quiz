@@ -10,15 +10,66 @@ public static class SeedData
     {
         var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
         await context.Database.MigrateAsync();
+        await EnsureSchemaAsync(context);
 
         await SeedRolesAndAdminAsync(serviceProvider);
         await SeedQuizzesAsync(context);
     }
 
+    /// <summary>
+    /// Applies schema changes that may not yet be tracked by a migration
+    /// (e.g. manually-written migrations that EF hasn't discovered).
+    /// Safe to call on every startup — each statement is guarded by an existence check.
+    /// </summary>
+    private static async Task EnsureSchemaAsync(ApplicationDbContext context)
+    {
+        var conn = context.Database.GetDbConnection();
+        if (conn.State != System.Data.ConnectionState.Open)
+            await conn.OpenAsync();
+
+        // DisplayName column on AspNetUsers
+        using (var cmd = conn.CreateCommand())
+        {
+            cmd.CommandText = "SELECT COUNT(*) FROM pragma_table_info('AspNetUsers') WHERE name='DisplayName'";
+            var exists = (long)(await cmd.ExecuteScalarAsync())! > 0;
+            if (!exists)
+            {
+                using var alter = conn.CreateCommand();
+                alter.CommandText = "ALTER TABLE \"AspNetUsers\" ADD COLUMN \"DisplayName\" TEXT NOT NULL DEFAULT ''";
+                await alter.ExecuteNonQueryAsync();
+            }
+        }
+
+        // Performance indexes
+        using (var cmd = conn.CreateCommand())
+        {
+            cmd.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type='index' AND name='IX_QuizAttempts_CompletedAt'";
+            var exists = (long)(await cmd.ExecuteScalarAsync())! > 0;
+            if (!exists)
+            {
+                using var idx = conn.CreateCommand();
+                idx.CommandText = "CREATE INDEX \"IX_QuizAttempts_CompletedAt\" ON \"QuizAttempts\" (\"CompletedAt\")";
+                await idx.ExecuteNonQueryAsync();
+            }
+        }
+
+        using (var cmd = conn.CreateCommand())
+        {
+            cmd.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type='index' AND name='IX_Quizzes_PublishedAt'";
+            var exists = (long)(await cmd.ExecuteScalarAsync())! > 0;
+            if (!exists)
+            {
+                using var idx = conn.CreateCommand();
+                idx.CommandText = "CREATE INDEX \"IX_Quizzes_PublishedAt\" ON \"Quizzes\" (\"PublishedAt\")";
+                await idx.ExecuteNonQueryAsync();
+            }
+        }
+    }
+
     private static async Task SeedRolesAndAdminAsync(IServiceProvider serviceProvider)
     {
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-        var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
         // Ensure Admin role exists
         if (!await roleManager.RoleExistsAsync("Admin"))
@@ -31,7 +82,7 @@ public static class SeedData
         var adminUser = await userManager.FindByEmailAsync(adminEmail);
         if (adminUser is null)
         {
-            adminUser = new IdentityUser { UserName = adminEmail, Email = adminEmail };
+            adminUser = new ApplicationUser { UserName = adminEmail, Email = adminEmail, DisplayName = "Admin" };
             var result = await userManager.CreateAsync(adminUser, adminPassword);
             if (!result.Succeeded)
                 throw new InvalidOperationException(

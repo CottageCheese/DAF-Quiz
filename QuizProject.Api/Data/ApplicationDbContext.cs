@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using QuizProject.Api.Models.Domain;
@@ -6,7 +5,7 @@ using QuizProject.Api.Models.Domain;
 namespace QuizProject.Api.Data;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-    : IdentityDbContext<IdentityUser>(options)
+    : IdentityDbContext<ApplicationUser>(options)
 {
     public DbSet<Quiz> Quizzes => Set<Quiz>();
     public DbSet<Question> Questions => Set<Question>();
@@ -25,6 +24,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             e.Property(q => q.Description).HasMaxLength(1000);
             e.Property(q => q.CreatedByUserId).HasMaxLength(450);
             e.Property(q => q.CreatedByEmail).HasMaxLength(256);
+            e.HasIndex(q => q.PublishedAt);
         });
 
         builder.Entity<Question>(e =>
@@ -45,6 +45,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        builder.Entity<ApplicationUser>(e =>
+        {
+            e.Property(u => u.DisplayName).HasMaxLength(50).IsRequired();
+        });
+
         builder.Entity<QuizAttempt>(e =>
         {
             e.HasOne(a => a.User)
@@ -55,6 +60,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .WithMany(q => q.Attempts)
                 .HasForeignKey(a => a.QuizId)
                 .OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(a => a.CompletedAt);
         });
 
         builder.Entity<QuizAttemptAnswer>(e =>

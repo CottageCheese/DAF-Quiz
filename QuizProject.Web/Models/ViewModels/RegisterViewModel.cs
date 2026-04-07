@@ -4,6 +4,11 @@ namespace QuizProject.Web.Models.ViewModels;
 
 public class RegisterViewModel
 {
+    [Required(ErrorMessage = "Display name is required.")]
+    [StringLength(50, MinimumLength = 2, ErrorMessage = "Display name must be between 2 and 50 characters.")]
+    [Display(Name = "Display name")]
+    public string DisplayName { get; set; } = string.Empty;
+
     [Required(ErrorMessage = "Email address is required.")]
     [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
     [Display(Name = "Email address")]

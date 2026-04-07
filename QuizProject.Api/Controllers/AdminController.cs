@@ -17,9 +17,9 @@ public class AdminController(IAdminQuizService adminService) : ControllerBase
     /// <summary>Returns all quizzes (published and drafts).</summary>
     [HttpGet("quizzes")]
     [ProducesResponseType(typeof(List<AdminQuizListViewModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetQuizzes()
+    public async Task<IActionResult> GetQuizzes(CancellationToken ct)
     {
-        var quizzes = await adminService.GetAllQuizzesAsync();
+        var quizzes = await adminService.GetAllQuizzesAsync(ct);
         return Ok(quizzes);
     }
 
@@ -27,9 +27,9 @@ public class AdminController(IAdminQuizService adminService) : ControllerBase
     [HttpGet("quizzes/{id:int}")]
     [ProducesResponseType(typeof(AdminQuizDetailViewModel), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetQuiz(int id)
+    public async Task<IActionResult> GetQuiz(int id, CancellationToken ct)
     {
-        var quiz = await adminService.GetQuizDetailAsync(id);
+        var quiz = await adminService.GetQuizDetailAsync(id, ct);
         if (quiz is null) return NotFound();
         return Ok(quiz);
     }
@@ -38,7 +38,7 @@ public class AdminController(IAdminQuizService adminService) : ControllerBase
     [HttpPost("quizzes")]
     [ProducesResponseType(typeof(AdminQuizDetailViewModel), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CreateQuiz([FromBody] CreateQuizRequest request)
+    public async Task<IActionResult> CreateQuiz([FromBody] CreateQuizRequest request, CancellationToken ct)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
@@ -46,7 +46,7 @@ public class AdminController(IAdminQuizService adminService) : ControllerBase
         var userEmail = User.FindFirstValue(ClaimTypes.Email)
             ?? User.FindFirstValue("email") ?? string.Empty;
 
-        var quiz = await adminService.CreateQuizAsync(request, userId, userEmail);
+        var quiz = await adminService.CreateQuizAsync(request, userId, userEmail, ct);
         return CreatedAtAction(nameof(GetQuiz), new { id = quiz.Id }, quiz);
     }
 
@@ -55,11 +55,11 @@ public class AdminController(IAdminQuizService adminService) : ControllerBase
     [ProducesResponseType(typeof(AdminQuizDetailViewModel), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateQuiz(int id, [FromBody] UpdateQuizRequest request)
+    public async Task<IActionResult> UpdateQuiz(int id, [FromBody] UpdateQuizRequest request, CancellationToken ct)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        var quiz = await adminService.UpdateQuizAsync(id, request);
+        var quiz = await adminService.UpdateQuizAsync(id, request, ct);
         if (quiz is null) return NotFound();
         return Ok(quiz);
     }
@@ -68,9 +68,9 @@ public class AdminController(IAdminQuizService adminService) : ControllerBase
     [HttpDelete("quizzes/{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteQuiz(int id)
+    public async Task<IActionResult> DeleteQuiz(int id, CancellationToken ct)
     {
-        var deleted = await adminService.DeleteQuizAsync(id);
+        var deleted = await adminService.DeleteQuizAsync(id, ct);
         if (!deleted) return NotFound();
         return NoContent();
     }
@@ -81,14 +81,14 @@ public class AdminController(IAdminQuizService adminService) : ControllerBase
     [HttpPost("quizzes/{quizId:int}/questions")]
     [ProducesResponseType(typeof(AdminQuestionViewModel), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> AddQuestion(int quizId, [FromBody] UpsertQuestionRequest request)
+    public async Task<IActionResult> AddQuestion(int quizId, [FromBody] UpsertQuestionRequest request, CancellationToken ct)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
         if (!request.Answers.Any(a => a.IsCorrect))
             return BadRequest(new { message = "At least one answer must be marked as correct." });
 
-        var question = await adminService.AddQuestionAsync(quizId, request);
+        var question = await adminService.AddQuestionAsync(quizId, request, ct);
         return StatusCode(StatusCodes.Status201Created, question);
     }
 
@@ -97,14 +97,14 @@ public class AdminController(IAdminQuizService adminService) : ControllerBase
     [ProducesResponseType(typeof(AdminQuestionViewModel), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateQuestion(int quizId, int questionId, [FromBody] UpsertQuestionRequest request)
+    public async Task<IActionResult> UpdateQuestion(int quizId, int questionId, [FromBody] UpsertQuestionRequest request, CancellationToken ct)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
         if (!request.Answers.Any(a => a.IsCorrect))
             return BadRequest(new { message = "At least one answer must be marked as correct." });
 
-        var question = await adminService.UpdateQuestionAsync(questionId, request);
+        var question = await adminService.UpdateQuestionAsync(questionId, request, ct);
         if (question is null) return NotFound();
         return Ok(question);
     }
@@ -113,9 +113,9 @@ public class AdminController(IAdminQuizService adminService) : ControllerBase
     [HttpDelete("quizzes/{quizId:int}/questions/{questionId:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteQuestion(int quizId, int questionId)
+    public async Task<IActionResult> DeleteQuestion(int quizId, int questionId, CancellationToken ct)
     {
-        var deleted = await adminService.DeleteQuestionAsync(questionId);
+        var deleted = await adminService.DeleteQuestionAsync(questionId, ct);
         if (!deleted) return NotFound();
         return NoContent();
     }

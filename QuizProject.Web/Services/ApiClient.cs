@@ -31,10 +31,10 @@ public class ApiClient(
         return await ReadAuthResponse(response);
     }
 
-    public async Task<AuthTokens?> RegisterAsync(string email, string password)
+    public async Task<AuthTokens?> RegisterAsync(string email, string password, string displayName)
     {
         var response = await http.PostAsJsonAsync("api/auth/register",
-            new { email, password });
+            new { email, password, displayName });
 
         if (!response.IsSuccessStatusCode) return null;
 

@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Identity;
-
 namespace QuizProject.Api.Models.Domain;
 
 public class QuizAttempt
@@ -7,7 +5,7 @@ public class QuizAttempt
     public int Id { get; set; }
 
     public string UserId { get; set; } = string.Empty;
-    public IdentityUser User { get; set; } = null!;
+    public ApplicationUser User { get; set; } = null!;
 
     public int QuizId { get; set; }
     public Quiz Quiz { get; set; } = null!;

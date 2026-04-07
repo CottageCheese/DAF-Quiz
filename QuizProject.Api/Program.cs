@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using QuizProject.Api.Data;
+using QuizProject.Api.Models.Domain;
 using QuizProject.Api.Repositories;
 using QuizProject.Api.Services;
 
@@ -16,7 +17,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // ── Identity ──────────────────────────────────────────────────────────────────
-builder.Services.AddIdentityCore<IdentityUser>(options =>
+builder.Services.AddIdentityCore<ApplicationUser>(options =>
     {
         options.Password.RequireDigit = true;
         options.Password.RequireLowercase = true;
@@ -87,6 +88,16 @@ builder.Services.AddScoped<IQuizService, QuizService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IAdminQuizService, AdminQuizService>();
 
+// ── Caching ───────────────────────────────────────────────────────────────────
+builder.Services.AddMemoryCache();
+
+// ── Health checks ─────────────────────────────────────────────────────────────
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<ApplicationDbContext>();
+
+// ── Problem Details (RFC 7807) ────────────────────────────────────────────────
+builder.Services.AddProblemDetails();
+
 // ── Controllers ───────────────────────────────────────────────────────────────
 builder.Services.AddControllers();
 
@@ -109,7 +120,10 @@ app.Use(async (context, next) =>
 
 // ── Pipeline ──────────────────────────────────────────────────────────────────
 if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler();
     app.UseHsts();
+}
 
 app.UseHttpsRedirection();
 app.UseRateLimiter();
@@ -118,5 +132,6 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 app.Run();
