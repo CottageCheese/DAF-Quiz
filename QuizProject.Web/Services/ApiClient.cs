@@ -21,24 +21,34 @@ public class ApiClient(
 
     // ── Auth ──────────────────────────────────────────────────────────────────
 
-    public async Task<AuthTokens?> LoginAsync(string email, string password)
+    public async Task<ApiResult<AuthTokens>> LoginAsync(string email, string password)
     {
         var response = await http.PostAsJsonAsync("api/auth/login",
             new { email, password });
 
-        if (!response.IsSuccessStatusCode) return null;
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await GetErrorMessage(response);
+            return new ApiResult<AuthTokens>(null, false, error ?? "Invalid email or password.");
+        }
 
-        return await ReadAuthResponse(response);
+        var tokens = await ReadAuthResponse(response);
+        return new ApiResult<AuthTokens>(tokens, tokens is not null, tokens is null ? "Failed to read auth response." : null);
     }
 
-    public async Task<AuthTokens?> RegisterAsync(string email, string password, string displayName)
+    public async Task<ApiResult<AuthTokens>> RegisterAsync(string email, string password, string displayName)
     {
         var response = await http.PostAsJsonAsync("api/auth/register",
             new { email, password, displayName });
 
-        if (!response.IsSuccessStatusCode) return null;
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await GetErrorMessage(response);
+            return new ApiResult<AuthTokens>(null, false, error ?? "Registration failed.");
+        }
 
-        return await ReadAuthResponse(response);
+        var tokens = await ReadAuthResponse(response);
+        return new ApiResult<AuthTokens>(tokens, tokens is not null, tokens is null ? "Failed to read auth response." : null);
     }
 
     public async Task RevokeTokenAsync(string refreshToken)
@@ -265,5 +275,24 @@ public class ApiClient(
 
         if (access is null || refresh is null) return null;
         return new AuthTokens(access, refresh, expiresIn);
+    }
+
+    private static async Task<string?> GetErrorMessage(HttpResponseMessage response)
+    {
+        try
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(content);
+            if (doc.RootElement.TryGetProperty("message", out var messageProp))
+                return messageProp.GetString();
+            if (doc.RootElement.TryGetProperty("errors", out var errorsProp))
+            {
+                if (errorsProp.ValueKind == JsonValueKind.Array)
+                    return string.Join(" ", errorsProp.EnumerateArray().Select(e => e.GetString()));
+                return errorsProp.GetString();
+            }
+        }
+        catch { /* ignored */ }
+        return null;
     }
 }

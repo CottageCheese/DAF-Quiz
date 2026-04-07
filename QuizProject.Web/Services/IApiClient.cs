@@ -5,8 +5,8 @@ namespace QuizProject.Web.Services;
 public interface IApiClient
 {
     // Auth
-    Task<AuthTokens?> LoginAsync(string email, string password);
-    Task<AuthTokens?> RegisterAsync(string email, string password, string displayName);
+    Task<ApiResult<AuthTokens>> LoginAsync(string email, string password);
+    Task<ApiResult<AuthTokens>> RegisterAsync(string email, string password, string displayName);
     Task RevokeTokenAsync(string refreshToken);
 
     // Quizzes
@@ -31,3 +31,5 @@ public interface IApiClient
 
 /// <summary>Tokens returned by the API auth endpoints.</summary>
 public sealed record AuthTokens(string AccessToken, string RefreshToken, int ExpiresIn);
+
+public record ApiResult<T>(T? Data, bool Succeeded, string? ErrorMessage = null);

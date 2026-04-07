@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using QuizProject.Api.Models.Domain;
 using QuizProject.Api.Services;
@@ -31,9 +32,14 @@ public class AuthController(
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        var existing = await userManager.FindByEmailAsync(request.Email);
-        if (existing is not null)
+        var existingEmail = await userManager.FindByEmailAsync(request.Email);
+        if (existingEmail is not null)
             return Conflict(new { message = "An account with that email already exists." });
+
+        var existingDisplayName = await userManager.Users
+            .AnyAsync(u => u.DisplayName == request.DisplayName);
+        if (existingDisplayName)
+            return Conflict(new { message = "That display name is already taken." });
 
         var user = new ApplicationUser
         {

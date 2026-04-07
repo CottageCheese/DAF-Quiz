@@ -34,15 +34,15 @@ public class AccountController(IApiClient apiClient, ITokenStorageService tokenS
         if (!ModelState.IsValid)
             return View(model);
 
-        var tokens = await apiClient.RegisterAsync(model.Email, model.Password, model.DisplayName);
-        if (tokens is null)
+        var result = await apiClient.RegisterAsync(model.Email, model.Password, model.DisplayName);
+        if (!result.Succeeded || result.Data is null)
         {
             ModelState.AddModelError(string.Empty,
-                "Registration failed. The email may already be in use or the password does not meet requirements.");
+                result.ErrorMessage ?? "Registration failed. The email may already be in use or the password does not meet requirements.");
             return View(model);
         }
 
-        await SignInFromTokensAsync(tokens.AccessToken, tokens.RefreshToken, tokens.ExpiresIn);
+        await SignInFromTokensAsync(result.Data.AccessToken, result.Data.RefreshToken, result.Data.ExpiresIn);
         return RedirectToLocal(returnUrl);
     }
 
@@ -68,14 +68,14 @@ public class AccountController(IApiClient apiClient, ITokenStorageService tokenS
         if (!ModelState.IsValid)
             return View(model);
 
-        var tokens = await apiClient.LoginAsync(model.Email, model.Password);
-        if (tokens is null)
+        var result = await apiClient.LoginAsync(model.Email, model.Password);
+        if (!result.Succeeded || result.Data is null)
         {
-            ModelState.AddModelError(string.Empty, "Invalid email or password.");
+            ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Invalid email or password.");
             return View(model);
         }
 
-        await SignInFromTokensAsync(tokens.AccessToken, tokens.RefreshToken, tokens.ExpiresIn);
+        await SignInFromTokensAsync(result.Data.AccessToken, result.Data.RefreshToken, result.Data.ExpiresIn);
         return RedirectToLocal(returnUrl);
     }
 

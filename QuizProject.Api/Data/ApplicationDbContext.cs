@@ -48,6 +48,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<ApplicationUser>(e =>
         {
             e.Property(u => u.DisplayName).HasMaxLength(50).IsRequired();
+            e.HasIndex(u => u.DisplayName).IsUnique();
         });
 
         builder.Entity<QuizAttempt>(e =>
