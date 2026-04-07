@@ -1,22 +1,35 @@
 using Microsoft.EntityFrameworkCore;
-using QuizProject.Web.Data;
 using QuizProject.Web.Models.Domain;
 using QuizProject.Web.Models.ViewModels;
+using QuizProject.Web.Repositories;
 
 namespace QuizProject.Web.Services;
 
 public class QuizService : IQuizService
 {
-    private readonly ApplicationDbContext _db;
+    private readonly IRepository<Quiz> _quizzes;
+    private readonly IRepository<Question> _questions;
+    private readonly IRepository<Answer> _answers;
+    private readonly IRepository<QuizAttempt> _attempts;
+    private readonly IRepository<QuizAttemptAnswer> _attemptAnswers;
 
-    public QuizService(ApplicationDbContext db)
+    public QuizService(
+        IRepository<Quiz> quizzes,
+        IRepository<Question> questions,
+        IRepository<Answer> answers,
+        IRepository<QuizAttempt> attempts,
+        IRepository<QuizAttemptAnswer> attemptAnswers)
     {
-        _db = db;
+        _quizzes = quizzes;
+        _questions = questions;
+        _answers = answers;
+        _attempts = attempts;
+        _attemptAnswers = attemptAnswers;
     }
 
     public async Task<List<QuizListViewModel>> GetActiveQuizzesAsync()
     {
-        return await _db.Quizzes
+        return await _quizzes.Query()
             .Where(q => q.IsActive)
             .Select(q => new QuizListViewModel
             {
@@ -33,7 +46,7 @@ public class QuizService : IQuizService
 
     public async Task<TakeQuizViewModel?> StartAttemptAsync(int quizId, string userId)
     {
-        var quiz = await _db.Quizzes
+        var quiz = await _quizzes.Query()
             .Where(q => q.Id == quizId && q.IsActive)
             .Include(q => q.Questions.OrderBy(qu => qu.DisplayOrder))
             .ThenInclude(q => q.Answers)
@@ -49,8 +62,8 @@ public class QuizService : IQuizService
             TotalQuestions = quiz.Questions.Count
         };
 
-        _db.QuizAttempts.Add(attempt);
-        await _db.SaveChangesAsync();
+        await _attempts.AddAsync(attempt);
+        await _attempts.SaveChangesAsync();
 
         var rng = new Random();
 
@@ -68,7 +81,7 @@ public class QuizService : IQuizService
                     Text = q.Text,
                     DisplayOrder = q.DisplayOrder,
                     Answers = q.Answers
-                        .OrderBy(_ => rng.Next()) // shuffle answers
+                        .OrderBy(_ => rng.Next())
                         .Select(a => new QuizAnswerViewModel
                         {
                             AnswerId = a.Id,
@@ -82,7 +95,7 @@ public class QuizService : IQuizService
 
     public async Task<QuizResultViewModel?> SubmitAttemptAsync(SubmitQuizViewModel submission, string userId)
     {
-        var attempt = await _db.QuizAttempts
+        var attempt = await _attempts.Query()
             .Where(a => a.Id == submission.AttemptId && a.UserId == userId && a.CompletedAt == null)
             .Include(a => a.Quiz)
             .FirstOrDefaultAsync();
@@ -90,7 +103,7 @@ public class QuizService : IQuizService
         if (attempt is null) return null;
 
         var questionIds = submission.Selections.Select(s => s.QuestionId).ToList();
-        var questions = await _db.Questions
+        var questions = await _questions.Query()
             .Where(q => questionIds.Contains(q.Id) && q.QuizId == attempt.QuizId)
             .Include(q => q.Answers)
             .ToListAsync();
@@ -120,26 +133,25 @@ public class QuizService : IQuizService
 
         attempt.Score = score;
         attempt.CompletedAt = DateTime.UtcNow;
-        _db.QuizAttemptAnswers.AddRange(attemptAnswers);
-        await _db.SaveChangesAsync();
+        await _attemptAnswers.AddRangeAsync(attemptAnswers);
+        await _attemptAnswers.SaveChangesAsync();
 
         return await BuildResultViewModelAsync(attempt.Id);
     }
 
     public async Task<QuizResultViewModel?> GetResultAsync(int attemptId, string userId)
     {
-        var attempt = await _db.QuizAttempts
-            .Where(a => a.Id == attemptId && a.UserId == userId && a.CompletedAt != null)
-            .FirstOrDefaultAsync();
+        var exists = await _attempts.Query()
+            .AnyAsync(a => a.Id == attemptId && a.UserId == userId && a.CompletedAt != null);
 
-        if (attempt is null) return null;
+        if (!exists) return null;
 
         return await BuildResultViewModelAsync(attemptId);
     }
 
     private async Task<QuizResultViewModel> BuildResultViewModelAsync(int attemptId)
     {
-        var attempt = await _db.QuizAttempts
+        var attempt = await _attempts.Query()
             .Include(a => a.Quiz)
             .Include(a => a.AttemptAnswers)
             .ThenInclude(aa => aa.Question)
@@ -150,7 +162,7 @@ public class QuizService : IQuizService
         var answerDetails = new List<ResultAnswerViewModel>();
         foreach (var aa in attempt.AttemptAnswers.OrderBy(a => a.Question.DisplayOrder))
         {
-            var correctAnswer = await _db.Answers
+            var correctAnswer = await _answers.Query()
                 .Where(a => a.QuestionId == aa.QuestionId && a.IsCorrect)
                 .Select(a => a.Text)
                 .FirstOrDefaultAsync() ?? string.Empty;

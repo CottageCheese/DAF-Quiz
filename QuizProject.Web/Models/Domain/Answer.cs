@@ -9,7 +9,8 @@ public class Answer
     public int QuestionId { get; set; }
     public Question Question { get; set; } = null!;
 
-    [Required] [MaxLength(500)] public string Text { get; set; } = string.Empty;
+    [Required] [MaxLength(500)] 
+    public string Text { get; init; } = string.Empty;
 
     public bool IsCorrect { get; set; }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using QuizProject.Web.Data;
+using QuizProject.Web.Repositories;
 using QuizProject.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -59,6 +60,9 @@ builder.Services.AddRateLimiter(options =>
     });
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
+
+// ── Repositories ──────────────────────────────────────────────────────────────
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 // ── Application services ──────────────────────────────────────────────────────
 builder.Services.AddScoped<IQuizService, QuizService>();
