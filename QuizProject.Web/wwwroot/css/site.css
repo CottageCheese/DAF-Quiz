@@ -18,16 +18,29 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* ── Focus ring (WCAG SC 2.4.7) ────────────────────────────── */
+/* ── Focus ring (WCAG 2.2 SC 2.4.11 / 2.4.13) ──────────────── */
 :focus-visible {
     outline: 3px solid #0d6efd;
     outline-offset: 2px;
-    border-radius: 2px;
+    border-radius: 4px;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.25);
 }
 
 /* Remove default outline only when :focus-visible is supported */
 :focus:not(:focus-visible) {
     outline: none;
+}
+
+/* ── Target size (WCAG 2.2 SC 2.5.8) ────────────────────────── */
+/* Minimum target size for interactive elements not meeting 24x24px */
+.btn, .nav-link, .navbar-brand, .form-check-input {
+    min-height: 2.25rem; /* ~36px */
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-sm {
+    min-height: 2rem; /* ~32px */
 }
 
 /* ── Body layout ────────────────────────────────────────────── */

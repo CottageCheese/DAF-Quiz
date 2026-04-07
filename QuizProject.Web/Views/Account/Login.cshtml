@@ -18,8 +18,10 @@
                     <label asp-for="Email" class="form-label fw-semibold"></label>
                     <input asp-for="Email"
                            class="form-control"
-                           autocomplete="email"
-                           aria-required="true"/>
+                           type="email"
+                           autocomplete="username"
+                           aria-required="true"
+                           placeholder="name@example.com"/>
                     <span asp-validation-for="Email" class="text-danger" role="alert" aria-live="polite"></span>
                 </div>
 

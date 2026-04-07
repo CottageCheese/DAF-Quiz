@@ -29,9 +29,11 @@
                     <label asp-for="Email" class="form-label fw-semibold"></label>
                     <input asp-for="Email"
                            class="form-control"
-                           autocomplete="email"
+                           type="email"
+                           autocomplete="username"
                            aria-required="true"
-                           aria-describedby="email-hint"/>
+                           aria-describedby="email-hint"
+                           placeholder="name@example.com"/>
                     <div id="email-hint" class="form-text">We will never share your email.</div>
                     <span asp-validation-for="Email" class="text-danger" role="alert" aria-live="polite"></span>
                 </div>
