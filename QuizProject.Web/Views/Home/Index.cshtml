@@ -3,7 +3,7 @@
     ViewData["Title"] = "Dashboard";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
     <h1 class="h2 mb-0">Dashboard</h1>
     @if (User.Identity?.IsAuthenticated == true)
     {
@@ -95,7 +95,7 @@
                                             }
                                             @maskedEmail
                                         </td>
-                                        <td class="text-truncate" style="max-width:140px;" title="@user.QuizTitle">@user.QuizTitle</td>
+                                        <td class="text-truncate col-title-truncate" title="@user.QuizTitle">@user.QuizTitle</td>
                                         <td class="text-end pe-3">
                                             <span class="badge @(user.BestScorePercent >= 70 ? "bg-success" : user.BestScorePercent >= 50 ? "bg-warning text-dark" : "bg-danger") rounded-pill">
                                                 @user.BestScorePercent%

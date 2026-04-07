@@ -5,35 +5,66 @@
    ============================================================ */
 
 :root {
-    --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
-    --surface-color: #ffffff;
-    --background-color: #f8f9fa;
-    --card-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    /* ── Color tokens ──────────────────────────────────────────── */
+    --color-primary:               #0d6efd;
+    --color-primary-dark:          #0a58ca;
+    --color-primary-focus-ring:    rgba(13, 110, 253, 0.25);
+    --color-primary-hover-bg:      #f0f4ff;
+    --color-primary-selected-bg:   #e7f1ff;
+    --color-primary-selected-text: #084298;
+    --color-text:                  #212529;
+    --color-text-muted:            #6c757d;
+    --color-border:                #ced4da;
+    --color-border-light:          #dee2e6;
+    --color-surface:               #ffffff;
+    --color-bg:                    #f8f9fa;
+
+    /* ── Gradient & shadow tokens ──────────────────────────────── */
+    --primary-gradient:  linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    --card-shadow:       0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     --card-shadow-hover: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+
+    /* ── Spacing scale ─────────────────────────────────────────── */
+    --space-1: 0.25rem;   /*  4px */
+    --space-2: 0.5rem;    /*  8px */
+    --space-3: 0.75rem;   /* 12px */
+    --space-4: 1rem;      /* 16px */
+    --space-5: 1.25rem;   /* 20px */
+    --space-6: 1.5rem;    /* 24px */
+    --space-8: 2rem;      /* 32px */
+
+    /* ── Typography tokens ─────────────────────────────────────── */
+    --font-size-sm:       0.875rem;
+    --font-size-base:     1rem;
+    --font-weight-normal:   400;
+    --font-weight-semibold: 600;
+    --line-height-base:   1.6;
+
+    /* ── Transition ────────────────────────────────────────────── */
     --transition-speed: 0.2s;
 }
 
 /* ── Skip link (WCAG SC 2.4.1) ─────────────────────────────── */
 .skip-link:focus {
     position: fixed;
-    top: 0.5rem;
-    left: 0.5rem;
+    top: var(--space-2);
+    left: var(--space-2);
     z-index: 9999;
-    padding: 0.5rem 1rem;
-    background: #0d6efd;
-    color: #fff;
-    border-radius: 0.25rem;
-    font-weight: 600;
+    padding: var(--space-2) var(--space-4);
+    background: var(--color-primary);
+    color: var(--color-surface);
+    border-radius: var(--space-1);
+    font-weight: var(--font-weight-semibold);
     text-decoration: none;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* ── Focus ring (WCAG 2.2 SC 2.4.11 / 2.4.13) ──────────────── */
 :focus-visible {
-    outline: 3px solid #0d6efd;
+    outline: 3px solid var(--color-primary);
     outline-offset: 2px;
-    border-radius: 4px;
-    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.25);
+    border-radius: var(--space-1);
+    box-shadow: 0 0 0 4px var(--color-primary-focus-ring);
 }
 
 /* Remove default outline only when :focus-visible is supported */
@@ -49,63 +80,65 @@
     align-items: center;
 }
 
-.btn-sm {
-    min-height: 2rem; /* ~32px */
-}
-
 /* ── Body layout ────────────────────────────────────────────── */
 html,
 body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background-color: var(--background-color);
+    background-color: var(--color-bg);
 }
 
 main.container {
     flex: 1;
 }
 
-/* ── Typography contrast ────────────────────────────────────── */
+/* ── Typography ─────────────────────────────────────────────── */
 /* Ensure body text meets 4.5:1 against white (#fff) */
 body {
-    color: #212529; /* Bootstrap default dark — contrast 16.1:1 */
-    font-size: 1rem;
-    line-height: 1.6;
+    color: var(--color-text); /* contrast 16.1:1 */
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
 }
 
 .text-muted {
-    color: #6c757d !important; /* contrast 4.54:1 on #fff — AA */
+    color: var(--color-text-muted) !important; /* contrast 4.54:1 on #fff — AA */
 }
 
 /* ── Quiz answer list ───────────────────────────────────────── */
+.quiz-answer-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
 .quiz-answer-label {
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--space-3);
     width: 100%;
-    padding: 0.625rem 1rem;
-    border-radius: 0.5rem;
-    border: 2px solid #ced4da;
-    background-color: #ffffff;
-    color: #212529;
-    font-size: 1rem;
+    padding: 0.625rem var(--space-4);
+    border-radius: var(--space-2);
+    border: 2px solid var(--color-border);
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    font-size: var(--font-size-base);
     box-sizing: border-box;
     transition: background-color var(--transition-speed) ease, border-color var(--transition-speed) ease;
 }
 
 .quiz-answer-label:hover {
-    background-color: #f0f4ff;
-    border-color: #0d6efd;
+    background-color: var(--color-primary-hover-bg);
+    border-color: var(--color-primary);
 }
 
 .quiz-answer-label.active,
 .quiz-answer-label.list-group-item-primary {
-    background-color: #e7f1ff;
-    border-color: #0d6efd;
-    color: #084298;
-    font-weight: 600;
+    background-color: var(--color-primary-selected-bg);
+    border-color: var(--color-primary);
+    color: var(--color-primary-selected-text);
+    font-weight: var(--font-weight-semibold);
 }
 
 /* Reset the global form-check-input overrides inside quiz so radio buttons stay compact */
@@ -121,8 +154,30 @@ body {
 
 /* ── Progress bar ───────────────────────────────────────────── */
 .progress {
-    background-color: #dee2e6;
-    border-radius: 0.5rem;
+    background-color: var(--color-border-light);
+    border-radius: var(--space-2);
+}
+
+.quiz-progress-bar {
+    height: 10px;
+}
+
+/* ── Score circle ───────────────────────────────────────────── */
+.score-circle {
+    width: 120px;
+    height: 120px;
+}
+
+/* ── Table column widths ────────────────────────────────────── */
+.col-num    { width: 3rem; }
+.col-result { width: 5rem; }
+.col-title-truncate {
+    max-width: 140px;
+}
+
+/* ── Number input (compact) ─────────────────────────────────── */
+.input-number-sm {
+    width: 100px;
 }
 
 /* ── Card enhancements ──────────────────────────────────────── */
@@ -130,7 +185,7 @@ body {
     border: none;
     box-shadow: var(--card-shadow);
     transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
-    border-radius: 0.75rem;
+    border-radius: var(--space-3);
     overflow: hidden;
 }
 
@@ -141,11 +196,11 @@ body {
 
 .card-header {
     border-bottom: none;
-    padding: 1.25rem;
+    padding: var(--space-5);
 }
 
 .card-body {
-    padding: 1.5rem;
+    padding: var(--space-6);
 }
 
 .card.h-100:hover {
@@ -155,9 +210,10 @@ body {
 
 /* ── Buttons ────────────────────────────────────────────────── */
 .btn {
-    border-radius: 0.5rem;
-    font-weight: 600;
+    border-radius: var(--space-2);
+    font-weight: var(--font-weight-semibold);
     transition: all var(--transition-speed) ease;
+    touch-action: manipulation;
 }
 
 .btn-primary {
@@ -169,6 +225,7 @@ body {
     filter: brightness(1.1);
     transform: translateY(-1px);
 }
+
 .badge.rounded-pill {
     min-width: 2.5rem;
 }
@@ -176,7 +233,7 @@ body {
 /* ── Responsive table text ──────────────────────────────────── */
 @media (max-width: 575.98px) {
     .table {
-        font-size: 0.875rem;
+        font-size: var(--font-size-sm);
     }
 }
 
@@ -213,5 +270,5 @@ body {
 /* ── Print styles ───────────────────────────────────────────── */
 @media print {
     nav, footer, .btn, form { display: none !important; }
-    .card { box-shadow: none !important; border: 1px solid #ccc !important; }
+    .card { box-shadow: none !important; border: 1px solid var(--color-border) !important; }
 }

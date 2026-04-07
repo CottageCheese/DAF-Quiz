@@ -3,7 +3,7 @@
     ViewData["Title"] = "Admin — Quiz Management";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
     <h1 class="h3 mb-0">Quiz Management</h1>
     <a asp-action="Create" class="btn btn-primary">+ New Quiz</a>
 </div>
@@ -19,10 +19,10 @@ else
             <thead class="table-dark">
             <tr>
                 <th>Title</th>
-                <th>Questions</th>
-                <th>Created By</th>
-                <th>Created</th>
-                <th>Publish Date</th>
+                <th class="d-none d-sm-table-cell">Questions</th>
+                <th class="d-none d-md-table-cell">Created By</th>
+                <th class="d-none d-md-table-cell">Created</th>
+                <th class="d-none d-lg-table-cell">Publish Date</th>
                 <th>Status</th>
                 <th class="text-end">Actions</th>
             </tr>
@@ -38,10 +38,10 @@ else
                             <br/><small class="text-muted">@quiz.Description</small>
                         }
                     </td>
-                    <td>@quiz.QuestionCount</td>
-                    <td>@(quiz.CreatedByEmail ?? "—")</td>
-                    <td>@quiz.CreatedAt.ToString("dd MMM yyyy")</td>
-                    <td>
+                    <td class="d-none d-sm-table-cell">@quiz.QuestionCount</td>
+                    <td class="d-none d-md-table-cell">@(quiz.CreatedByEmail ?? "—")</td>
+                    <td class="d-none d-md-table-cell">@quiz.CreatedAt.ToString("dd MMM yyyy")</td>
+                    <td class="d-none d-lg-table-cell">
                         @if (quiz.PublishedAt.HasValue)
                         {
                             @quiz.PublishedAt.Value.ToString("dd MMM yyyy HH:mm")
@@ -66,17 +66,19 @@ else
                             <span class="badge bg-secondary">Draft</span>
                         }
                     </td>
-                    <td class="text-end">
-                        <a asp-action="Details" asp-route-id="@quiz.Id"
-                           class="btn btn-sm btn-outline-primary me-1">View</a>
-                        <a asp-action="Edit" asp-route-id="@quiz.Id"
-                           class="btn btn-sm btn-outline-secondary me-1">Edit</a>
-                        <form asp-action="DeleteQuiz" method="post" class="d-inline"
-                              onsubmit="return confirm('Delete quiz \'@quiz.Title\'? This cannot be undone.');">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="id" value="@quiz.Id"/>
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                        </form>
+                    <td>
+                        <div class="d-flex flex-wrap justify-content-end gap-1">
+                            <a asp-action="Details" asp-route-id="@quiz.Id"
+                               class="btn btn-sm btn-outline-primary">View</a>
+                            <a asp-action="Edit" asp-route-id="@quiz.Id"
+                               class="btn btn-sm btn-outline-secondary">Edit</a>
+                            <form asp-action="DeleteQuiz" method="post"
+                                  onsubmit="return confirm('Delete quiz \'@quiz.Title\'? This cannot be undone.');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@quiz.Id"/>
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
             }

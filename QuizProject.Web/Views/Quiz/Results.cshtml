@@ -20,8 +20,7 @@
             <h1 id="results-heading" class="h2 mb-1">@Model.QuizTitle</h1>
             <p class="text-muted mb-4">Quiz complete — here is how you did.</p>
 
-            <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-@scoreClass @textClass mb-3"
-                 style="width:120px;height:120px;"
+            <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-@scoreClass @textClass mb-3 score-circle"
                  aria-label="Score: @Model.Score out of @Model.TotalQuestions, @Model.Percentage percent">
                 <span class="display-5 fw-bold">@Model.Score/@Model.TotalQuestions</span>
             </div>
@@ -38,11 +37,11 @@
             <caption class="visually-hidden">Each question, your answer, the correct answer, and whether it was correct</caption>
             <thead class="table-light">
             <tr>
-                <th scope="col" style="width:3rem;">#</th>
+                <th scope="col" class="col-num">#</th>
                 <th scope="col">Question</th>
                 <th scope="col">Your answer</th>
                 <th scope="col">Correct answer</th>
-                <th scope="col" class="text-center" style="width:5rem;">Result</th>
+                <th scope="col" class="text-center col-result">Result</th>
             </tr>
             </thead>
             <tbody>
@@ -74,7 +73,7 @@
         </table>
     </div>
 
-    <div class="d-flex gap-3 mt-4">
+    <div class="d-flex flex-wrap gap-3 mt-4">
         <a asp-controller="Quiz" asp-action="Index" class="btn btn-primary">Take another quiz</a>
         <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">View leaderboard</a>
     </div>
