@@ -7,6 +7,7 @@ public class QuizResultViewModel
     public int Score { get; set; }
     public int TotalQuestions { get; set; }
     public double Percentage => TotalQuestions > 0 ? Math.Round((double)Score / TotalQuestions * 100, 1) : 0;
+
     public string Grade => Percentage switch
     {
         >= 90 => "Excellent",
@@ -14,13 +15,6 @@ public class QuizResultViewModel
         >= 50 => "Pass",
         _ => "Needs Improvement"
     };
-    public List<ResultAnswerViewModel> Answers { get; set; } = new();
-}
 
-public class ResultAnswerViewModel
-{
-    public string QuestionText { get; set; } = string.Empty;
-    public string SelectedAnswerText { get; set; } = string.Empty;
-    public string CorrectAnswerText { get; set; } = string.Empty;
-    public bool IsCorrect { get; set; }
+    public List<ResultAnswerViewModel> Answers { get; set; } = new();
 }

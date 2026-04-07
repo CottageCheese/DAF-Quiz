@@ -30,23 +30,23 @@
                             <table class="table table-hover mb-0" aria-describedby="top-quizzes-heading">
                                 <caption class="visually-hidden">Ranking of quizzes by number of attempts</caption>
                                 <thead class="table-light">
-                                    <tr>
-                                        <th scope="col" class="ps-3">#</th>
-                                        <th scope="col">Quiz</th>
-                                        <th scope="col" class="text-end pe-3">Attempts</th>
-                                    </tr>
+                                <tr>
+                                    <th scope="col" class="ps-3">#</th>
+                                    <th scope="col">Quiz</th>
+                                    <th scope="col" class="text-end pe-3">Attempts</th>
+                                </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var quiz in Model.TopQuizzes)
-                                    {
-                                        <tr>
-                                            <th scope="row" class="ps-3 text-muted fw-normal">@quiz.Rank</th>
-                                            <td>@quiz.QuizTitle</td>
-                                            <td class="text-end pe-3">
-                                                <span class="badge bg-primary rounded-pill">@quiz.AttemptCount</span>
-                                            </td>
-                                        </tr>
-                                    }
+                                @foreach (var quiz in Model.TopQuizzes)
+                                {
+                                    <tr>
+                                        <th scope="row" class="ps-3 text-muted fw-normal">@quiz.Rank</th>
+                                        <td>@quiz.QuizTitle</td>
+                                        <td class="text-end pe-3">
+                                            <span class="badge bg-primary rounded-pill">@quiz.AttemptCount</span>
+                                        </td>
+                                    </tr>
+                                }
                                 </tbody>
                             </table>
                         </div>
@@ -74,35 +74,35 @@
                             <table class="table table-hover mb-0" aria-describedby="top-users-heading">
                                 <caption class="visually-hidden">Top users ranked by their best quiz score percentage</caption>
                                 <thead class="table-light">
-                                    <tr>
-                                        <th scope="col" class="ps-3">#</th>
-                                        <th scope="col">User</th>
-                                        <th scope="col">Best on</th>
-                                        <th scope="col" class="text-end pe-3">Score</th>
-                                    </tr>
+                                <tr>
+                                    <th scope="col" class="ps-3">#</th>
+                                    <th scope="col">User</th>
+                                    <th scope="col">Best on</th>
+                                    <th scope="col" class="text-end pe-3">Score</th>
+                                </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var user in Model.TopUsers)
-                                    {
-                                        <tr>
-                                            <th scope="row" class="ps-3 text-muted fw-normal">@user.Rank</th>
-                                            <td>
-                                                @{
-                                                    var email = user.UserName;
-                                                    var maskedEmail = email.Length > 3
-                                                        ? email[..3] + new string('*', Math.Min(email.IndexOf('@') - 3, 5)) + email[email.IndexOf('@')..]
-                                                        : email;
-                                                }
-                                                @maskedEmail
-                                            </td>
-                                            <td class="text-truncate" style="max-width:140px;" title="@user.QuizTitle">@user.QuizTitle</td>
-                                            <td class="text-end pe-3">
-                                                <span class="badge @(user.BestScorePercent >= 70 ? "bg-success" : user.BestScorePercent >= 50 ? "bg-warning text-dark" : "bg-danger") rounded-pill">
-                                                    @user.BestScorePercent%
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    }
+                                @foreach (var user in Model.TopUsers)
+                                {
+                                    <tr>
+                                        <th scope="row" class="ps-3 text-muted fw-normal">@user.Rank</th>
+                                        <td>
+                                            @{
+                                                var email = user.UserName;
+                                                var maskedEmail = email.Length > 3
+                                                    ? email[..3] + new string('*', Math.Min(email.IndexOf('@') - 3, 5)) + email[email.IndexOf('@')..]
+                                                    : email;
+                                            }
+                                            @maskedEmail
+                                        </td>
+                                        <td class="text-truncate" style="max-width:140px;" title="@user.QuizTitle">@user.QuizTitle</td>
+                                        <td class="text-end pe-3">
+                                            <span class="badge @(user.BestScorePercent >= 70 ? "bg-success" : user.BestScorePercent >= 50 ? "bg-warning text-dark" : "bg-danger") rounded-pill">
+                                                @user.BestScorePercent%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
                                 </tbody>
                             </table>
                         </div>

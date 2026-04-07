@@ -9,7 +9,7 @@
             <h1 id="login-heading" class="mb-4">Sign in</h1>
 
             <form asp-action="Login" method="post" novalidate>
-                <input type="hidden" value="@ViewData["ReturnUrl"]" name="returnUrl" />
+                <input type="hidden" value="@ViewData["ReturnUrl"]" name="returnUrl"/>
                 @Html.AntiForgeryToken()
 
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert" aria-live="assertive"></div>
@@ -19,7 +19,7 @@
                     <input asp-for="Email"
                            class="form-control"
                            autocomplete="email"
-                           aria-required="true" />
+                           aria-required="true"/>
                     <span asp-validation-for="Email" class="text-danger" role="alert" aria-live="polite"></span>
                 </div>
 
@@ -28,12 +28,12 @@
                     <input asp-for="Password"
                            class="form-control"
                            autocomplete="current-password"
-                           aria-required="true" />
+                           aria-required="true"/>
                     <span asp-validation-for="Password" class="text-danger" role="alert" aria-live="polite"></span>
                 </div>
 
                 <div class="mb-4 form-check">
-                    <input asp-for="RememberMe" class="form-check-input" />
+                    <input asp-for="RememberMe" class="form-check-input"/>
                     <label asp-for="RememberMe" class="form-check-label"></label>
                 </div>
 

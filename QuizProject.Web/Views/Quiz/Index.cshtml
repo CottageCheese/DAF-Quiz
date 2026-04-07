@@ -33,7 +33,7 @@ else
 
                         <form asp-controller="Quiz" asp-action="Start" method="post" class="mt-auto">
                             @Html.AntiForgeryToken()
-                            <input type="hidden" name="quizId" value="@quiz.Id" />
+                            <input type="hidden" name="quizId" value="@quiz.Id"/>
                             <button type="submit"
                                     class="btn btn-primary w-100"
                                     aria-label="Start quiz: @quiz.Title">

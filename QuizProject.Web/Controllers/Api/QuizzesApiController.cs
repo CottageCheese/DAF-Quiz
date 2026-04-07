@@ -1,30 +1,23 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QuizProject.Web.Models.ViewModels;
 using QuizProject.Web.Services;
-using System.Security.Claims;
 
 namespace QuizProject.Web.Controllers.Api;
 
 [ApiController]
 [Route("api/quizzes")]
 [Authorize]
-public class QuizzesApiController : ControllerBase
+public class QuizzesApiController(IQuizService quizService) : ControllerBase
 {
-    private readonly IQuizService _quizService;
-
-    public QuizzesApiController(IQuizService quizService)
-    {
-        _quizService = quizService;
-    }
-
     /// <summary>Returns all active quizzes.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(List<QuizListViewModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetQuizzes()
     {
-        var quizzes = await _quizService.GetActiveQuizzesAsync();
+        var quizzes = await quizService.GetActiveQuizzesAsync();
         return Ok(quizzes);
     }
 
@@ -38,7 +31,7 @@ public class QuizzesApiController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId is null) return Unauthorized();
 
-        var model = await _quizService.StartAttemptAsync(quizId, userId);
+        var model = await quizService.StartAttemptAsync(quizId, userId);
         if (model is null) return NotFound(new { message = "Quiz not found or inactive." });
 
         return Ok(model);
@@ -58,7 +51,7 @@ public class QuizzesApiController : ControllerBase
         if (userId is null) return Unauthorized();
 
         var submission = new SubmitQuizViewModel { AttemptId = attemptId, Selections = selections };
-        var result = await _quizService.SubmitAttemptAsync(submission, userId);
+        var result = await quizService.SubmitAttemptAsync(submission, userId);
 
         if (result is null) return NotFound(new { message = "Attempt not found or already completed." });
 
@@ -75,7 +68,7 @@ public class QuizzesApiController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId is null) return Unauthorized();
 
-        var result = await _quizService.GetResultAsync(attemptId, userId);
+        var result = await quizService.GetResultAsync(attemptId, userId);
         if (result is null) return NotFound(new { message = "Result not found." });
 
         return Ok(result);

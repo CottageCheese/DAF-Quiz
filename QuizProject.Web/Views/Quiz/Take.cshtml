@@ -5,7 +5,9 @@
 
 <nav aria-label="Quiz breadcrumb" class="mb-3">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Quiz" asp-action="Index">Quizzes</a></li>
+        <li class="breadcrumb-item">
+            <a asp-controller="Quiz" asp-action="Index">Quizzes</a>
+        </li>
         <li class="breadcrumb-item active" aria-current="page">@Model.QuizTitle</li>
     </ol>
 </nav>
@@ -31,9 +33,9 @@
 
 <form asp-controller="Quiz" asp-action="Submit" method="post" id="quiz-form" novalidate>
     @Html.AntiForgeryToken()
-    <input type="hidden" name="AttemptId" value="@Model.AttemptId" />
+    <input type="hidden" name="AttemptId" value="@Model.AttemptId"/>
 
-    @for (int i = 0; i < Model.Questions.Count; i++)
+    @for (var i = 0; i < Model.Questions.Count; i++)
     {
         var q = Model.Questions[i];
         var isFirst = i == 0;
@@ -49,7 +51,7 @@
                         @q.Text
                     </legend>
 
-                    <input type="hidden" name="Selections[@i].QuestionId" value="@q.QuestionId" />
+                    <input type="hidden" name="Selections[@i].QuestionId" value="@q.QuestionId"/>
 
                     <div class="list-group">
                         @foreach (var answer in q.Answers)
@@ -63,7 +65,7 @@
                                        name="Selections[@i].SelectedAnswerId"
                                        value="@answer.AnswerId"
                                        required
-                                       aria-required="true" />
+                                       aria-required="true"/>
                                 @answer.Text
                             </label>
                         }
@@ -111,7 +113,7 @@
 </form>
 
 @section Scripts {
-<script>
+    <script>
 (function () {
     'use strict';
 

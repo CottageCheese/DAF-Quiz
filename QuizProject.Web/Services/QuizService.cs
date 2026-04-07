@@ -36,7 +36,7 @@ public class QuizService : IQuizService
         var quiz = await _db.Quizzes
             .Where(q => q.Id == quizId && q.IsActive)
             .Include(q => q.Questions.OrderBy(qu => qu.DisplayOrder))
-                .ThenInclude(q => q.Answers)
+            .ThenInclude(q => q.Answers)
             .FirstOrDefaultAsync();
 
         if (quiz is null) return null;
@@ -68,7 +68,7 @@ public class QuizService : IQuizService
                     Text = q.Text,
                     DisplayOrder = q.DisplayOrder,
                     Answers = q.Answers
-                        .OrderBy(_ => rng.Next())   // shuffle answers
+                        .OrderBy(_ => rng.Next()) // shuffle answers
                         .Select(a => new QuizAnswerViewModel
                         {
                             AnswerId = a.Id,
@@ -96,7 +96,7 @@ public class QuizService : IQuizService
             .ToListAsync();
 
         var attemptAnswers = new List<QuizAttemptAnswer>();
-        int score = 0;
+        var score = 0;
 
         foreach (var selection in submission.Selections)
         {
@@ -106,7 +106,7 @@ public class QuizService : IQuizService
             var selectedAnswer = question.Answers.FirstOrDefault(a => a.Id == selection.SelectedAnswerId);
             if (selectedAnswer is null) continue;
 
-            bool isCorrect = selectedAnswer.IsCorrect;
+            var isCorrect = selectedAnswer.IsCorrect;
             if (isCorrect) score++;
 
             attemptAnswers.Add(new QuizAttemptAnswer
@@ -142,9 +142,9 @@ public class QuizService : IQuizService
         var attempt = await _db.QuizAttempts
             .Include(a => a.Quiz)
             .Include(a => a.AttemptAnswers)
-                .ThenInclude(aa => aa.Question)
+            .ThenInclude(aa => aa.Question)
             .Include(a => a.AttemptAnswers)
-                .ThenInclude(aa => aa.SelectedAnswer)
+            .ThenInclude(aa => aa.SelectedAnswer)
             .FirstAsync(a => a.Id == attemptId);
 
         var answerDetails = new List<ResultAnswerViewModel>();

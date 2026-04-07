@@ -9,8 +9,7 @@ public class Question
     public int QuizId { get; set; }
     public Quiz Quiz { get; set; } = null!;
 
-    [Required, MaxLength(1000)]
-    public string Text { get; set; } = string.Empty;
+    [Required] [MaxLength(1000)] public string Text { get; set; } = string.Empty;
 
     public int DisplayOrder { get; set; }
 
