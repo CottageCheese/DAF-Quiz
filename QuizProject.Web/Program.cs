@@ -1,44 +1,50 @@
 using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.EntityFrameworkCore;
-using QuizProject.Web.Data;
-using QuizProject.Web.Repositories;
 using QuizProject.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── Database ──────────────────────────────────────────────────────────────────
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// ── Identity ──────────────────────────────────────────────────────────────────
-builder.Services.AddDefaultIdentity<IdentityUser>(options =>
-    {
-        options.Password.RequireDigit = true;
-        options.Password.RequireLowercase = true;
-        options.Password.RequireUppercase = true;
-        options.Password.RequireNonAlphanumeric = true;
-        options.Password.RequiredLength = 8;
-        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-        options.Lockout.MaxFailedAccessAttempts = 5;
-        options.User.RequireUniqueEmail = true;
-        options.SignIn.RequireConfirmedAccount = false;
-    })
-    .AddEntityFrameworkStores<ApplicationDbContext>();
-
-// ── Cookie security ───────────────────────────────────────────────────────────
-builder.Services.ConfigureApplicationCookie(options =>
+// ── Session (server-side JWT token storage) ───────────────────────────────────
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
 {
     options.Cookie.HttpOnly = true;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.Cookie.SameSite = SameSiteMode.Strict;
-    options.ExpireTimeSpan = TimeSpan.FromHours(2);
-    options.SlidingExpiration = true;
-    options.LoginPath = "/Account/Login";
-    options.LogoutPath = "/Account/Logout";
-    options.AccessDeniedPath = "/Account/AccessDenied";
+    options.Cookie.Name = ".QuizProject.Session";
+    options.IdleTimeout = TimeSpan.FromHours(2);
 });
+
+// ── Cookie authentication (no Identity/EF — principal comes from JWT claims) ──
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Strict;
+        options.Cookie.Name = ".QuizProject.Auth";
+        options.ExpireTimeSpan = TimeSpan.FromHours(2);
+        options.SlidingExpiration = true;
+        options.LoginPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout";
+        options.AccessDeniedPath = "/Account/AccessDenied";
+
+        // If the session no longer has tokens the cookie principal is stale — sign out
+        options.Events.OnValidatePrincipal = async ctx =>
+        {
+            var storage = ctx.HttpContext.RequestServices
+                .GetRequiredService<ITokenStorageService>();
+
+            if (storage.GetAccessToken() is null)
+            {
+                ctx.RejectPrincipal();
+                await ctx.HttpContext.SignOutAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme);
+            }
+        };
+    });
 
 // ── Anti-forgery ──────────────────────────────────────────────────────────────
 builder.Services.AddAntiforgery(options =>
@@ -61,39 +67,25 @@ builder.Services.AddRateLimiter(options =>
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 
-// ── Repositories ──────────────────────────────────────────────────────────────
-builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+// ── HTTP client + services ────────────────────────────────────────────────────
+var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"]
+    ?? throw new InvalidOperationException("ApiSettings:BaseUrl is not configured.");
 
-// ── Application services ──────────────────────────────────────────────────────
-builder.Services.AddScoped<IQuizService, QuizService>();
-builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
-
-// ── MVC + API ─────────────────────────────────────────────────────────────────
-builder.Services.AddControllersWithViews(options =>
+builder.Services.AddHttpClient<IApiClient, ApiClient>(client =>
 {
-    // Global anti-forgery filter for MVC actions
-});
-builder.Services.AddRazorPages();
-
-// ── CORS (same-origin only for API) ──────────────────────────────────────────
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-        policy.WithOrigins("https://localhost:64564", "http://localhost:64565")
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials());
+    client.BaseAddress = new Uri(apiBaseUrl);
 });
 
+builder.Services.AddScoped<ITokenStorageService, TokenStorageService>();
+builder.Services.AddHttpContextAccessor();
+
+// ── MVC ───────────────────────────────────────────────────────────────────────
+builder.Services.AddControllersWithViews();
+
+// ── Build ─────────────────────────────────────────────────────────────────────
 var app = builder.Build();
 
-// ── Database migration + seed ─────────────────────────────────────────────────
-using (var scope = app.Services.CreateScope())
-{
-    await SeedData.InitialiseAsync(scope.ServiceProvider);
-}
-
-// ── Security headers middleware ───────────────────────────────────────────────
+// ── Security headers ──────────────────────────────────────────────────────────
 app.Use(async (context, next) =>
 {
     context.Response.Headers["X-Content-Type-Options"] = "nosniff";
@@ -122,13 +114,12 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRateLimiter();
 app.UseRouting();
-app.UseCors();
+app.UseSession();           // MUST be before UseAuthentication
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
     "default",
     "{controller=Home}/{action=Index}/{id?}");
-app.MapRazorPages();
 
 app.Run();

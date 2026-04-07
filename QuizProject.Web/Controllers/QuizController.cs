@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QuizProject.Web.Models.ViewModels;
@@ -7,12 +6,12 @@ using QuizProject.Web.Services;
 namespace QuizProject.Web.Controllers;
 
 [Authorize]
-public class QuizController(IQuizService quizService) : Controller
+public class QuizController(IApiClient apiClient) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var quizzes = await quizService.GetActiveQuizzesAsync();
+        var quizzes = await apiClient.GetQuizzesAsync();
         return View(quizzes);
     }
 
@@ -20,10 +19,7 @@ public class QuizController(IQuizService quizService) : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Start(int quizId)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId is null) return Unauthorized();
-
-        var model = await quizService.StartAttemptAsync(quizId, userId);
+        var model = await apiClient.StartAttemptAsync(quizId);
         if (model is null)
         {
             TempData["Error"] = "Quiz not found or is no longer active.";
@@ -43,10 +39,7 @@ public class QuizController(IQuizService quizService) : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId is null) return Unauthorized();
-
-        var result = await quizService.SubmitAttemptAsync(model, userId);
+        var result = await apiClient.SubmitAttemptAsync(model.AttemptId, model.Selections);
         if (result is null)
         {
             TempData["Error"] = "Unable to submit quiz. It may have already been completed.";
@@ -59,10 +52,7 @@ public class QuizController(IQuizService quizService) : Controller
     [HttpGet]
     public async Task<IActionResult> Results(int attemptId)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId is null) return Unauthorized();
-
-        var result = await quizService.GetResultAsync(attemptId, userId);
+        var result = await apiClient.GetResultAsync(attemptId);
         if (result is null) return NotFound();
 
         return View(result);

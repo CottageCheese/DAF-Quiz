@@ -1,18 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
-using QuizProject.Web.Models.ViewModels;
 using QuizProject.Web.Services;
 
 namespace QuizProject.Web.Controllers;
 
-public class HomeController(ILeaderboardService leaderboardService) : Controller
+public class HomeController(IApiClient apiClient) : Controller
 {
     public async Task<IActionResult> Index()
     {
-        var model = new LeaderboardViewModel
-        {
-            TopQuizzes = await leaderboardService.GetTopQuizzesAsync(),
-            TopUsers = await leaderboardService.GetTopUsersAsync()
-        };
+        var model = await apiClient.GetLeaderboardAsync();
         return View(model);
     }
 

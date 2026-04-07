@@ -1,13 +1,16 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using QuizProject.Web.Models.ViewModels;
+using QuizProject.Web.Services;
 
 namespace QuizProject.Web.Controllers;
 
-public class AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
-    : Controller
+public class AccountController(IApiClient apiClient, ITokenStorageService tokenStorage) : Controller
 {
     [HttpGet]
     [AllowAnonymous]
@@ -31,19 +34,16 @@ public class AccountController(UserManager<IdentityUser> userManager, SignInMana
         if (!ModelState.IsValid)
             return View(model);
 
-        var user = new IdentityUser { UserName = model.Email, Email = model.Email };
-        var result = await userManager.CreateAsync(user, model.Password);
-
-        if (result.Succeeded)
+        var tokens = await apiClient.RegisterAsync(model.Email, model.Password);
+        if (tokens is null)
         {
-            await signInManager.SignInAsync(user, false);
-            return RedirectToLocal(returnUrl);
+            ModelState.AddModelError(string.Empty,
+                "Registration failed. The email may already be in use or the password does not meet requirements.");
+            return View(model);
         }
 
-        foreach (var error in result.Errors)
-            ModelState.AddModelError(string.Empty, error.Description);
-
-        return View(model);
+        await SignInFromTokensAsync(tokens.AccessToken, tokens.RefreshToken, tokens.ExpiresIn);
+        return RedirectToLocal(returnUrl);
     }
 
     [HttpGet]
@@ -68,21 +68,15 @@ public class AccountController(UserManager<IdentityUser> userManager, SignInMana
         if (!ModelState.IsValid)
             return View(model);
 
-        var result = await signInManager.PasswordSignInAsync(
-            model.Email, model.Password, model.RememberMe, true);
-
-        if (result.Succeeded)
-            return RedirectToLocal(returnUrl);
-
-        if (result.IsLockedOut)
+        var tokens = await apiClient.LoginAsync(model.Email, model.Password);
+        if (tokens is null)
         {
-            ModelState.AddModelError(string.Empty,
-                "Account locked due to multiple failed attempts. Please try again in 5 minutes.");
+            ModelState.AddModelError(string.Empty, "Invalid email or password.");
             return View(model);
         }
 
-        ModelState.AddModelError(string.Empty, "Invalid email or password.");
-        return View(model);
+        await SignInFromTokensAsync(tokens.AccessToken, tokens.RefreshToken, tokens.ExpiresIn);
+        return RedirectToLocal(returnUrl);
     }
 
     [HttpPost]
@@ -90,15 +84,47 @@ public class AccountController(UserManager<IdentityUser> userManager, SignInMana
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
-        await signInManager.SignOutAsync();
+        var refreshToken = tokenStorage.GetRefreshToken();
+        if (refreshToken is not null)
+            await apiClient.RevokeTokenAsync(refreshToken);
+
+        tokenStorage.Clear();
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return RedirectToAction("Login", "Account");
     }
 
     [HttpGet]
     [AllowAnonymous]
-    public IActionResult AccessDenied()
+    public IActionResult AccessDenied() => View();
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private async Task SignInFromTokensAsync(string accessToken, string refreshToken, int expiresIn)
     {
-        return View();
+        // Read identity claims from the JWT without full validation
+        // (the API already validated credentials and issued the token)
+        var handler = new JwtSecurityTokenHandler();
+        var jwt = handler.ReadJwtToken(accessToken);
+
+        var userId = jwt.Subject;
+        var email = jwt.Claims.FirstOrDefault(c =>
+            c.Type is JwtRegisteredClaimNames.Email or "email")?.Value ?? string.Empty;
+
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, userId),
+            new(ClaimTypes.Name, email),
+            new(ClaimTypes.Email, email),
+        };
+
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var principal = new ClaimsPrincipal(identity);
+
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,
+            new AuthenticationProperties { IsPersistent = false });
+
+        tokenStorage.StoreTokens(accessToken, refreshToken,
+            DateTime.UtcNow.AddSeconds(expiresIn));
     }
 
     private IActionResult RedirectToLocal(string? returnUrl)

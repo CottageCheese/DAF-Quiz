@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"/c/Program Files/dotnet/dotnet.exe\" build QuizProject.Api/QuizProject.Api.csproj)",
+      "Bash(dotnet build:*)",
+      "Bash(cmd /c \"cd C:\\\\Git\\\\DAF-Quiz && dotnet build QuizProject.Web/QuizProject.Web.csproj 2>&1\")",
+      "Read(//usr/local/share/dotnet/**)",
+      "Read(//c/Users/dfure/.dotnet/**)",
+      "Bash(/c/Users/dfure/.dotnet/dotnet build:*)"
+    ]
+  }
+}
