@@ -53,30 +53,29 @@
 
                     <input type="hidden" name="Selections[@i].QuestionId" value="@q.QuestionId"/>
 
-                    <div class="list-group list-group-flush border-0">
+                    <div class="mt-3" style="display:flex; flex-direction:column; gap:0.5rem;">
                         @foreach (var answer in q.Answers)
                         {
                             var answerId = $"answer-{i}-{answer.AnswerId}";
-                            <label class="list-group-item d-flex align-items-center gap-3 py-3 quiz-answer-label"
-                                   for="@answerId">
-                                <input class="form-check-input flex-shrink-0 quiz-answer-radio mt-0"
+                            <label class="quiz-answer-label" for="@answerId">
+                                <input class="quiz-answer-radio"
                                        type="radio"
                                        id="@answerId"
                                        name="Selections[@i].SelectedAnswerId"
                                        value="@answer.AnswerId"
                                        required
                                        aria-required="true"/>
-                                <span class="flex-grow-1">@answer.Text</span>
+                                <span>@answer.Text</span>
                             </label>
                         }
                     </div>
                 </fieldset>
 
-                <div class="d-flex justify-content-between mt-4">
+                <div class="d-flex justify-content-between mt-4 gap-3">
                     @if (i > 0)
                     {
                         <button type="button"
-                                class="btn btn-outline-secondary quiz-prev-btn"
+                                class="btn btn-outline-secondary btn-lg quiz-prev-btn px-4"
                                 data-target="@(i - 1)"
                                 aria-label="Go to previous question">
                             &larr; Previous
@@ -90,7 +89,7 @@
                     @if (i < Model.Questions.Count - 1)
                     {
                         <button type="button"
-                                class="btn btn-primary quiz-next-btn"
+                                class="btn btn-primary btn-lg quiz-next-btn px-4"
                                 data-target="@(i + 1)"
                                 data-current="@i"
                                 aria-label="Go to next question">
@@ -100,10 +99,10 @@
                     else
                     {
                         <button type="submit"
-                                class="btn btn-success quiz-submit-btn"
+                                class="btn btn-success btn-lg quiz-submit-btn px-5"
                                 data-current="@i"
                                 aria-label="Submit quiz and see your results">
-                            Submit quiz
+                            Submit Quiz
                         </button>
                     }
                 </div>

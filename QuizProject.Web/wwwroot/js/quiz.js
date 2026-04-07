@@ -60,7 +60,7 @@
                     err.className = 'text-danger mt-2 answer-error';
                     err.setAttribute('role', 'alert');
                     err.textContent = 'Please select an answer before continuing.';
-                    section.querySelector('.list-group').after(err);
+                    section.querySelector('.quiz-answer-label')?.closest('div').after(err);
                 }
                 return;
             }
@@ -88,7 +88,7 @@
                 err.className = 'text-danger mt-2 answer-error';
                 err.setAttribute('role', 'alert');
                 err.textContent = 'Please select an answer before submitting.';
-                section.querySelector('.list-group').after(err);
+                section.querySelector('.quiz-answer-label')?.closest('div').after(err);
             }
         }
     });
