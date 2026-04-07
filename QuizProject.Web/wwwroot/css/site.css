@@ -180,6 +180,36 @@ body {
     }
 }
 
+/* ── Reduced-motion (WCAG 2.3 / user preference) ────────────── */
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --transition-speed: 0s;
+    }
+
+    .card,
+    .card.h-100 {
+        transition: none;
+    }
+
+    .card:hover,
+    .card.h-100:hover {
+        transform: none;
+    }
+
+    .btn {
+        transition: none;
+    }
+
+    .btn-primary:hover {
+        filter: none;
+        transform: none;
+    }
+
+    .quiz-answer-label {
+        transition: none;
+    }
+}
+
 /* ── Print styles ───────────────────────────────────────────── */
 @media print {
     nav, footer, .btn, form { display: none !important; }

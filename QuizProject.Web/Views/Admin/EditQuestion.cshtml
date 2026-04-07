@@ -16,14 +16,14 @@
 
                     <div class="mb-3">
                         <label asp-for="Text" class="form-label fw-semibold"></label>
-                        <textarea asp-for="Text" class="form-control" rows="2" autofocus></textarea>
-                        <span asp-validation-for="Text" class="text-danger small"></span>
+                        <textarea asp-for="Text" class="form-control" rows="2" autofocus aria-required="true"></textarea>
+                        <span asp-validation-for="Text" class="text-danger small" role="alert" aria-live="polite"></span>
                     </div>
 
                     <div class="mb-3">
                         <label asp-for="DisplayOrder" class="form-label fw-semibold"></label>
-                        <input asp-for="DisplayOrder" type="number" class="form-control" min="1" style="width:100px"/>
-                        <span asp-validation-for="DisplayOrder" class="text-danger small"></span>
+                        <input asp-for="DisplayOrder" type="number" class="form-control" min="1" style="width:100px" aria-required="true"/>
+                        <span asp-validation-for="DisplayOrder" class="text-danger small" role="alert" aria-live="polite"></span>
                     </div>
 
                     <hr/>
@@ -47,10 +47,12 @@
                             </div>
                             <input type="text" name="@fieldName" class="form-control"
                                    placeholder="Answer @(i + 1)@(isRequired ? "" : " (optional)")"
+                                   aria-label="Answer @(i + 1)@(isRequired ? "" : " (optional)")"
+                                   @(isRequired ? "aria-required=\"true\"" : "")
                                    value="@currentValue"/>
                         </div>
                     }
-                    <span asp-validation-for="CorrectAnswerIndex" class="text-danger small"></span>
+                    <span asp-validation-for="CorrectAnswerIndex" class="text-danger small" role="alert" aria-live="polite"></span>
 
                     <div class="d-flex gap-2 mt-4">
                         <button type="submit" class="btn btn-primary">Save Changes</button>
