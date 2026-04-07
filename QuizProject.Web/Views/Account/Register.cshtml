@@ -1,0 +1,62 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Create account";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <section aria-labelledby="register-heading">
+            <h1 id="register-heading" class="mb-4">Create account</h1>
+
+            <form asp-action="Register" method="post" novalidate>
+                <input type="hidden" name="returnUrl" value="@(ViewData["ReturnUrl"] as string)" />
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert" aria-live="assertive"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label fw-semibold"></label>
+                    <input asp-for="Email"
+                           class="form-control"
+                           autocomplete="email"
+                           aria-required="true"
+                           aria-describedby="email-hint" />
+                    <div id="email-hint" class="form-text">We will never share your email.</div>
+                    <span asp-validation-for="Email" class="text-danger" role="alert" aria-live="polite"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label fw-semibold"></label>
+                    <input asp-for="Password"
+                           class="form-control"
+                           autocomplete="new-password"
+                           aria-required="true"
+                           aria-describedby="password-hint" />
+                    <div id="password-hint" class="form-text">
+                        Minimum 8 characters, including uppercase, digit, and symbol.
+                    </div>
+                    <span asp-validation-for="Password" class="text-danger" role="alert" aria-live="polite"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="ConfirmPassword" class="form-label fw-semibold"></label>
+                    <input asp-for="ConfirmPassword"
+                           class="form-control"
+                           autocomplete="new-password"
+                           aria-required="true" />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger" role="alert" aria-live="polite"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mb-3">Create account</button>
+
+                <p class="text-center">
+                    Already registered? <a asp-controller="Account" asp-action="Login">Sign in</a>
+                </p>
+            </form>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

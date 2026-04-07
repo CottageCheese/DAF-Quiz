@@ -1,0 +1,48 @@
+@model List<QuizListViewModel>
+@{
+    ViewData["Title"] = "Quizzes";
+}
+
+<h1 class="h2 mb-4">Available Quizzes</h1>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info" role="status">No quizzes are available right now. Check back soon.</div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (var quiz in Model)
+        {
+            <div class="col">
+                <article class="card h-100 shadow-sm" aria-labelledby="quiz-title-@quiz.Id">
+                    <div class="card-body d-flex flex-column">
+                        <h2 id="quiz-title-@quiz.Id" class="h5 card-title">@quiz.Title</h2>
+
+                        @if (!string.IsNullOrEmpty(quiz.Description))
+                        {
+                            <p class="card-text text-muted flex-grow-1">@quiz.Description</p>
+                        }
+
+                        <dl class="row small text-muted mt-2 mb-3">
+                            <dt class="col-7">Questions</dt>
+                            <dd class="col-5 text-end">@quiz.QuestionCount</dd>
+                            <dt class="col-7">Times taken</dt>
+                            <dd class="col-5 text-end">@quiz.AttemptCount</dd>
+                        </dl>
+
+                        <form asp-controller="Quiz" asp-action="Start" method="post" class="mt-auto">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="quizId" value="@quiz.Id" />
+                            <button type="submit"
+                                    class="btn btn-primary w-100"
+                                    aria-label="Start quiz: @quiz.Title">
+                                Start quiz
+                            </button>
+                        </form>
+                    </div>
+                </article>
+            </div>
+        }
+    </div>
+}

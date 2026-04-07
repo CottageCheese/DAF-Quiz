@@ -1,0 +1,79 @@
+@model QuizResultViewModel
+@{
+    ViewData["Title"] = $"Results: {Model.QuizTitle}";
+    var scoreClass = Model.Percentage >= 70 ? "success" : Model.Percentage >= 50 ? "warning" : "danger";
+    var textClass = Model.Percentage >= 50 ? "" : "text-white";
+}
+
+<nav aria-label="Quiz breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Quiz" asp-action="Index">Quizzes</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Results</li>
+    </ol>
+</nav>
+
+<section aria-labelledby="results-heading">
+    <div class="card shadow-sm mb-4">
+        <div class="card-body text-center py-5">
+            <h1 id="results-heading" class="h2 mb-1">@Model.QuizTitle</h1>
+            <p class="text-muted mb-4">Quiz complete — here is how you did.</p>
+
+            <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-@scoreClass @textClass mb-3"
+                 style="width:120px;height:120px;"
+                 aria-label="Score: @Model.Score out of @Model.TotalQuestions, @Model.Percentage percent">
+                <span class="display-5 fw-bold">@Model.Score/@Model.TotalQuestions</span>
+            </div>
+
+            <p class="fs-4 fw-semibold mb-1" aria-hidden="true">@Model.Percentage%</p>
+            <p class="badge bg-@scoreClass fs-6 @textClass">@Model.Grade</p>
+        </div>
+    </div>
+
+    <h2 class="h4 mb-3">Answer breakdown</h2>
+
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle" aria-label="Detailed answer breakdown">
+            <caption class="visually-hidden">Each question, your answer, the correct answer, and whether it was correct</caption>
+            <thead class="table-light">
+                <tr>
+                    <th scope="col" style="width:3rem;">#</th>
+                    <th scope="col">Question</th>
+                    <th scope="col">Your answer</th>
+                    <th scope="col">Correct answer</th>
+                    <th scope="col" class="text-center" style="width:5rem;">Result</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Answers.Count; i++)
+                {
+                    var a = Model.Answers[i];
+                    <tr class="@(a.IsCorrect ? "table-success" : "table-danger")">
+                        <th scope="row">@(i + 1)</th>
+                        <td>@a.QuestionText</td>
+                        <td>@a.SelectedAnswerText</td>
+                        <td>@a.CorrectAnswerText</td>
+                        <td class="text-center">
+                            @if (a.IsCorrect)
+                            {
+                                <span class="badge bg-success" aria-label="Correct">
+                                    <span aria-hidden="true">&#10003;</span> Correct
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger" aria-label="Incorrect">
+                                    <span aria-hidden="true">&#10007;</span> Wrong
+                                </span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex gap-3 mt-4">
+        <a asp-controller="Quiz" asp-action="Index" class="btn btn-primary">Take another quiz</a>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">View leaderboard</a>
+    </div>
+</section>

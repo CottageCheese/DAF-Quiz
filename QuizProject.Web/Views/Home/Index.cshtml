@@ -1,0 +1,118 @@
+@model LeaderboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2 mb-0">Dashboard</h1>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <a asp-controller="Quiz" asp-action="Index" class="btn btn-primary">Browse quizzes</a>
+    }
+    else
+    {
+        <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Get started</a>
+    }
+</div>
+
+<div class="row g-4">
+    <!-- Most taken quizzes -->
+    <div class="col-lg-6">
+        <section aria-labelledby="top-quizzes-heading">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h2 id="top-quizzes-heading" class="h5 mb-0">Most Taken Quizzes</h2>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.TopQuizzes.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" aria-describedby="top-quizzes-heading">
+                                <caption class="visually-hidden">Ranking of quizzes by number of attempts</caption>
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col" class="ps-3">#</th>
+                                        <th scope="col">Quiz</th>
+                                        <th scope="col" class="text-end pe-3">Attempts</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var quiz in Model.TopQuizzes)
+                                    {
+                                        <tr>
+                                            <th scope="row" class="ps-3 text-muted fw-normal">@quiz.Rank</th>
+                                            <td>@quiz.QuizTitle</td>
+                                            <td class="text-end pe-3">
+                                                <span class="badge bg-primary rounded-pill">@quiz.AttemptCount</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="p-3 text-muted mb-0">No quiz attempts yet. Be the first!</p>
+                    }
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Top scorers -->
+    <div class="col-lg-6">
+        <section aria-labelledby="top-users-heading">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h2 id="top-users-heading" class="h5 mb-0">Top Scorers</h2>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.TopUsers.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" aria-describedby="top-users-heading">
+                                <caption class="visually-hidden">Top users ranked by their best quiz score percentage</caption>
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col" class="ps-3">#</th>
+                                        <th scope="col">User</th>
+                                        <th scope="col">Best on</th>
+                                        <th scope="col" class="text-end pe-3">Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var user in Model.TopUsers)
+                                    {
+                                        <tr>
+                                            <th scope="row" class="ps-3 text-muted fw-normal">@user.Rank</th>
+                                            <td>
+                                                @{
+                                                    var email = user.UserName;
+                                                    var maskedEmail = email.Length > 3
+                                                        ? email[..3] + new string('*', Math.Min(email.IndexOf('@') - 3, 5)) + email[email.IndexOf('@')..]
+                                                        : email;
+                                                }
+                                                @maskedEmail
+                                            </td>
+                                            <td class="text-truncate" style="max-width:140px;" title="@user.QuizTitle">@user.QuizTitle</td>
+                                            <td class="text-end pe-3">
+                                                <span class="badge @(user.BestScorePercent >= 70 ? "bg-success" : user.BestScorePercent >= 50 ? "bg-warning text-dark" : "bg-danger") rounded-pill">
+                                                    @user.BestScorePercent%
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="p-3 text-muted mb-0">No scores yet. Take a quiz to get on the board!</p>
+                    }
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

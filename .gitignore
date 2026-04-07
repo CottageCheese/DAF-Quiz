@@ -1,5 +1,34 @@
+## Build output
 bin/
 obj/
 /packages/
+
+## Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## JetBrains Rider / ReSharper
+.idea/
+_ReSharper.Caches/
 riderModule.iml
-/_ReSharper.Caches/
+*.DotSettings.user
+
+## SQLite database files
+*.db
+*.db-shm
+*.db-wal
+
+## Publish output
+**/publish/
+**/PublishProfiles/
+
+## NuGet
+*.nupkg
+.nuget/
+
+## OS
+.DS_Store
+Thumbs.db

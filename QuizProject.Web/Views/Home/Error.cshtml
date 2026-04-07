@@ -1,0 +1,17 @@
+@model QuizProject.Web.Controllers.ErrorViewModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6 text-center">
+        <h1 class="display-4 mb-3">Something went wrong</h1>
+        @if (Model.ShowRequestId)
+        {
+            <p class="text-muted">
+                <small>Request ID: <code>@Model.RequestId</code></small>
+            </p>
+        }
+        <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Go to dashboard</a>
+    </div>
+</div>
