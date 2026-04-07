@@ -1,0 +1,86 @@
+@model List<QuizProject.Web.Models.ViewModels.AdminQuizListViewModel>
+@{
+    ViewData["Title"] = "Admin — Quiz Management";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Quiz Management</h1>
+    <a asp-action="Create" class="btn btn-primary">+ New Quiz</a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No quizzes yet. Create one to get started.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+            <tr>
+                <th>Title</th>
+                <th>Questions</th>
+                <th>Created By</th>
+                <th>Created</th>
+                <th>Publish Date</th>
+                <th>Status</th>
+                <th class="text-end">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var quiz in Model)
+            {
+                <tr>
+                    <td>
+                        <strong>@quiz.Title</strong>
+                        @if (!string.IsNullOrEmpty(quiz.Description))
+                        {
+                            <br/><small class="text-muted">@quiz.Description</small>
+                        }
+                    </td>
+                    <td>@quiz.QuestionCount</td>
+                    <td>@(quiz.CreatedByEmail ?? "—")</td>
+                    <td>@quiz.CreatedAt.ToString("dd MMM yyyy")</td>
+                    <td>
+                        @if (quiz.PublishedAt.HasValue)
+                        {
+                            @quiz.PublishedAt.Value.ToString("dd MMM yyyy HH:mm")
+                            <span class="text-muted">UTC</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted fst-italic">Not set</span>
+                        }
+                    </td>
+                    <td>
+                        @if (quiz.IsPublished)
+                        {
+                            <span class="badge bg-success">Published</span>
+                        }
+                        else if (quiz.PublishedAt.HasValue)
+                        {
+                            <span class="badge bg-warning text-dark">Scheduled</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Draft</span>
+                        }
+                    </td>
+                    <td class="text-end">
+                        <a asp-action="Details" asp-route-id="@quiz.Id"
+                           class="btn btn-sm btn-outline-primary me-1">View</a>
+                        <a asp-action="Edit" asp-route-id="@quiz.Id"
+                           class="btn btn-sm btn-outline-secondary me-1">Edit</a>
+                        <form asp-action="DeleteQuiz" method="post" class="d-inline"
+                              onsubmit="return confirm('Delete quiz \'@quiz.Title\'? This cannot be undone.');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@quiz.Id"/>
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

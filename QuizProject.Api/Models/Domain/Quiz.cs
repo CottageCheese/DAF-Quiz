@@ -15,7 +15,17 @@ public class Quiz
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    public bool IsActive { get; set; } = true;
+    [MaxLength(450)]
+    public string? CreatedByUserId { get; set; }
+
+    [MaxLength(256)]
+    public string? CreatedByEmail { get; set; }
+
+    /// <summary>
+    /// When set, the quiz is published. Users can see the quiz once this date/time has passed.
+    /// Null means the quiz is a draft and not visible to regular users.
+    /// </summary>
+    public DateTime? PublishedAt { get; set; }
 
     public ICollection<Question> Questions { get; set; } = new List<Question>();
     public ICollection<QuizAttempt> Attempts { get; set; } = new List<QuizAttempt>();

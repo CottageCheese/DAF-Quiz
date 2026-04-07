@@ -17,6 +17,16 @@ public interface IApiClient
 
     // Leaderboard
     Task<LeaderboardViewModel> GetLeaderboardAsync();
+
+    // Admin
+    Task<List<AdminQuizListViewModel>> GetAdminQuizzesAsync();
+    Task<AdminQuizDetailViewModel?> GetAdminQuizAsync(int id);
+    Task<AdminQuizDetailViewModel?> CreateQuizAsync(string title, string? description);
+    Task<AdminQuizDetailViewModel?> UpdateQuizAsync(int id, string title, string? description, DateTime? publishedAt);
+    Task<bool> DeleteQuizAsync(int id);
+    Task<AdminQuestionViewModel?> AddQuestionAsync(int quizId, string text, int displayOrder, List<(string Text, bool IsCorrect)> answers);
+    Task<AdminQuestionViewModel?> UpdateQuestionAsync(int quizId, int questionId, string text, int displayOrder, List<(string Text, bool IsCorrect)> answers);
+    Task<bool> DeleteQuestionAsync(int quizId, int questionId);
 }
 
 /// <summary>Tokens returned by the API auth endpoints.</summary>

@@ -40,7 +40,7 @@ public class AuthController(
         if (!result.Succeeded)
             return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
 
-        var accessToken = tokenService.GenerateAccessToken(user);
+        var accessToken = await tokenService.GenerateAccessTokenAsync(user);
         var refreshToken = await tokenService.CreateRefreshTokenAsync(user);
 
         return Ok(new AuthResponse
@@ -74,7 +74,7 @@ public class AuthController(
         if (!result.Succeeded)
             return Unauthorized(new { message = "Invalid credentials." });
 
-        var accessToken = tokenService.GenerateAccessToken(user);
+        var accessToken = await tokenService.GenerateAccessTokenAsync(user);
         var refreshToken = await tokenService.CreateRefreshTokenAsync(user);
 
         return Ok(new AuthResponse

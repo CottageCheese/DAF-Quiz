@@ -15,8 +15,9 @@ public class QuizService(
 {
     public async Task<List<QuizListViewModel>> GetActiveQuizzesAsync()
     {
+        var now = DateTime.UtcNow;
         return await quizzes.Query()
-            .Where(q => q.IsActive)
+            .Where(q => q.PublishedAt != null && q.PublishedAt <= now)
             .Select(q => new QuizListViewModel
             {
                 Id = q.Id,
@@ -32,8 +33,9 @@ public class QuizService(
 
     public async Task<TakeQuizViewModel?> StartAttemptAsync(int quizId, string userId)
     {
+        var now = DateTime.UtcNow;
         var quiz = await quizzes.Query()
-            .Where(q => q.Id == quizId && q.IsActive)
+            .Where(q => q.Id == quizId && q.PublishedAt != null && q.PublishedAt <= now)
             .Include(q => q.Questions.OrderBy(qu => qu.DisplayOrder))
             .ThenInclude(q => q.Answers)
             .FirstOrDefaultAsync();

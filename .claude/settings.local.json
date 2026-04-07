@@ -6,7 +6,12 @@
       "Bash(cmd /c \"cd C:\\\\Git\\\\DAF-Quiz && dotnet build QuizProject.Web/QuizProject.Web.csproj 2>&1\")",
       "Read(//usr/local/share/dotnet/**)",
       "Read(//c/Users/dfure/.dotnet/**)",
-      "Bash(/c/Users/dfure/.dotnet/dotnet build:*)"
+      "Bash(/c/Users/dfure/.dotnet/dotnet build:*)",
+      "Bash(ls /c/Users/dfure/.dotnet/tools/dotnet-ef*)",
+      "Bash(export PATH=\"$PATH:/c/Users/dfure/.dotnet/tools\")",
+      "Bash(dotnet-ef migrations:*)",
+      "Bash(export PATH=\"$PATH:/c/Users/dfure/.dotnet:/c/Users/dfure/.dotnet/tools\")",
+      "Bash(export PATH=\"$PATH:/c/Users/dfure/.dotnet\")"
     ]
   }
 }

@@ -26,17 +26,22 @@ public sealed class TokenService(
 {
     private readonly JwtSettings _jwt = jwtOptions.Value;
 
-    public string GenerateAccessToken(IdentityUser user)
+    public async Task<string> GenerateAccessTokenAsync(IdentityUser user)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.SecretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var roles = await userManager.GetRolesAsync(user);
+
+        var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(JwtRegisteredClaimNames.Sub, user.Id),
+            new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
+
+        foreach (var role in roles)
+            claims.Add(new Claim(ClaimTypes.Role, role));
 
         var token = new JwtSecurityToken(
             issuer: _jwt.Issuer,
@@ -100,7 +105,7 @@ public sealed class TokenService(
         await refreshTokenRepo.AddAsync(newEntity);
         await refreshTokenRepo.SaveChangesAsync();
 
-        return (GenerateAccessToken(user), newRaw);
+        return (await GenerateAccessTokenAsync(user), newRaw);
     }
 
     public async Task<bool> RevokeRefreshTokenAsync(string rawRefreshToken)

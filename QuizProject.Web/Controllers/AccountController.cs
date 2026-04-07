@@ -110,12 +110,20 @@ public class AccountController(IApiClient apiClient, ITokenStorageService tokenS
         var email = jwt.Claims.FirstOrDefault(c =>
             c.Type is JwtRegisteredClaimNames.Email or "email")?.Value ?? string.Empty;
 
+        // Extract role claims from the JWT so User.IsInRole() works in MVC
+        var roleClaims = jwt.Claims
+            .Where(c => c.Type is ClaimTypes.Role or "role" or
+                "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")
+            .Select(c => new Claim(ClaimTypes.Role, c.Value));
+
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, userId),
             new(ClaimTypes.Name, email),
             new(ClaimTypes.Email, email),
         };
+
+        claims.AddRange(roleClaims);
 
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);

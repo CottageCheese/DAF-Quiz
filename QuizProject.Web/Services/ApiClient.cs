@@ -84,6 +84,83 @@ public class ApiClient(
         return await response.Content.ReadFromJsonAsync<QuizResultViewModel>(JsonOpts);
     }
 
+    // ── Admin ─────────────────────────────────────────────────────────────────
+
+    public async Task<List<AdminQuizListViewModel>> GetAdminQuizzesAsync()
+    {
+        var response = await SendWithAuthAsync(HttpMethod.Get, "api/admin/quizzes");
+        if (response is null || !response.IsSuccessStatusCode) return [];
+        return await response.Content.ReadFromJsonAsync<List<AdminQuizListViewModel>>(JsonOpts) ?? [];
+    }
+
+    public async Task<AdminQuizDetailViewModel?> GetAdminQuizAsync(int id)
+    {
+        var response = await SendWithAuthAsync(HttpMethod.Get, $"api/admin/quizzes/{id}");
+        if (response is null || !response.IsSuccessStatusCode) return null;
+        return await response.Content.ReadFromJsonAsync<AdminQuizDetailViewModel>(JsonOpts);
+    }
+
+    public async Task<AdminQuizDetailViewModel?> CreateQuizAsync(string title, string? description)
+    {
+        var response = await SendWithAuthAsync(HttpMethod.Post, "api/admin/quizzes",
+            new { title, description });
+        if (response is null || !response.IsSuccessStatusCode) return null;
+        return await response.Content.ReadFromJsonAsync<AdminQuizDetailViewModel>(JsonOpts);
+    }
+
+    public async Task<AdminQuizDetailViewModel?> UpdateQuizAsync(
+        int id, string title, string? description, DateTime? publishedAt)
+    {
+        var response = await SendWithAuthAsync(HttpMethod.Put, $"api/admin/quizzes/{id}",
+            new { title, description, publishedAt });
+        if (response is null || !response.IsSuccessStatusCode) return null;
+        return await response.Content.ReadFromJsonAsync<AdminQuizDetailViewModel>(JsonOpts);
+    }
+
+    public async Task<bool> DeleteQuizAsync(int id)
+    {
+        var response = await SendWithAuthAsync(HttpMethod.Delete, $"api/admin/quizzes/{id}");
+        return response?.IsSuccessStatusCode == true;
+    }
+
+    public async Task<AdminQuestionViewModel?> AddQuestionAsync(
+        int quizId, string text, int displayOrder, List<(string Text, bool IsCorrect)> answers)
+    {
+        var response = await SendWithAuthAsync(HttpMethod.Post, $"api/admin/quizzes/{quizId}/questions",
+            new
+            {
+                text,
+                displayOrder,
+                answers = answers.Select(a => new { text = a.Text, isCorrect = a.IsCorrect }).ToList()
+            });
+        if (response is null || !response.IsSuccessStatusCode) return null;
+        return await response.Content.ReadFromJsonAsync<AdminQuestionViewModel>(JsonOpts);
+    }
+
+    public async Task<AdminQuestionViewModel?> UpdateQuestionAsync(
+        int quizId, int questionId, string text, int displayOrder, List<(string Text, bool IsCorrect)> answers)
+    {
+        var response = await SendWithAuthAsync(HttpMethod.Put,
+            $"api/admin/quizzes/{quizId}/questions/{questionId}",
+            new
+            {
+                text,
+                displayOrder,
+                answers = answers.Select(a => new { text = a.Text, isCorrect = a.IsCorrect }).ToList()
+            });
+        if (response is null || !response.IsSuccessStatusCode) return null;
+        return await response.Content.ReadFromJsonAsync<AdminQuestionViewModel>(JsonOpts);
+    }
+
+    public async Task<bool> DeleteQuestionAsync(int quizId, int questionId)
+    {
+        var response = await SendWithAuthAsync(HttpMethod.Delete,
+            $"api/admin/quizzes/{quizId}/questions/{questionId}");
+        return response?.IsSuccessStatusCode == true;
+    }
+
+    // ── Leaderboard ───────────────────────────────────────────────────────────
+
     public async Task<LeaderboardViewModel> GetLeaderboardAsync()
     {
         // Leaderboard is public — no auth needed

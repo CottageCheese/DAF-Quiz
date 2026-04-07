@@ -23,6 +23,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         {
             e.Property(q => q.Title).HasMaxLength(200).IsRequired();
             e.Property(q => q.Description).HasMaxLength(1000);
+            e.Property(q => q.CreatedByUserId).HasMaxLength(450);
+            e.Property(q => q.CreatedByEmail).HasMaxLength(256);
         });
 
         builder.Entity<Question>(e =>

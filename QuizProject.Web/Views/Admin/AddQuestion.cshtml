@@ -1,0 +1,70 @@
+@model QuizProject.Web.Models.ViewModels.QuestionFormModel
+@{
+    ViewData["Title"] = "Add Question";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1 class="h3 mb-4">Add Question</h1>
+
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="AddQuestion" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="QuizId"/>
+                    <input type="hidden" asp-for="QuestionId"/>
+
+                    <div class="mb-3">
+                        <label asp-for="Text" class="form-label fw-semibold"></label>
+                        <textarea asp-for="Text" class="form-control" rows="2"
+                                  placeholder="e.g. What is the capital of Australia?" autofocus></textarea>
+                        <span asp-validation-for="Text" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="DisplayOrder" class="form-label fw-semibold"></label>
+                        <input asp-for="DisplayOrder" type="number" class="form-control" min="1" style="width:100px"/>
+                        <span asp-validation-for="DisplayOrder" class="text-danger small"></span>
+                    </div>
+
+                    <hr/>
+                    <p class="fw-semibold mb-2">Answers <small class="text-muted fw-normal">(at least 2 required)</small></p>
+                    <p class="text-muted small mb-3">Select the radio button next to the correct answer.</p>
+
+                    @{
+                        var answers = new[] { (nameof(Model.Answer1), "Answer1"), (nameof(Model.Answer2), "Answer2"),
+                            (nameof(Model.Answer3), "Answer3"), (nameof(Model.Answer4), "Answer4") };
+                    }
+
+                    @for (int i = 0; i < answers.Length; i++)
+                    {
+                        var (displayName, fieldName) = answers[i];
+                        var isRequired = i < 2;
+                        <div class="input-group mb-2">
+                            <div class="input-group-text">
+                                <input type="radio" name="CorrectAnswerIndex" value="@i"
+                                       @(Model.CorrectAnswerIndex == i ? "checked" : "")
+                                       aria-label="Mark answer @(i + 1) as correct"
+                                       class="form-check-input mt-0"/>
+                            </div>
+                            <input type="text" name="@fieldName" class="form-control"
+                                   placeholder="Answer @(i + 1)@(isRequired ? "" : " (optional)")"
+                                   value="@(i == 0 ? Model.Answer1 : i == 1 ? Model.Answer2 : i == 2 ? Model.Answer3 : Model.Answer4)"/>
+                        </div>
+                    }
+                    <span asp-validation-for="CorrectAnswerIndex" class="text-danger small"></span>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">Save Question</button>
+                        <a asp-action="Details" asp-route-id="@Model.QuizId"
+                           class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

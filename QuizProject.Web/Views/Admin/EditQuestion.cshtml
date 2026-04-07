@@ -1,0 +1,68 @@
+@model QuizProject.Web.Models.ViewModels.QuestionFormModel
+@{
+    ViewData["Title"] = "Edit Question";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1 class="h3 mb-4">Edit Question</h1>
+
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="EditQuestion" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="QuizId"/>
+                    <input type="hidden" asp-for="QuestionId"/>
+
+                    <div class="mb-3">
+                        <label asp-for="Text" class="form-label fw-semibold"></label>
+                        <textarea asp-for="Text" class="form-control" rows="2" autofocus></textarea>
+                        <span asp-validation-for="Text" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="DisplayOrder" class="form-label fw-semibold"></label>
+                        <input asp-for="DisplayOrder" type="number" class="form-control" min="1" style="width:100px"/>
+                        <span asp-validation-for="DisplayOrder" class="text-danger small"></span>
+                    </div>
+
+                    <hr/>
+                    <p class="fw-semibold mb-2">Answers <small class="text-muted fw-normal">(at least 2 required)</small></p>
+                    <p class="text-muted small mb-3">Select the radio button next to the correct answer.</p>
+
+                    @for (int i = 0; i < 4; i++)
+                    {
+                        var isRequired = i < 2;
+                        var currentValue = i == 0 ? Model.Answer1 : i == 1 ? Model.Answer2 :
+                            i == 2 ? Model.Answer3 : Model.Answer4;
+                        var fieldName = i == 0 ? "Answer1" : i == 1 ? "Answer2" :
+                            i == 2 ? "Answer3" : "Answer4";
+
+                        <div class="input-group mb-2">
+                            <div class="input-group-text">
+                                <input type="radio" name="CorrectAnswerIndex" value="@i"
+                                       @(Model.CorrectAnswerIndex == i ? "checked" : "")
+                                       aria-label="Mark answer @(i + 1) as correct"
+                                       class="form-check-input mt-0"/>
+                            </div>
+                            <input type="text" name="@fieldName" class="form-control"
+                                   placeholder="Answer @(i + 1)@(isRequired ? "" : " (optional)")"
+                                   value="@currentValue"/>
+                        </div>
+                    }
+                    <span asp-validation-for="CorrectAnswerIndex" class="text-danger small"></span>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <a asp-action="Details" asp-route-id="@Model.QuizId"
+                           class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

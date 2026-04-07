@@ -4,7 +4,7 @@ namespace QuizProject.Api.Services;
 
 public interface ITokenService
 {
-    string GenerateAccessToken(IdentityUser user);
+    Task<string> GenerateAccessTokenAsync(IdentityUser user);
     Task<string> CreateRefreshTokenAsync(IdentityUser user);
     Task<(string AccessToken, string RefreshToken)?> RotateRefreshTokenAsync(string rawRefreshToken);
     Task<bool> RevokeRefreshTokenAsync(string rawRefreshToken);
