@@ -53,20 +53,20 @@
 
                     <input type="hidden" name="Selections[@i].QuestionId" value="@q.QuestionId"/>
 
-                    <div class="list-group">
+                    <div class="list-group list-group-flush border-0">
                         @foreach (var answer in q.Answers)
                         {
                             var answerId = $"answer-{i}-{answer.AnswerId}";
-                            <label class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3 quiz-answer-label"
+                            <label class="list-group-item d-flex align-items-center gap-3 py-3 quiz-answer-label"
                                    for="@answerId">
-                                <input class="form-check-input flex-shrink-0 quiz-answer-radio"
+                                <input class="form-check-input flex-shrink-0 quiz-answer-radio mt-0"
                                        type="radio"
                                        id="@answerId"
                                        name="Selections[@i].SelectedAnswerId"
                                        value="@answer.AnswerId"
                                        required
                                        aria-required="true"/>
-                                @answer.Text
+                                <span class="flex-grow-1">@answer.Text</span>
                             </label>
                         }
                     </div>
