@@ -74,10 +74,17 @@
 
 /* ── Target size (WCAG 2.2 SC 2.5.8) ────────────────────────── */
 /* Minimum target size for interactive elements not meeting 24x24px */
-.btn, .nav-link, .navbar-brand, .form-check-input {
+.btn, .nav-link, .navbar-brand {
     min-height: 2.25rem; /* ~36px */
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+}
+
+/* Checkboxes/radios: size only — inline-flex distorts native controls */
+.form-check-input {
+    min-width: 1.25em;
+    min-height: 1.25em;
 }
 
 /* ── Body layout ────────────────────────────────────────────── */
@@ -143,8 +150,6 @@ body {
 
 /* Reset the global form-check-input overrides inside quiz so radio buttons stay compact */
 .quiz-answer-radio {
-    display: inline-block !important;
-    min-height: 1.25em !important;
     width: 1.25em;
     height: 1.25em;
     flex-shrink: 0;
