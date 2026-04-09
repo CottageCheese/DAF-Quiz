@@ -11,7 +11,8 @@
       "Bash(export PATH=\"$PATH:/c/Users/dfure/.dotnet/tools\")",
       "Bash(dotnet-ef migrations:*)",
       "Bash(export PATH=\"$PATH:/c/Users/dfure/.dotnet:/c/Users/dfure/.dotnet/tools\")",
-      "Bash(export PATH=\"$PATH:/c/Users/dfure/.dotnet\")"
+      "Bash(export PATH=\"$PATH:/c/Users/dfure/.dotnet\")",
+      "Bash(\"/c/Users/dfure/.dotnet/tools/dotnet-ef.exe\" migrations:*)"
     ]
   }
 }

@@ -17,8 +17,7 @@ public static class SeedData
     }
 
     /// <summary>
-    /// Applies schema changes that may not yet be tracked by a migration
-    /// (e.g. manually-written migrations that EF hasn't discovered).
+    /// Applies schema changes that may not yet be tracked by a migration.
     /// Safe to call on every startup — each statement is guarded by an existence check.
     /// </summary>
     private static async Task EnsureSchemaAsync(ApplicationDbContext context)
@@ -30,12 +29,15 @@ public static class SeedData
         // DisplayName column on AspNetUsers
         using (var cmd = conn.CreateCommand())
         {
-            cmd.CommandText = "SELECT COUNT(*) FROM pragma_table_info('AspNetUsers') WHERE name='DisplayName'";
-            var exists = (long)(await cmd.ExecuteScalarAsync())! > 0;
+            cmd.CommandText = """
+                SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_NAME = 'AspNetUsers' AND COLUMN_NAME = 'DisplayName'
+                """;
+            var exists = (int)(await cmd.ExecuteScalarAsync())! > 0;
             if (!exists)
             {
                 using var alter = conn.CreateCommand();
-                alter.CommandText = "ALTER TABLE \"AspNetUsers\" ADD COLUMN \"DisplayName\" TEXT NOT NULL DEFAULT ''";
+                alter.CommandText = "ALTER TABLE [AspNetUsers] ADD [DisplayName] NVARCHAR(MAX) NOT NULL DEFAULT ''";
                 await alter.ExecuteNonQueryAsync();
             }
         }
@@ -43,24 +45,32 @@ public static class SeedData
         // Performance indexes
         using (var cmd = conn.CreateCommand())
         {
-            cmd.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type='index' AND name='IX_QuizAttempts_CompletedAt'";
-            var exists = (long)(await cmd.ExecuteScalarAsync())! > 0;
+            cmd.CommandText = """
+                SELECT COUNT(*) FROM sys.indexes
+                WHERE name = 'IX_QuizAttempts_CompletedAt'
+                  AND object_id = OBJECT_ID('QuizAttempts')
+                """;
+            var exists = (int)(await cmd.ExecuteScalarAsync())! > 0;
             if (!exists)
             {
                 using var idx = conn.CreateCommand();
-                idx.CommandText = "CREATE INDEX \"IX_QuizAttempts_CompletedAt\" ON \"QuizAttempts\" (\"CompletedAt\")";
+                idx.CommandText = "CREATE INDEX [IX_QuizAttempts_CompletedAt] ON [QuizAttempts] ([CompletedAt])";
                 await idx.ExecuteNonQueryAsync();
             }
         }
 
         using (var cmd = conn.CreateCommand())
         {
-            cmd.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type='index' AND name='IX_Quizzes_PublishedAt'";
-            var exists = (long)(await cmd.ExecuteScalarAsync())! > 0;
+            cmd.CommandText = """
+                SELECT COUNT(*) FROM sys.indexes
+                WHERE name = 'IX_Quizzes_PublishedAt'
+                  AND object_id = OBJECT_ID('Quizzes')
+                """;
+            var exists = (int)(await cmd.ExecuteScalarAsync())! > 0;
             if (!exists)
             {
                 using var idx = conn.CreateCommand();
-                idx.CommandText = "CREATE INDEX \"IX_Quizzes_PublishedAt\" ON \"Quizzes\" (\"PublishedAt\")";
+                idx.CommandText = "CREATE INDEX [IX_Quizzes_PublishedAt] ON [Quizzes] ([PublishedAt])";
                 await idx.ExecuteNonQueryAsync();
             }
         }
