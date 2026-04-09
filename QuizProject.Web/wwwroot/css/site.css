@@ -112,26 +112,13 @@ body {
     color: var(--color-text-muted) !important; /* contrast 4.54:1 on #fff — AA */
 }
 
-/* ── Quiz answer list ───────────────────────────────────────── */
-.quiz-answer-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-}
-
+/* ── Quiz answer labels ─────────────────────────────────────── */
 .quiz-answer-label {
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    width: 100%;
-    padding: 0.625rem var(--space-4);
-    border-radius: var(--space-2);
     border: 2px solid var(--color-border);
+    border-radius: var(--space-2);
     background-color: var(--color-surface);
     color: var(--color-text);
-    font-size: var(--font-size-base);
-    box-sizing: border-box;
     transition: background-color var(--transition-speed) ease, border-color var(--transition-speed) ease;
 }
 
@@ -140,21 +127,11 @@ body {
     border-color: var(--color-primary);
 }
 
-.quiz-answer-label.active,
-.quiz-answer-label.list-group-item-primary {
+.quiz-answer-label.active {
     background-color: var(--color-primary-selected-bg);
     border-color: var(--color-primary);
     color: var(--color-primary-selected-text);
     font-weight: var(--font-weight-semibold);
-}
-
-/* Reset the global form-check-input overrides inside quiz so radio buttons stay compact */
-.quiz-answer-radio {
-    width: 1.25em;
-    height: 1.25em;
-    flex-shrink: 0;
-    margin: 0;
-    cursor: pointer;
 }
 
 /* ── Progress bar ───────────────────────────────────────────── */
@@ -191,7 +168,6 @@ body {
     box-shadow: var(--card-shadow);
     transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
     border-radius: var(--space-3);
-    overflow: hidden;
 }
 
 .card:hover {

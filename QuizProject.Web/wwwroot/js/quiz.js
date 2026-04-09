@@ -97,9 +97,9 @@
         radio.addEventListener('change', function () {
             const name = this.name;
             document.querySelectorAll('input[name="' + name + '"]').forEach(r => {
-                r.closest('.quiz-answer-label').classList.remove('active', 'list-group-item-primary');
+                r.closest('.quiz-answer-label').classList.remove('active');
             });
-            this.closest('.quiz-answer-label').classList.add('active', 'list-group-item-primary');
+            this.closest('.quiz-answer-label').classList.add('active');
         });
     });
 
