@@ -7,7 +7,22 @@ using QuizProject.Web.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // ── Session (server-side JWT token storage) ───────────────────────────────────
-builder.Services.AddDistributedMemoryCache();
+var sessionConnection = builder.Configuration.GetConnectionString("SessionConnection")
+    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
+if (builder.Environment.IsDevelopment() || sessionConnection is null)
+{
+    builder.Services.AddDistributedMemoryCache();
+}
+else
+{
+    builder.Services.AddDistributedSqlServerCache(options =>
+    {
+        options.ConnectionString = sessionConnection;
+        options.SchemaName = "dbo";
+        options.TableName = "SessionCache";
+    });
+}
 builder.Services.AddSession(options =>
 {
     options.Cookie.HttpOnly = true;
@@ -84,6 +99,27 @@ builder.Services.AddControllersWithViews();
 
 // ── Build ─────────────────────────────────────────────────────────────────────
 var app = builder.Build();
+
+// ── Ensure SQL session cache table exists (production only) ───────────────────
+if (!app.Environment.IsDevelopment() && sessionConnection is not null)
+{
+    using var conn = new Microsoft.Data.SqlClient.SqlConnection(sessionConnection);
+    await conn.OpenAsync();
+    await new Microsoft.Data.SqlClient.SqlCommand("""
+        IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'SessionCache' AND schema_id = SCHEMA_ID('dbo'))
+        BEGIN
+            CREATE TABLE [dbo].[SessionCache] (
+                [Id]                         NVARCHAR(449)       NOT NULL,
+                [Value]                      VARBINARY(MAX)      NOT NULL,
+                [ExpiresAtTime]              DATETIMEOFFSET(7)   NOT NULL,
+                [SlidingExpirationInSeconds] BIGINT              NULL,
+                [AbsoluteExpiration]         DATETIMEOFFSET(7)   NULL,
+                CONSTRAINT [pk_Id] PRIMARY KEY ([Id] ASC)
+            );
+            CREATE NONCLUSTERED INDEX [Index_ExpiresAtTime] ON [dbo].[SessionCache] ([ExpiresAtTime] ASC);
+        END
+        """, conn).ExecuteNonQueryAsync();
+}
 
 // ── Security headers ──────────────────────────────────────────────────────────
 app.Use(async (context, next) =>

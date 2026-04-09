@@ -11,6 +11,8 @@
   <ItemGroup>
     <!-- JWT reading (claims extraction only — no validation in Web project) -->
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.7.1" />
+    <!-- SQL Server distributed session (survives app restarts on Azure) -->
+    <PackageReference Include="Microsoft.Extensions.Caching.SqlServer" Version="8.0.0" />
   </ItemGroup>
 
 </Project>
