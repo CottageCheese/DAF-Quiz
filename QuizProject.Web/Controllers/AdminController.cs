@@ -8,7 +8,7 @@ namespace QuizProject.Web.Controllers;
 [Authorize(Roles = "Admin")]
 public class AdminController(IApiClient apiClient) : Controller
 {
-    // ── Quiz List ─────────────────────────────────────────────────────────────
+    // Quiz List
 
     [HttpGet]
     public async Task<IActionResult> Index()
@@ -17,7 +17,7 @@ public class AdminController(IApiClient apiClient) : Controller
         return View(quizzes);
     }
 
-    // ── Create Quiz ───────────────────────────────────────────────────────────
+    // Create Quiz
 
     [HttpGet]
     public IActionResult Create() => View(new CreateQuizFormModel());
@@ -39,7 +39,7 @@ public class AdminController(IApiClient apiClient) : Controller
         return RedirectToAction(nameof(Details), new { id = quiz.Id });
     }
 
-    // ── Edit Quiz ─────────────────────────────────────────────────────────────
+    // Edit Quiz
 
     [HttpGet]
     public async Task<IActionResult> Edit(int id)
@@ -73,7 +73,7 @@ public class AdminController(IApiClient apiClient) : Controller
         return RedirectToAction(nameof(Details), new { id = quiz.Id });
     }
 
-    // ── Quiz Details ──────────────────────────────────────────────────────────
+    // Quiz Details
 
     [HttpGet]
     public async Task<IActionResult> Details(int id)
@@ -83,7 +83,7 @@ public class AdminController(IApiClient apiClient) : Controller
         return View(quiz);
     }
 
-    // ── Delete Quiz ───────────────────────────────────────────────────────────
+    // Delete Quiz
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -102,7 +102,7 @@ public class AdminController(IApiClient apiClient) : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    // ── Add Question ──────────────────────────────────────────────────────────
+    // Add Question
 
     [HttpGet]
     public async Task<IActionResult> AddQuestion(int quizId)
@@ -142,7 +142,7 @@ public class AdminController(IApiClient apiClient) : Controller
         return RedirectToAction(nameof(Details), new { id = model.QuizId });
     }
 
-    // ── Edit Question ─────────────────────────────────────────────────────────
+    // Edit Question
 
     [HttpGet]
     public async Task<IActionResult> EditQuestion(int quizId, int questionId)
@@ -195,7 +195,7 @@ public class AdminController(IApiClient apiClient) : Controller
         return RedirectToAction(nameof(Details), new { id = model.QuizId });
     }
 
-    // ── Delete Question ───────────────────────────────────────────────────────
+    // Delete Question
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -208,7 +208,7 @@ public class AdminController(IApiClient apiClient) : Controller
         return RedirectToAction(nameof(Details), new { id = quizId });
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    // Helpers
 
     private static List<(string Text, bool IsCorrect)>? BuildAnswerList(QuestionFormModel model)
     {

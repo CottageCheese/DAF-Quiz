@@ -19,7 +19,7 @@ public class ApiClient(
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
-    // ── Auth ──────────────────────────────────────────────────────────────────
+    // Auth
 
     public async Task<ApiResult<AuthTokens>> LoginAsync(string email, string password)
     {

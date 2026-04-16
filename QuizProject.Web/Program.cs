@@ -6,7 +6,7 @@ using QuizProject.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── Session (server-side JWT token storage) ───────────────────────────────────
+// Session (server-side JWT token storage)
 var sessionConnection = builder.Configuration.GetConnectionString("SessionConnection")
     ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -55,13 +55,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
             if (storage.GetAccessToken() is null)
             {
                 ctx.RejectPrincipal();
-                await ctx.HttpContext.SignOutAsync(
-                    CookieAuthenticationDefaults.AuthenticationScheme);
+                await ctx.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             }
         };
     });
 
-// ── Anti-forgery ──────────────────────────────────────────────────────────────
+// Anti-forgery
 builder.Services.AddAntiforgery(options =>
 {
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
@@ -69,7 +68,7 @@ builder.Services.AddAntiforgery(options =>
     options.Cookie.HttpOnly = true;
 });
 
-// ── Rate limiting ─────────────────────────────────────────────────────────────
+// Rate limiting
 builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("auth", limiterOptions =>
@@ -82,7 +81,7 @@ builder.Services.AddRateLimiter(options =>
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 
-// ── HTTP client + services ────────────────────────────────────────────────────
+// HTTP client + services
 var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"]
     ?? throw new InvalidOperationException("ApiSettings:BaseUrl is not configured.");
 
@@ -94,13 +93,13 @@ builder.Services.AddHttpClient<IApiClient, ApiClient>(client =>
 builder.Services.AddScoped<ITokenStorageService, TokenStorageService>();
 builder.Services.AddHttpContextAccessor();
 
-// ── MVC ───────────────────────────────────────────────────────────────────────
+// MVC
 builder.Services.AddControllersWithViews();
 
-// ── Build ─────────────────────────────────────────────────────────────────────
+// Build
 var app = builder.Build();
 
-// ── Ensure SQL session cache table exists (production only) ───────────────────
+// Ensure SQL session cache table exists (production only)
 if (!app.Environment.IsDevelopment() && sessionConnection is not null)
 {
     using var conn = new Microsoft.Data.SqlClient.SqlConnection(sessionConnection);
@@ -121,7 +120,7 @@ if (!app.Environment.IsDevelopment() && sessionConnection is not null)
         """, conn).ExecuteNonQueryAsync();
 }
 
-// ── Security headers ──────────────────────────────────────────────────────────
+// Security headers
 app.Use(async (context, next) =>
 {
     context.Response.Headers["X-Content-Type-Options"] = "nosniff";
@@ -139,7 +138,7 @@ app.Use(async (context, next) =>
     await next();
 });
 
-// ── Pipeline ──────────────────────────────────────────────────────────────────
+// Pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -150,7 +149,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRateLimiter();
 app.UseRouting();
-app.UseSession();           // MUST be before UseAuthentication
+app.UseSession(); // Must be before UseAuthentication
 app.UseAuthentication();
 app.UseAuthorization();
 

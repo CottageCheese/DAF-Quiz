@@ -12,7 +12,7 @@ namespace QuizProject.Api.Controllers;
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
 public class AdminController(IAdminQuizService adminService) : ControllerBase
 {
-    // ── Quizzes ───────────────────────────────────────────────────────────────
+    // Quizzes
 
     /// <summary>Returns all quizzes (published and drafts).</summary>
     [HttpGet("quizzes")]
@@ -75,7 +75,7 @@ public class AdminController(IAdminQuizService adminService) : ControllerBase
         return NoContent();
     }
 
-    // ── Questions ─────────────────────────────────────────────────────────────
+    // Questions
 
     /// <summary>Adds a question (with answers) to a quiz.</summary>
     [HttpPost("quizzes/{quizId:int}/questions")]
