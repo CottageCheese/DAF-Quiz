@@ -32,7 +32,7 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromHours(2);
 });
 
-// ── Cookie authentication (no Identity/EF — principal comes from JWT claims) ──
+// Cookie authentication (no Identity/EF — principal comes from JWT claims)
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
