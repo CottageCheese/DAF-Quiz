@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>QuizProject.Api</RootNamespace>
     <AssemblyName>QuizProject.Api</AssemblyName>
+    <UserSecretsId>daf-quiz-api-secrets</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

@@ -80,14 +80,18 @@ public static class SeedData
     {
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-
+        var config = serviceProvider.GetRequiredService<IConfiguration>();
+            
         // Ensure Admin role exists
         if (!await roleManager.RoleExistsAsync("Admin"))
             await roleManager.CreateAsync(new IdentityRole("Admin"));
 
         // Ensure default admin user exists
-        const string adminEmail = "admin@quiz.local";
-        const string adminPassword = "Admin123!";
+        var adminEmail = config["AdminSettings:Email"]
+            ?? throw new InvalidOperationException("AdminSettings:Email is not configured.");
+        var adminPassword = config["AdminSettings:Password"];
+        if (string.IsNullOrWhiteSpace(adminPassword))
+            throw new InvalidOperationException("AdminSettings:Password is not configured. Set it via User Secrets or an environment variable.");
 
         var adminUser = await userManager.FindByEmailAsync(adminEmail);
         if (adminUser is null)
