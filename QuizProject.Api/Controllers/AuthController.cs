@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -132,37 +131,4 @@ public class AuthController(
         await tokenService.RevokeRefreshTokenAsync(request.RefreshToken);
         return NoContent();
     }
-}
-
-public sealed record RegisterRequest
-{
-    [Required, EmailAddress, MaxLength(256)]
-    public string Email { get; init; } = string.Empty;
-
-    [Required, StringLength(100, MinimumLength = 8)]
-    public string Password { get; init; } = string.Empty;
-
-    [Required, StringLength(50, MinimumLength = 2)]
-    public string DisplayName { get; init; } = string.Empty;
-}
-
-public sealed record LoginRequest
-{
-    [Required, EmailAddress]
-    public string Email { get; init; } = string.Empty;
-
-    [Required]
-    public string Password { get; init; } = string.Empty;
-}
-
-public sealed record RefreshRequest
-{
-    public string RefreshToken { get; init; } = string.Empty;
-}
-
-public sealed record AuthResponse
-{
-    public string AccessToken { get; init; } = string.Empty;
-    public string RefreshToken { get; init; } = string.Empty;
-    public int ExpiresIn { get; init; }
 }

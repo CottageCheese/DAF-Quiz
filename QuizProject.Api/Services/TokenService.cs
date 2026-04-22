@@ -10,15 +10,6 @@ using QuizProject.Api.Repositories;
 
 namespace QuizProject.Api.Services;
 
-public sealed class JwtSettings
-{
-    public string Issuer { get; init; } = string.Empty;
-    public string Audience { get; init; } = string.Empty;
-    public string SecretKey { get; init; } = string.Empty;
-    public int AccessTokenExpiryMinutes { get; init; } = 15;
-    public int RefreshTokenExpiryDays { get; init; } = 7;
-}
-
 public sealed class TokenService(
     IOptions<JwtSettings> jwtOptions,
     UserManager<ApplicationUser> userManager,

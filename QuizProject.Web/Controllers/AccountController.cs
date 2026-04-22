@@ -97,8 +97,8 @@ public class AccountController(IApiClient apiClient, ITokenStorageService tokenS
     [AllowAnonymous]
     public IActionResult AccessDenied() => View();
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
+    // Helpers
+    
     private async Task SignInFromTokensAsync(string accessToken, string refreshToken, int expiresIn)
     {
         // Read identity claims from the JWT without full validation

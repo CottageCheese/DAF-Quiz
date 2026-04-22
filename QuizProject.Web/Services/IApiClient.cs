@@ -28,8 +28,3 @@ public interface IApiClient
     Task<AdminQuestionViewModel?> UpdateQuestionAsync(int quizId, int questionId, string text, int displayOrder, List<(string Text, bool IsCorrect)> answers);
     Task<bool> DeleteQuestionAsync(int quizId, int questionId);
 }
-
-/// <summary>Tokens returned by the API auth endpoints.</summary>
-public sealed record AuthTokens(string AccessToken, string RefreshToken, int ExpiresIn);
-
-public record ApiResult<T>(T? Data, bool Succeeded, string? ErrorMessage = null);

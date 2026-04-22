@@ -62,7 +62,7 @@ public class ApiClient(
         await http.SendAsync(request);
     }
 
-    // ── Quizzes ───────────────────────────────────────────────────────────────
+    // Quizzes
 
     public async Task<List<QuizListViewModel>> GetQuizzesAsync()
     {
@@ -94,7 +94,7 @@ public class ApiClient(
         return await response.Content.ReadFromJsonAsync<QuizResultViewModel>(JsonOpts);
     }
 
-    // ── Admin ─────────────────────────────────────────────────────────────────
+    // Admin
 
     public async Task<List<AdminQuizListViewModel>> GetAdminQuizzesAsync()
     {
@@ -169,7 +169,7 @@ public class ApiClient(
         return response?.IsSuccessStatusCode == true;
     }
 
-    // ── Leaderboard ───────────────────────────────────────────────────────────
+    // Leaderboard
 
     public async Task<LeaderboardViewModel> GetLeaderboardAsync()
     {
@@ -188,7 +188,7 @@ public class ApiClient(
         };
     }
 
-    // ── Core send with Bearer + 401 retry ────────────────────────────────────
+    // Core send with Bearer + 401 retry
 
     private async Task<HttpResponseMessage?> SendWithAuthAsync(
         HttpMethod method, string url, object? body = null)

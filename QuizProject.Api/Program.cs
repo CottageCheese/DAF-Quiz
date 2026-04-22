@@ -12,11 +12,11 @@ using QuizProject.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── Database ──────────────────────────────────────────────────────────────────
+// Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ── Identity ──────────────────────────────────────────────────────────────────
+// Identity
 builder.Services.AddIdentityCore<ApplicationUser>(options =>
     {
         options.Password.RequireDigit = true;
@@ -34,7 +34,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
     .AddDefaultTokenProviders()
     .AddSignInManager();
 
-// ── JWT Settings + Bearer ─────────────────────────────────────────────────────
+// JWT Settings + Bearer
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -54,7 +54,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// ── Rate limiting ─────────────────────────────────────────────────────────────
+// Rate limiting
 builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("auth", limiterOptions =>
@@ -67,7 +67,7 @@ builder.Services.AddRateLimiter(options =>
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 
-// ── CORS (Web frontend only) ──────────────────────────────────────────────────
+// CORS (Web frontend only)
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
     ?? ["https://localhost:5001", "http://localhost:5000"];
 
@@ -79,37 +79,37 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader());
 });
 
-// ── Repositories ──────────────────────────────────────────────────────────────
+// Repositories
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
-// ── Application services ──────────────────────────────────────────────────────
+// Application services
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IQuizService, QuizService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IAdminQuizService, AdminQuizService>();
 
-// ── Caching ───────────────────────────────────────────────────────────────────
+// Caching
 builder.Services.AddMemoryCache();
 
-// ── Health checks ─────────────────────────────────────────────────────────────
+// Health checks
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<ApplicationDbContext>();
 
-// ── Problem Details (RFC 7807) ────────────────────────────────────────────────
+// Problem Details (RFC 7807)
 builder.Services.AddProblemDetails();
 
-// ── Controllers ───────────────────────────────────────────────────────────────
+// Controllers
 builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// ── Database migration + seed ─────────────────────────────────────────────────
+// Database migration + seed
 using (var scope = app.Services.CreateScope())
 {
     await SeedData.InitialiseAsync(scope.ServiceProvider);
 }
 
-// ── Security headers ──────────────────────────────────────────────────────────
+// Security headers
 app.Use(async (context, next) =>
 {
     context.Response.Headers["X-Content-Type-Options"] = "nosniff";
@@ -118,7 +118,7 @@ app.Use(async (context, next) =>
     await next();
 });
 
-// ── Pipeline ──────────────────────────────────────────────────────────────────
+// Pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler();

@@ -5,7 +5,7 @@
    ============================================================ */
 
 :root {
-    /* ── Color tokens ──────────────────────────────────────────── */
+    /* Color tokens */
     --color-primary:               #0d6efd;
     --color-primary-dark:          #0a58ca;
     --color-primary-focus-ring:    rgba(13, 110, 253, 0.25);
@@ -19,12 +19,12 @@
     --color-surface:               #ffffff;
     --color-bg:                    #f8f9fa;
 
-    /* ── Gradient & shadow tokens ──────────────────────────────── */
+    /* Gradient & shadow tokens */
     --primary-gradient:  linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
     --card-shadow:       0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     --card-shadow-hover: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 
-    /* ── Spacing scale ─────────────────────────────────────────── */
+    /* Spacing scale */
     --space-1: 0.25rem;   /*  4px */
     --space-2: 0.5rem;    /*  8px */
     --space-3: 0.75rem;   /* 12px */
@@ -33,18 +33,18 @@
     --space-6: 1.5rem;    /* 24px */
     --space-8: 2rem;      /* 32px */
 
-    /* ── Typography tokens ─────────────────────────────────────── */
+    /* Typography tokens */
     --font-size-sm:       0.875rem;
     --font-size-base:     1rem;
     --font-weight-normal:   400;
     --font-weight-semibold: 600;
     --line-height-base:   1.6;
 
-    /* ── Transition ────────────────────────────────────────────── */
+    /* Transition */
     --transition-speed: 0.2s;
 }
 
-/* ── Skip link (WCAG SC 2.4.1) ─────────────────────────────── */
+/* Skip link */
 .skip-link:focus {
     position: fixed;
     top: var(--space-2);
@@ -59,7 +59,7 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* ── Focus ring (WCAG 2.2 SC 2.4.11 / 2.4.13) ──────────────── */
+/* Focus ring */
 :focus-visible {
     outline: 3px solid var(--color-primary);
     outline-offset: 2px;
@@ -72,7 +72,7 @@
     outline: none;
 }
 
-/* ── Target size (WCAG 2.2 SC 2.5.8) ────────────────────────── */
+/* Target size */
 /* Minimum target size for interactive elements not meeting 24x24px */
 .btn, .nav-link, .navbar-brand {
     min-height: 2.25rem; /* ~36px */
@@ -87,7 +87,7 @@
     min-height: 1.25em;
 }
 
-/* ── Body layout ────────────────────────────────────────────── */
+/* Body layout */
 html,
 body {
     min-height: 100vh;
@@ -100,7 +100,7 @@ main.container {
     flex: 1;
 }
 
-/* ── Typography ─────────────────────────────────────────────── */
+/* Typography */
 /* Ensure body text meets 4.5:1 against white (#fff) */
 body {
     color: var(--color-text); /* contrast 16.1:1 */
@@ -112,7 +112,7 @@ body {
     color: var(--color-text-muted) !important; /* contrast 4.54:1 on #fff — AA */
 }
 
-/* ── Quiz answer labels ─────────────────────────────────────── */
+/* Quiz answer labels */
 .quiz-answer-label {
     cursor: pointer;
     border: 2px solid var(--color-border);
@@ -134,7 +134,7 @@ body {
     font-weight: var(--font-weight-semibold);
 }
 
-/* ── Progress bar ───────────────────────────────────────────── */
+/* Progress bar */
 .progress {
     background-color: var(--color-border-light);
     border-radius: var(--space-2);
@@ -144,25 +144,25 @@ body {
     height: 10px;
 }
 
-/* ── Score circle ───────────────────────────────────────────── */
+/* Score circle */
 .score-circle {
     width: 120px;
     height: 120px;
 }
 
-/* ── Table column widths ────────────────────────────────────── */
+/* Table column widths */
 .col-num    { width: 3rem; }
 .col-result { width: 5rem; }
 .col-title-truncate {
     max-width: 140px;
 }
 
-/* ── Number input (compact) ─────────────────────────────────── */
+/* Number input (compact) */
 .input-number-sm {
     width: 100px;
 }
 
-/* ── Card enhancements ──────────────────────────────────────── */
+/* Card enhancements */
 .card {
     border: none;
     box-shadow: var(--card-shadow);
@@ -189,7 +189,7 @@ body {
     box-shadow: var(--card-shadow-hover);
 }
 
-/* ── Buttons ────────────────────────────────────────────────── */
+/* Buttons */
 .btn {
     border-radius: var(--space-2);
     font-weight: var(--font-weight-semibold);
@@ -211,14 +211,14 @@ body {
     min-width: 2.5rem;
 }
 
-/* ── Responsive table text ──────────────────────────────────── */
+/* Responsive table text */
 @media (max-width: 575.98px) {
     .table {
         font-size: var(--font-size-sm);
     }
 }
 
-/* ── Reduced-motion (WCAG 2.3 / user preference) ────────────── */
+/* Reduced-motion (WCAG 2.3 / user preference) */
 @media (prefers-reduced-motion: reduce) {
     :root {
         --transition-speed: 0s;
@@ -248,7 +248,7 @@ body {
     }
 }
 
-/* ── Print styles ───────────────────────────────────────────── */
+/* Print styles */
 @media print {
     nav, footer, .btn, form { display: none !important; }
     .card { box-shadow: none !important; border: 1px solid var(--color-border) !important; }
