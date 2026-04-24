@@ -104,8 +104,10 @@ builder.Services.AddControllers();
 var app = builder.Build();
 
 // Database migration + seed
-using (var scope = app.Services.CreateScope())
+// Integration tests use a separate SQLite seed path in CustomWebApplicationFactory.
+if (!app.Environment.IsEnvironment("Testing"))
 {
+    using var scope = app.Services.CreateScope();
     await SeedData.InitialiseAsync(scope.ServiceProvider);
 }
 
@@ -135,3 +137,5 @@ app.MapControllers();
 app.MapHealthChecks("/health");
 
 app.Run();
+
+public partial class Program { }
