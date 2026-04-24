@@ -11,6 +11,20 @@ jobs:
   postman-tests:
     runs-on: ubuntu-latest
 
+    services:
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          SA_PASSWORD: "DevCi_Strong@Passw0rd"
+          ACCEPT_EULA: "Y"
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'DevCi_Strong@Passw0rd' -C -Q 'SELECT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 15
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,6 +43,9 @@ jobs:
         run: dotnet build QuizProject.Api/QuizProject.Api.csproj --configuration Release
 
       - name: Start API
+        env:
+          ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=QuizDbCi;User ID=sa;Password=DevCi_Strong@Passw0rd;TrustServerCertificate=True;"
+          AdminSettings__Password: ${{ secrets.POSTMAN_ADMIN_PASSWORD }}
         run: |
           nohup dotnet run --project QuizProject.Api/QuizProject.Api.csproj --configuration Release --urls http://localhost:5169 > api.log 2>&1 &
           echo $! > api.pid
@@ -36,7 +53,7 @@ jobs:
       - name: Wait for API
         run: |
           for i in {1..40}; do
-            if curl -fsS http://localhost:5169/swagger/index.html > /dev/null; then
+            if curl -fsS http://localhost:5169/health > /dev/null; then
               echo "API is up"
               exit 0
             fi
