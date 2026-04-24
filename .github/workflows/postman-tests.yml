@@ -1,0 +1,84 @@
+name: Postman API Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  postman-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build API
+        run: dotnet build QuizProject.Api/QuizProject.Api.csproj --configuration Release
+
+      - name: Start API
+        run: |
+          nohup dotnet run --project QuizProject.Api/QuizProject.Api.csproj --configuration Release --urls http://localhost:5169 > api.log 2>&1 &
+          echo $! > api.pid
+
+      - name: Wait for API
+        run: |
+          for i in {1..40}; do
+            if curl -fsS http://localhost:5169/swagger/index.html > /dev/null; then
+              echo "API is up"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "API did not become ready in time"
+          tail -n 200 api.log || true
+          exit 1
+
+      - name: Run Postman tests
+        shell: pwsh
+        env:
+          ADMIN_PASSWORD: ${{ secrets.POSTMAN_ADMIN_PASSWORD }}
+          USER_PASSWORD: ${{ secrets.POSTMAN_USER_PASSWORD }}
+          ADMIN_EMAIL: ${{ vars.POSTMAN_ADMIN_EMAIL || 'admin@quiz.local' }}
+          USER_EMAIL: ${{ vars.POSTMAN_USER_EMAIL || 'user@quiz.local' }}
+        run: |
+          if (-not $env:ADMIN_PASSWORD) { throw "Missing secret POSTMAN_ADMIN_PASSWORD" }
+          if (-not $env:USER_PASSWORD) { throw "Missing secret POSTMAN_USER_PASSWORD" }
+
+          ./scripts/run-postman-tests.ps1 `
+            -AdminPassword $env:ADMIN_PASSWORD `
+            -UserPassword $env:USER_PASSWORD `
+            -AdminEmail $env:ADMIN_EMAIL `
+            -UserEmail $env:USER_EMAIL `
+            -BaseUrl "http://localhost:5169" `
+            -JunitOutput "tests/postman/results.xml"
+
+      - name: Upload Newman JUnit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: postman-newman-junit
+          path: tests/postman/results.xml
+
+      - name: Show API logs on failure
+        if: failure()
+        run: tail -n 200 api.log || true
+
+      - name: Stop API
+        if: always()
+        run: |
+          if [ -f api.pid ]; then
+            kill "$(cat api.pid)" || true
+          fi
