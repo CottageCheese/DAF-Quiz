@@ -10,21 +10,20 @@ on:
 jobs:
   postman-tests:
     runs-on: ubuntu-latest
+
     services:
       mssql:
         image: mcr.microsoft.com/mssql/server:2022-latest
         env:
-          ACCEPT_EULA: Y
-          SA_PASSWORD: "YourStrong!Password123"
-          MSSQL_PID: Express
-        options: >-
-          --health-cmd="/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong!Password123 -Q 'SELECT 1'"
-          --health-interval 10s
-          --health-timeout 3s
-          --health-retries 10
-          --health-start-period 10s
+          SA_PASSWORD: "DevCi_Strong@Passw0rd"
+          ACCEPT_EULA: "Y"
         ports:
           - 1433:1433
+        options: >-
+          --health-cmd "bash -c 'cat < /dev/null > /dev/tcp/localhost/1433'"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
 
     steps:
       - name: Checkout
@@ -43,11 +42,18 @@ jobs:
       - name: Build API
         run: dotnet build QuizProject.Api/QuizProject.Api.csproj --configuration Release
 
+      - name: Wait for SQL Server
+        run: |
+          echo "Waiting for SQL Server on port 1433..."
+          timeout 90 bash -c 'until nc -z localhost 1433; do sleep 2; done'
+          echo "Port open — allowing SQL Server to finish initializing..."
+          sleep 8
+          echo "SQL Server ready"
+
       - name: Start API
         env:
-          ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=QuizDb;User Id=sa;Password=YourStrong!Password123;TrustServerCertificate=True;"
-          AdminSettings__Email: "admin@quiz.local"
-          AdminSettings__Password: "AdminPass123!"
+          ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=QuizDbCi;User ID=sa;Password=DevCi_Strong@Passw0rd;TrustServerCertificate=True;"
+          AdminSettings__Password: ${{ secrets.POSTMAN_ADMIN_PASSWORD }}
         run: |
           nohup dotnet run --project QuizProject.Api/QuizProject.Api.csproj --configuration Release --urls http://localhost:5169 > api.log 2>&1 &
           echo $! > api.pid
@@ -55,7 +61,7 @@ jobs:
       - name: Wait for API
         run: |
           for i in {1..40}; do
-            if curl -fsS http://localhost:5169/swagger/index.html > /dev/null; then
+            if curl -fsS http://localhost:5169/health > /dev/null; then
               echo "API is up"
               exit 0
             fi
