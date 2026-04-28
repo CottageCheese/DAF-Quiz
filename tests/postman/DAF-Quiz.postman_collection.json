@@ -283,24 +283,6 @@
               }
             }
           ]
-        },
-        {
-          "name": "Delete Quiz",
-          "request": {
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] },
-            "method": "DELETE",
-            "url": "{{baseUrl}}/api/admin/quizzes/{{quizId}}"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
-                ]
-              }
-            }
-          ]
         }
       ]
     },
@@ -520,6 +502,24 @@
                   "  pm.test('First rank is 1', () => pm.expect(j[0].rank).to.equal(1));",
                   "  pm.test('Quiz title present', () => pm.expect(j[0].quizTitle).to.be.a('string').and.not.empty);",
                   "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Quiz",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] },
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/admin/quizzes/{{quizId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
                 ]
               }
             }
