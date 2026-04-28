@@ -81,7 +81,9 @@
                   "const j = pm.response.json();",
                   "pm.test('Has accessToken', () => pm.expect(j.accessToken).to.be.a('string').and.not.empty);",
                   "pm.test('Has refreshToken', () => pm.expect(j.refreshToken).to.be.a('string').and.not.empty);",
-                  "pm.test('ExpiresIn positive', () => pm.expect(j.expiresIn).to.be.above(0));"
+                  "pm.test('ExpiresIn positive', () => pm.expect(j.expiresIn).to.be.above(0));",
+                  "pm.environment.set('userEmail', pm.environment.get('registerEmail'));",
+                  "pm.environment.set('userPassword', 'User@Pass1!');"
                 ]
               }
             }
