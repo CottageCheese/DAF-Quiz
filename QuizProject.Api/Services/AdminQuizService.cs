@@ -10,6 +10,8 @@ public class AdminQuizService(
     IRepository<Quiz> quizzes,
     IRepository<Question> questions,
     IRepository<Answer> answers,
+    IRepository<QuizAttempt> attempts,
+    IRepository<QuizAttemptAnswer> attemptAnswers,
     IMemoryCache cache) : IAdminQuizService
 {
     public async Task<List<AdminQuizListViewModel>> GetAllQuizzesAsync(CancellationToken ct = default)
@@ -85,8 +87,23 @@ public class AdminQuizService(
 
     public async Task<bool> DeleteQuizAsync(int quizId, CancellationToken ct = default)
     {
-        var quiz = await quizzes.Query().FirstOrDefaultAsync(q => q.Id == quizId, ct);
+        var quiz = await quizzes.Query()
+            .Include(q => q.Questions)
+            .FirstOrDefaultAsync(q => q.Id == quizId, ct);
         if (quiz is null) return false;
+
+        var questionIds = quiz.Questions.Select(q => q.Id).ToList();
+        var relatedAttemptAnswers = await attemptAnswers.Query()
+            .Where(aa => questionIds.Contains(aa.QuestionId))
+            .ToListAsync(ct);
+        foreach (var aa in relatedAttemptAnswers)
+            attemptAnswers.Remove(aa);
+
+        var relatedAttempts = await attempts.Query()
+            .Where(a => a.QuizId == quizId)
+            .ToListAsync(ct);
+        foreach (var attempt in relatedAttempts)
+            attempts.Remove(attempt);
 
         quizzes.Remove(quiz);
         await quizzes.SaveChangesAsync();
@@ -128,6 +145,13 @@ public class AdminQuizService(
         question.Text = request.Text;
         question.DisplayOrder = request.DisplayOrder;
 
+        // Remove attempt answers referencing this question before replacing answers
+        var relatedAttemptAnswers = await attemptAnswers.Query()
+            .Where(aa => aa.QuestionId == questionId)
+            .ToListAsync(ct);
+        foreach (var aa in relatedAttemptAnswers)
+            attemptAnswers.Remove(aa);
+
         // Remove old answers and replace with new set
         foreach (var existing in question.Answers.ToList())
             answers.Remove(existing);
@@ -151,6 +175,12 @@ public class AdminQuizService(
     {
         var question = await questions.Query().FirstOrDefaultAsync(q => q.Id == questionId, ct);
         if (question is null) return false;
+
+        var relatedAttemptAnswers = await attemptAnswers.Query()
+            .Where(aa => aa.QuestionId == questionId)
+            .ToListAsync(ct);
+        foreach (var aa in relatedAttemptAnswers)
+            attemptAnswers.Remove(aa);
 
         questions.Remove(question);
         await questions.SaveChangesAsync();
