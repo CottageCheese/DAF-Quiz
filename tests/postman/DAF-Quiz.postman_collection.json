@@ -1,0 +1,564 @@
+{
+  "info": {
+    "name": "DAF-Quiz API",
+    "description": "Integration tests for DAF-Quiz ASP.NET Core Web API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-refresh access token if expiring within 60 seconds.",
+          "// Skip for auth endpoints to avoid recursion.",
+          "const url = pm.request.url.toString();",
+          "if (url.includes('/api/auth/')) return;",
+          "",
+          "const accessToken = pm.environment.get('accessToken');",
+          "const refreshToken = pm.environment.get('refreshToken');",
+          "if (!accessToken || !refreshToken) return;",
+          "",
+          "// Decode exp from JWT payload (middle segment)",
+          "try {",
+          "  const payload = JSON.parse(atob(accessToken.split('.')[1]));",
+          "  const expiresIn = payload.exp - Math.floor(Date.now() / 1000);",
+          "  if (expiresIn > 60) return;",
+          "",
+          "  // Proactively refresh",
+          "  pm.sendRequest({",
+          "    url: pm.environment.get('baseUrl') + '/api/auth/refresh',",
+          "    method: 'POST',",
+          "    header: { 'Content-Type': 'application/json' },",
+          "    body: { mode: 'raw', raw: JSON.stringify({ refreshToken }) }",
+          "  }, (err, res) => {",
+          "    if (!err && res.code === 200) {",
+          "      const json = res.json();",
+          "      pm.environment.set('accessToken', json.accessToken);",
+          "      pm.environment.set('refreshToken', json.refreshToken);",
+          "    }",
+          "  });",
+          "} catch (e) { /* malformed token — let the request proceed */ }"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"User@Pass1!\",\n  \"displayName\": \"New User\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Has accessToken', () => pm.expect(j.accessToken).to.be.a('string').and.not.empty);",
+                  "pm.test('Has refreshToken', () => pm.expect(j.refreshToken).to.be.a('string').and.not.empty);",
+                  "pm.test('ExpiresIn positive', () => pm.expect(j.expiresIn).to.be.above(0));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (User)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Has tokens', () => {",
+                  "  pm.expect(j.accessToken).to.be.a('string').and.not.empty;",
+                  "  pm.expect(j.refreshToken).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.test('ExpiresIn is 900', () => pm.expect(j.expiresIn).to.equal(900));",
+                  "pm.environment.set('accessToken', j.accessToken);",
+                  "pm.environment.set('refreshToken', j.refreshToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/refresh",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('New tokens issued', () => {",
+                  "  pm.expect(j.accessToken).to.be.a('string').and.not.empty;",
+                  "  pm.expect(j.refreshToken).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.environment.set('accessToken', j.accessToken);",
+                  "pm.environment.set('refreshToken', j.refreshToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Revoke Token",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/revoke",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin - Auth",
+      "item": [
+        {
+          "name": "Admin Login",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.environment.set('adminAccessToken', j.accessToken);",
+                  "pm.environment.set('adminRefreshToken', j.refreshToken);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin - Quizzes",
+      "item": [
+        {
+          "name": "Get All Quizzes (Admin)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/admin/quizzes"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Quiz",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] },
+            "method": "POST",
+            "url": "{{baseUrl}}/api/admin/quizzes",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Postman Test Quiz\",\n  \"description\": \"Created via Postman\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const j = pm.response.json();",
+                  "pm.test('Id positive', () => pm.expect(j.id).to.be.above(0));",
+                  "pm.test('Not published', () => pm.expect(j.isPublished).to.be.false);",
+                  "pm.environment.set('quizId', j.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Quiz by ID",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/admin/quizzes/{{quizId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Correct id', () => pm.expect(j.id).to.equal(parseInt(pm.environment.get('quizId'))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publish Quiz",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] },
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/admin/quizzes/{{quizId}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Postman Test Quiz\",\n  \"publishedAt\": \"{{$isoTimestamp}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Published', () => pm.expect(pm.response.json().isPublished).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Quiz",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] },
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/admin/quizzes/{{quizId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin - Questions",
+      "item": [
+        {
+          "name": "Add Question",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] },
+            "method": "POST",
+            "url": "{{baseUrl}}/api/admin/quizzes/{{quizId}}/questions",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"What is 2 + 2?\",\n  \"displayOrder\": 1,\n  \"answers\": [\n    { \"text\": \"4\", \"isCorrect\": true },\n    { \"text\": \"3\", \"isCorrect\": false },\n    { \"text\": \"5\", \"isCorrect\": false },\n    { \"text\": \"6\", \"isCorrect\": false }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const j = pm.response.json();",
+                  "pm.test('Has answers', () => pm.expect(j.answers).to.be.an('array').with.length.above(0));",
+                  "pm.environment.set('questionId', j.id);",
+                  "const correct = j.answers.find(a => a.isCorrect);",
+                  "if (correct) pm.environment.set('correctAnswerId', correct.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Question",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] },
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/admin/quizzes/{{quizId}}/questions/{{questionId}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"What is 3 + 3?\",\n  \"displayOrder\": 1,\n  \"answers\": [\n    { \"text\": \"6\", \"isCorrect\": true },\n    { \"text\": \"5\", \"isCorrect\": false },\n    { \"text\": \"7\", \"isCorrect\": false }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Text updated', () => pm.expect(pm.response.json().text).to.equal('What is 3 + 3?'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Question",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] },
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/admin/quizzes/{{quizId}}/questions/{{questionId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Quizzes (User)",
+      "item": [
+        {
+          "name": "Get Published Quizzes",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/quizzes"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Start Attempt",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/quizzes/{{quizId}}/start"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('AttemptId positive', () => pm.expect(j.attemptId).to.be.above(0));",
+                  "pm.test('Questions present', () => pm.expect(j.questions).to.be.an('array').with.length.above(0));",
+                  "pm.test('isCorrect not exposed', () => {",
+                  "  j.questions.forEach(q => q.answers.forEach(a => {",
+                  "    pm.expect(a).to.not.have.property('isCorrect');",
+                  "  }));",
+                  "});",
+                  "pm.environment.set('attemptId', j.attemptId);",
+                  "if (j.questions.length > 0) {",
+                  "  pm.environment.set('firstQuestionId', j.questions[0].questionId);",
+                  "  pm.environment.set('firstAnswerId', j.questions[0].answers[0].answerId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit Attempt",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/quizzes/attempts/{{attemptId}}/submit",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  { \"questionId\": {{firstQuestionId}}, \"selectedAnswerId\": {{firstAnswerId}} }\n]"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Score is number', () => pm.expect(j.score).to.be.a('number'));",
+                  "pm.test('Percentage in range', () => {",
+                  "  pm.expect(j.percentage).to.be.at.least(0);",
+                  "  pm.expect(j.percentage).to.be.at.most(100);",
+                  "});",
+                  "pm.test('Grade is valid', () => {",
+                  "  pm.expect(['Excellent','Good','Pass','Needs Improvement']).to.include(j.grade);",
+                  "});",
+                  "pm.test('Answers detail present', () => pm.expect(j.answers).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Results",
+      "item": [
+        {
+          "name": "Get Result",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/quizzes/attempts/{{attemptId}}/result"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('AttemptId matches', () => pm.expect(j.attemptId).to.equal(parseInt(pm.environment.get('attemptId'))));",
+                  "pm.test('Percentage in range', () => {",
+                  "  pm.expect(j.percentage).to.be.at.least(0);",
+                  "  pm.expect(j.percentage).to.be.at.most(100);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Leaderboard",
+      "item": [
+        {
+          "name": "Top Quizzes",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/leaderboard/top-quizzes?count=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaderboard", "top-quizzes"],
+              "query": [{ "key": "count", "value": "10" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Is array', () => pm.expect(j).to.be.an('array'));",
+                  "pm.test('Count <= 10', () => pm.expect(j.length).to.be.at.most(10));",
+                  "if (j.length > 0) {",
+                  "  pm.test('First rank is 1', () => pm.expect(j[0].rank).to.equal(1));",
+                  "  pm.test('Quiz title present', () => pm.expect(j[0].quizTitle).to.be.a('string').and.not.empty);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Top Users",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/leaderboard/top-users?count=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaderboard", "top-users"],
+              "query": [{ "key": "count", "value": "10" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('Is array', () => pm.expect(j).to.be.an('array'));",
+                  "pm.test('Count <= 10', () => pm.expect(j.length).to.be.at.most(10));",
+                  "if (j.length > 0) {",
+                  "  pm.test('First rank is 1', () => pm.expect(j[0].rank).to.equal(1));",
+                  "  pm.test('BestScorePercent in range', () => {",
+                  "    pm.expect(j[0].bestScorePercent).to.be.at.least(0);",
+                  "    pm.expect(j[0].bestScorePercent).to.be.at.most(100);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
