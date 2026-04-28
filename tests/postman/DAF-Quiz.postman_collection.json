@@ -59,10 +59,20 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"User@Pass1!\",\n  \"displayName\": \"New User\"\n}"
+              "raw": "{\n  \"email\": \"{{registerEmail}}\",\n  \"password\": \"User@Pass1!\",\n  \"displayName\": \"{{registerDisplayName}}\"\n}"
             }
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const ts = Date.now();",
+                  "pm.environment.set('registerEmail', 'newuser_' + ts + '@example.com');",
+                  "pm.environment.set('registerDisplayName', 'NewUser_' + ts);"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -341,24 +351,6 @@
             }
           ]
         },
-        {
-          "name": "Delete Question",
-          "request": {
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] },
-            "method": "DELETE",
-            "url": "{{baseUrl}}/api/admin/quizzes/{{quizId}}/questions/{{questionId}}"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
-                ]
-              }
-            }
-          ]
-        }
       ]
     },
     {
@@ -439,6 +431,24 @@
                   "  pm.expect(['Excellent','Good','Pass','Needs Improvement']).to.include(j.grade);",
                   "});",
                   "pm.test('Answers detail present', () => pm.expect(j.answers).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Question",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] },
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/admin/quizzes/{{quizId}}/questions/{{questionId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
                 ]
               }
             }
