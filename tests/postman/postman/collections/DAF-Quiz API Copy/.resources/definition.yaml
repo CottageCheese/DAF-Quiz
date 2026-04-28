@@ -1,0 +1,41 @@
+$kind: collection
+description: Integration tests for DAF-Quiz ASP.NET Core Web API
+scripts:
+  - type: http:beforeRequest
+    code: |-
+      // Auto-refresh access token if expiring within 60 seconds.
+      // Skip for auth endpoints to avoid recursion.
+      const url = pm.request.url.toString();
+      if (url.includes('/api/auth/')) return;
+
+      const accessToken = pm.environment.get('accessToken');
+      const refreshToken = pm.environment.get('refreshToken');
+      if (!accessToken || !refreshToken) return;
+
+      // Decode exp from JWT payload (middle segment)
+      try {
+        const payload = JSON.parse(atob(accessToken.split('.')[1]));
+        const expiresIn = payload.exp - Math.floor(Date.now() / 1000);
+        if (expiresIn > 60) return;
+
+        // Proactively refresh
+        pm.sendRequest({
+          url: pm.environment.get('baseUrl') + '/api/auth/refresh',
+          method: 'POST',
+          header: { 'Content-Type': 'application/json' },
+          body: { mode: 'raw', raw: JSON.stringify({ refreshToken }) }
+        }, (err, res) => {
+          if (!err && res.code === 200) {
+            const json = res.json();
+            pm.environment.set('accessToken', json.accessToken);
+            pm.environment.set('refreshToken', json.refreshToken);
+          }
+        });
+      } catch (e) { /* malformed token — let the request proceed */ }
+    language: text/javascript
+auth:
+  - id: cf6e3e53-edd7-456d-a57e-799572d83185
+    type: bearer
+    name: bearer auth
+    credentials:
+      token: "{{accessToken}}"

@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/register"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "email": "newuser@example.com",
+      "password": "User@Pass1!",
+      "displayName": "New User"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', () => pm.response.to.have.status(200));
+      const j = pm.response.json();
+      pm.test('Has accessToken', () => pm.expect(j.accessToken).to.be.a('string').and.not.empty);
+      pm.test('Has refreshToken', () => pm.expect(j.refreshToken).to.be.a('string').and.not.empty);
+      pm.test('ExpiresIn positive', () => pm.expect(j.expiresIn).to.be.above(0));
+    language: text/javascript
+order: 1000

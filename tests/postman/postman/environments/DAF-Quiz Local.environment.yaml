@@ -1,0 +1,47 @@
+name: DAF-Quiz Local
+values:
+  - key: baseUrl
+    enabled: true
+    value: 'http://localhost:5188'
+  - key: adminEmail
+    enabled: true
+    value: admin@quiz.local
+  - key: adminPassword
+    enabled: true
+    value: ''
+  - key: userEmail
+    enabled: true
+    value: ''
+  - key: userPassword
+    enabled: true
+    value: ''
+  - key: accessToken
+    enabled: true
+    value: ''
+  - key: refreshToken
+    enabled: true
+    value: ''
+  - key: adminAccessToken
+    enabled: true
+    value: ''
+  - key: adminRefreshToken
+    enabled: true
+    value: ''
+  - key: quizId
+    enabled: true
+    value: ''
+  - key: attemptId
+    enabled: true
+    value: ''
+  - key: questionId
+    enabled: true
+    value: ''
+  - key: correctAnswerId
+    enabled: true
+    value: ''
+  - key: firstQuestionId
+    enabled: true
+    value: ''
+  - key: firstAnswerId
+    enabled: true
+    value: ''

@@ -1,0 +1,26 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/quizzes"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "title": "Postman Test Quiz",
+      "description": "Created via Postman"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminAccessToken}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 201', () => pm.response.to.have.status(201));
+      const j = pm.response.json();
+      pm.test('Id positive', () => pm.expect(j.id).to.be.above(0));
+      pm.test('Not published', () => pm.expect(j.isPublished).to.be.false);
+      pm.environment.set('quizId', j.id);
+    language: text/javascript
+order: 2000

@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/quizzes/{{quizId}}"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminAccessToken}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', () => pm.response.to.have.status(200));
+      const j = pm.response.json();
+      pm.test('Correct id', () => pm.expect(j.id).to.equal(parseInt(pm.environment.get('quizId'))));
+    language: text/javascript
+order: 3000

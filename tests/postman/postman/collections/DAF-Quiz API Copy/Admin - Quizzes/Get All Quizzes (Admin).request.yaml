@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/quizzes"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminAccessToken}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', () => pm.response.to.have.status(200));
+      pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));
+    language: text/javascript
+order: 1000
