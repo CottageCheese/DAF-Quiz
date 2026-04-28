@@ -39,7 +39,7 @@ if ($junitDir -and -not (Test-Path -LiteralPath $junitDir)) {
     New-Item -ItemType Directory -Path $junitDir | Out-Null
 }
 
-npm install --no-audit --no-fund --save-dev newman newman-reporter-junit
+npm install --global --no-audit --no-fund newman newman-reporter-junit
 if ($LASTEXITCODE -ne 0) {
     throw "Failed to install Newman dependencies."
 }
