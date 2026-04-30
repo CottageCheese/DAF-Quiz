@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using QuizProject.Web.Models.ViewModels;
+using QuizProject.Contracts;
 using QuizProject.Web.Services;
 
 namespace QuizProject.Web.Controllers;

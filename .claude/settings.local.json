@@ -13,7 +13,34 @@
       "Bash(export PATH=\"$PATH:/c/Users/dfure/.dotnet:/c/Users/dfure/.dotnet/tools\")",
       "Bash(export PATH=\"$PATH:/c/Users/dfure/.dotnet\")",
       "Bash(\"/c/Users/dfure/.dotnet/tools/dotnet-ef.exe\" migrations:*)",
-      "Bash(dotnet user-secrets:*)"
+      "Bash(dotnet user-secrets:*)",
+      "Bash(xargs ls:*)",
+      "Bash(git add:*)",
+      "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); items=data[''''item'''']; [print\\(f{i}: {item[''''name'''']}\\) for i,item in enumerate\\(items\\)]\")",
+      "Bash(python -c \"import json,sys; data=json.load\\(open\\(''''tests/postman/DAF-Quiz.postman_collection.json''''\\)\\); items=data[''''item'''']; [print\\(f''''{i}: {item[name]}''''\\) for i,item in enumerate\\(items\\)]\")",
+      "Bash(python3 -c \":*)",
+      "Bash(node -e \":*)",
+      "Bash(git checkout:*)",
+      "Bash(\"C:/Program Files/dotnet/dotnet.exe\" build QuizProject.Web)",
+      "Bash(xargs grep:*)",
+      "Bash(\"C:/Program Files/dotnet/dotnet.exe\" build QuizProject.Tests.Integration)",
+      "Bash(\"C:/Program Files/dotnet/dotnet.exe\" sln add QuizProject.Domain.Tests)",
+      "Bash(\"C:/Program Files/dotnet/dotnet.exe\" build QuizProject.Domain.Tests)",
+      "Bash(\"C:/Program Files/dotnet/dotnet.exe\" test QuizProject.Domain.Tests)",
+      "Bash(\"C:/Program Files/dotnet/dotnet.exe\" test QuizProject.Tests.Integration)",
+      "Bash(\"C:/Program Files/dotnet/dotnet.exe\" build QuizProject.sln)",
+      "Bash(\"C:/Program Files/dotnet/dotnet.exe\" test QuizProject.sln)"
     ]
+  },
+  "enabledPlugins": {
+    "caveman@caveman": true
+  },
+  "extraKnownMarketplaces": {
+    "caveman": {
+      "source": {
+        "source": "github",
+        "repo": "juliusbrussee/caveman"
+      }
+    }
   }
 }

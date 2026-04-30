@@ -5,16 +5,19 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using QuizProject.Api.Data;
-using QuizProject.Api.Models.Domain;
-using QuizProject.Api.Repositories;
+using QuizProject.Domain.Data;
+using QuizProject.Domain.Models.Domain;
+using QuizProject.Domain.Repositories;
+using QuizProject.Domain.Services;
 using QuizProject.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        x => x.MigrationsAssembly("QuizProject.Domain")));
 
 // Identity
 builder.Services.AddIdentityCore<ApplicationUser>(options =>

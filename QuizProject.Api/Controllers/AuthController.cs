@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using QuizProject.Api.Models.Domain;
+using QuizProject.Contracts;
+using QuizProject.Domain.Models.Domain;
 using QuizProject.Api.Services;
 
 namespace QuizProject.Api.Controllers;

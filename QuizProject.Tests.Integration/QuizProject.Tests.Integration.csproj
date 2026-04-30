@@ -28,6 +28,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\QuizProject.Api\QuizProject.Api.csproj" />
+    <ProjectReference Include="..\QuizProject.Domain\QuizProject.Domain.csproj" />
+    <ProjectReference Include="..\QuizProject.Contracts\QuizProject.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>

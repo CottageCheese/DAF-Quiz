@@ -1,3 +1,4 @@
+using QuizProject.Contracts;
 using QuizProject.Web.Models.ViewModels;
 
 namespace QuizProject.Web.Services;

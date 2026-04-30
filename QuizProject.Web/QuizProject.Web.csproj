@@ -15,4 +15,8 @@
     <PackageReference Include="Microsoft.Extensions.Caching.SqlServer" Version="8.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\QuizProject.Contracts\QuizProject.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>
