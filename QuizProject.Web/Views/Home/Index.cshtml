@@ -89,8 +89,9 @@
                                         <td>
                                             @{
                                                 var email = user.UserName;
-                                                var maskedEmail = email.Length > 3
-                                                    ? email[..3] + new string('*', Math.Min(email.IndexOf('@') - 3, 5)) + email[email.IndexOf('@')..]
+                                                var atIndex = email.IndexOf('@');
+                                                var maskedEmail = atIndex > 3
+                                                    ? email[..3] + new string('*', Math.Min(atIndex - 3, 5)) + email[atIndex..]
                                                     : email;
                                             }
                                             @maskedEmail
