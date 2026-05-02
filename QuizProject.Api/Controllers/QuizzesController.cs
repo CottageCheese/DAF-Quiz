@@ -59,6 +59,19 @@ public class QuizzesController(IQuizService quizService) : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>Returns all completed quiz attempts for the authenticated user.</summary>
+    [HttpGet("my-history")]
+    [ProducesResponseType(typeof(List<UserAttemptHistoryViewModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetMyHistory(CancellationToken ct)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null) return Unauthorized();
+
+        var history = await quizService.GetUserAttemptHistoryAsync(userId, ct);
+        return Ok(history);
+    }
+
     /// <summary>Returns the result of a previously completed attempt.</summary>
     [HttpGet("attempts/{attemptId:int}/result")]
     [ProducesResponseType(typeof(QuizResultViewModel), StatusCodes.Status200OK)]

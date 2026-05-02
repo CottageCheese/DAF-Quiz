@@ -148,6 +148,24 @@ public class QuizService(
         return await BuildResultViewModelAsync(attemptId, ct);
     }
 
+    public async Task<List<UserAttemptHistoryViewModel>> GetUserAttemptHistoryAsync(string userId, CancellationToken ct = default)
+    {
+        return await attempts.Query()
+            .AsNoTracking()
+            .Where(a => a.UserId == userId && a.CompletedAt != null)
+            .Include(a => a.Quiz)
+            .OrderByDescending(a => a.CompletedAt)
+            .Select(a => new UserAttemptHistoryViewModel
+            {
+                AttemptId = a.Id,
+                QuizTitle = a.Quiz.Title,
+                Score = a.Score,
+                TotalQuestions = a.TotalQuestions,
+                CompletedAt = a.CompletedAt!.Value
+            })
+            .ToListAsync(ct);
+    }
+
     private async Task<QuizResultViewModel> BuildResultViewModelAsync(int attemptId, CancellationToken ct)
     {
         // Single query — no N+1. Question.Answers loaded so correct answer is resolved in memory.
