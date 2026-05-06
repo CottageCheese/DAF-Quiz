@@ -3,8 +3,8 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
-using QuizProject.Api.Models.ViewModels;
-using QuizProject.Api.Services;
+using QuizProject.Contracts;
+using QuizProject.Domain.Services;
 using QuizProject.Tests.Integration.Infrastructure;
 
 namespace QuizProject.Tests.Integration.Admin;

@@ -2,8 +2,8 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using QuizProject.Api.Models.ViewModels;
-using QuizProject.Api.Services;
+using QuizProject.Contracts;
+using QuizProject.Domain.Services;
 
 namespace QuizProject.Api.Controllers;
 

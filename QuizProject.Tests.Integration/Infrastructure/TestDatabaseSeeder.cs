@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
-using QuizProject.Api.Data;
-using QuizProject.Api.Models.Domain;
+using QuizProject.Domain.Data;
+using QuizProject.Domain.Models.Domain;
 
 namespace QuizProject.Tests.Integration.Infrastructure;
 

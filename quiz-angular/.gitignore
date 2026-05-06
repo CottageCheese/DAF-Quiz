@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.angular/
+
+# Test coverage
+coverage/
+
+# Environment (never commit secrets)
+src/environments/environment.prod.ts
+
+# OS
+.DS_Store
+Thumbs.db

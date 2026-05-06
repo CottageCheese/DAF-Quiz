@@ -2,8 +2,8 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using QuizProject.Api.Models.ViewModels;
-using QuizProject.Api.Services;
+using QuizProject.Contracts;
+using QuizProject.Domain.Services;
 
 namespace QuizProject.Api.Controllers;
 
@@ -57,6 +57,19 @@ public class QuizzesController(IQuizService quizService) : ControllerBase
         if (result is null) return NotFound(new { message = "Attempt not found or already completed." });
 
         return Ok(result);
+    }
+
+    /// <summary>Returns all completed quiz attempts for the authenticated user.</summary>
+    [HttpGet("my-history")]
+    [ProducesResponseType(typeof(List<UserAttemptHistoryViewModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetMyHistory(CancellationToken ct)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null) return Unauthorized();
+
+        var history = await quizService.GetUserAttemptHistoryAsync(userId, ct);
+        return Ok(history);
     }
 
     /// <summary>Returns the result of a previously completed attempt.</summary>

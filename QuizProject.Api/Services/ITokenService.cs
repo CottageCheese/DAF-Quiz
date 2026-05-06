@@ -1,4 +1,4 @@
-using QuizProject.Api.Models.Domain;
+using QuizProject.Domain.Models.Domain;
 
 namespace QuizProject.Api.Services;
 

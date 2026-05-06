@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.Net.Http.Json;
-using QuizProject.Api.Controllers;
+using QuizProject.Contracts;
 
 namespace QuizProject.Tests.Integration.Infrastructure;
 

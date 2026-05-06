@@ -1,3 +1,5 @@
+using QuizProject.Contracts;
+
 namespace QuizProject.Web.Models.ViewModels;
 
 public class LeaderboardViewModel

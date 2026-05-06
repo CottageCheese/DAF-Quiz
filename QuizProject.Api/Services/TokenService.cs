@@ -5,8 +5,8 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using QuizProject.Api.Models.Domain;
-using QuizProject.Api.Repositories;
+using QuizProject.Domain.Models.Domain;
+using QuizProject.Domain.Repositories;
 
 namespace QuizProject.Api.Services;
 

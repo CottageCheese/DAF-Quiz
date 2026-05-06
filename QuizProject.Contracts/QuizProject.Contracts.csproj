@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>QuizProject.Contracts</RootNamespace>
+    <AssemblyName>QuizProject.Contracts</AssemblyName>
+  </PropertyGroup>
+
+</Project>
