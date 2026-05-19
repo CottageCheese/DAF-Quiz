@@ -10,7 +10,7 @@ public class LeaderboardServiceTests : DomainTestBase
 
     public LeaderboardServiceTests()
     {
-        _svc = new LeaderboardService(AttemptRepo);
+        _svc = new LeaderboardService(Db);
     }
 
     [Fact]

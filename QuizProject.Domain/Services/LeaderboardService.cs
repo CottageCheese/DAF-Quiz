@@ -1,15 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using QuizProject.Contracts;
-using QuizProject.Domain.Models.Domain;
-using QuizProject.Domain.Repositories;
+using QuizProject.Domain.Data;
 
 namespace QuizProject.Domain.Services;
 
-public class LeaderboardService(IRepository<QuizAttempt> attempts) : ILeaderboardService
+public class LeaderboardService(ApplicationDbContext db) : ILeaderboardService
 {
     public async Task<List<TopQuizViewModel>> GetTopQuizzesAsync(int count = 10, CancellationToken ct = default)
     {
-        var results = await attempts.Query()
+        var results = await db.QuizAttempts
             .AsNoTracking()
             .Where(a => a.CompletedAt != null)
             .GroupBy(a => new { a.QuizId, a.Quiz.Title })
@@ -36,7 +35,7 @@ public class LeaderboardService(IRepository<QuizAttempt> attempts) : ILeaderboar
     public async Task<List<TopUserViewModel>> GetTopUsersAsync(int count = 10, CancellationToken ct = default)
     {
         // Step 1: DB-level grouping to find top N users by best score percentage.
-        var topUsers = await attempts.Query()
+        var topUsers = await db.QuizAttempts
             .AsNoTracking()
             .Where(a => a.CompletedAt != null && a.TotalQuestions > 0)
             .GroupBy(a => new { a.UserId, a.User.DisplayName })
@@ -54,7 +53,7 @@ public class LeaderboardService(IRepository<QuizAttempt> attempts) : ILeaderboar
 
         // Step 2: Fetch attempts for those users only to resolve the best quiz title.
         var topUserIds = topUsers.Select(u => u.UserId).ToList();
-        var bestAttempts = await attempts.Query()
+        var bestAttempts = await db.QuizAttempts
             .AsNoTracking()
             .Where(a => topUserIds.Contains(a.UserId) && a.CompletedAt != null && a.TotalQuestions > 0)
             .Select(a => new { a.UserId, a.Score, a.TotalQuestions, QuizTitle = a.Quiz.Title })

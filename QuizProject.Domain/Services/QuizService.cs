@@ -1,18 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using QuizProject.Contracts;
+using QuizProject.Domain.Data;
 using QuizProject.Domain.Models.Domain;
-using QuizProject.Domain.Repositories;
 
 namespace QuizProject.Domain.Services;
 
-public class QuizService(
-    IRepository<Quiz> quizzes,
-    IRepository<Question> questions,
-    IRepository<QuizAttempt> attempts,
-    IRepository<QuizAttemptAnswer> attemptAnswers,
-    IMemoryCache cache)
-    : IQuizService
+public class QuizService(ApplicationDbContext db, IMemoryCache cache) : IQuizService
 {
     public const string ActiveQuizzesCacheKey = "quizzes:active";
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
@@ -23,7 +17,7 @@ public class QuizService(
             return cached!;
 
         var now = DateTime.UtcNow;
-        var result = await quizzes.Query()
+        var result = await db.Quizzes
             .AsNoTracking()
             .Where(q => q.PublishedAt != null && q.PublishedAt <= now)
             .Select(q => new QuizListViewModel
@@ -45,7 +39,7 @@ public class QuizService(
     public async Task<TakeQuizViewModel?> StartAttemptAsync(int quizId, string userId, CancellationToken ct = default)
     {
         var now = DateTime.UtcNow;
-        var quiz = await quizzes.Query()
+        var quiz = await db.Quizzes
             .AsNoTracking()
             .Where(q => q.Id == quizId && q.PublishedAt != null && q.PublishedAt <= now)
             .Include(q => q.Questions.OrderBy(qu => qu.DisplayOrder))
@@ -62,8 +56,8 @@ public class QuizService(
             TotalQuestions = quiz.Questions.Count
         };
 
-        await attempts.AddAsync(attempt);
-        await attempts.SaveChangesAsync();
+        db.Add(attempt);
+        await db.SaveChangesAsync(ct);
 
         return new TakeQuizViewModel
         {
@@ -93,7 +87,7 @@ public class QuizService(
 
     public async Task<QuizResultViewModel?> SubmitAttemptAsync(SubmitQuizViewModel submission, string userId, CancellationToken ct = default)
     {
-        var attempt = await attempts.Query()
+        var attempt = await db.QuizAttempts
             .Where(a => a.Id == submission.AttemptId && a.UserId == userId && a.CompletedAt == null)
             .Include(a => a.Quiz)
             .FirstOrDefaultAsync(ct);
@@ -101,7 +95,7 @@ public class QuizService(
         if (attempt is null) return null;
 
         var questionIds = submission.Selections.Select(s => s.QuestionId).ToList();
-        var questionList = await questions.Query()
+        var questionList = await db.Questions
             .AsNoTracking()
             .Where(q => questionIds.Contains(q.Id) && q.QuizId == attempt.QuizId)
             .Include(q => q.Answers)
@@ -132,15 +126,15 @@ public class QuizService(
 
         attempt.Score = score;
         attempt.CompletedAt = DateTime.UtcNow;
-        await attemptAnswers.AddRangeAsync(attemptAnswerList);
-        await attemptAnswers.SaveChangesAsync();
+        db.AddRange(attemptAnswerList);
+        await db.SaveChangesAsync(ct);
 
         return await BuildResultViewModelAsync(attempt.Id, ct);
     }
 
     public async Task<QuizResultViewModel?> GetResultAsync(int attemptId, string userId, CancellationToken ct = default)
     {
-        var exists = await attempts.Query()
+        var exists = await db.QuizAttempts
             .AnyAsync(a => a.Id == attemptId && a.UserId == userId && a.CompletedAt != null, ct);
 
         if (!exists) return null;
@@ -150,7 +144,7 @@ public class QuizService(
 
     public async Task<List<UserAttemptHistoryViewModel>> GetUserAttemptHistoryAsync(string userId, CancellationToken ct = default)
     {
-        return await attempts.Query()
+        return await db.QuizAttempts
             .AsNoTracking()
             .Where(a => a.UserId == userId && a.CompletedAt != null)
             .Include(a => a.Quiz)
@@ -169,7 +163,7 @@ public class QuizService(
     private async Task<QuizResultViewModel> BuildResultViewModelAsync(int attemptId, CancellationToken ct)
     {
         // Single query — no N+1. Question.Answers loaded so correct answer is resolved in memory.
-        var attempt = await attempts.Query()
+        var attempt = await db.QuizAttempts
             .AsNoTracking()
             .Include(a => a.Quiz)
             .Include(a => a.AttemptAnswers)

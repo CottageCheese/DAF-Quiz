@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using QuizProject.Domain.Data;
 using QuizProject.Domain.Models.Domain;
-using QuizProject.Domain.Repositories;
 using QuizProject.Domain.Services;
 using QuizProject.Api.Services;
 
@@ -81,9 +80,6 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
-
-// Repositories
-builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 // Application services
 builder.Services.AddScoped<ITokenService, TokenService>();

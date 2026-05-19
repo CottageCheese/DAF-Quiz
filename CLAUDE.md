@@ -7,7 +7,7 @@ ASP.NET Core 8 quiz application with JWT authentication, admin management, and a
 ```
 QuizProject.sln
 ├── QuizProject.Contracts/        # Pure DTOs/ViewModels — no dependencies
-├── QuizProject.Domain/           # Entities, EF Core, repositories, domain services
+├── QuizProject.Domain/           # Entities, EF Core, domain services
 ├── QuizProject.Api/              # REST API (JWT Bearer, ASP.NET Identity)
 ├── QuizProject.Web/              # MVC frontend (Cookie auth, calls API via IApiClient)
 ├── QuizProject.Domain.Tests/     # xUnit unit tests for domain services (SQLite in-memory)
@@ -46,7 +46,8 @@ cd QuizProject.Tests.Integration && dotnet test
 
 ## Key Architectural Patterns
 
-- **Repository pattern**: `IRepository<T>` with `Query()`, `AddAsync()`, `Update()`, `Remove()`, `SaveChangesAsync()` — lives in `QuizProject.Domain`
+> **AVOID the Repository pattern.** Do not introduce `IRepository<T>` or any repository abstraction. Services use `ApplicationDbContext` (EF Core) directly.
+
 - **Services**: `IQuizService`, `IAdminQuizService`, `ILeaderboardService` in `QuizProject.Domain.Services`; `ITokenService` stays in `QuizProject.Api.Services` (JWT infrastructure, not domain logic)
 - **Contracts**: all shared DTOs/ViewModels live in `QuizProject.Contracts` (flat namespace, no sub-namespaces)
 - **Web has no DB access**: all data flows through `IApiClient` (HttpClient wrapper) → API
@@ -96,7 +97,7 @@ dotnet ef database update --project QuizProject.Domain --startup-project QuizPro
 Two test suites:
 
 **Domain unit tests** (`QuizProject.Domain.Tests`) — SQLite in-memory, no HTTP:
-- `DomainTestBase`: wires repositories + `MemoryCache` directly; `IDisposable`
+- `DomainTestBase`: wires services + `MemoryCache` directly; `IDisposable`
 - `DomainTestSeeder`: seeds entities via `ApplicationDbContext` directly (no `UserManager`)
 
 **Integration tests** (`QuizProject.Tests.Integration`) — full HTTP stack via `WebApplicationFactory`:

@@ -1,22 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using QuizProject.Contracts;
+using QuizProject.Domain.Data;
 using QuizProject.Domain.Models.Domain;
-using QuizProject.Domain.Repositories;
 
 namespace QuizProject.Domain.Services;
 
-public class AdminQuizService(
-    IRepository<Quiz> quizzes,
-    IRepository<Question> questions,
-    IRepository<Answer> answers,
-    IRepository<QuizAttempt> attempts,
-    IRepository<QuizAttemptAnswer> attemptAnswers,
-    IMemoryCache cache) : IAdminQuizService
+public class AdminQuizService(ApplicationDbContext db, IMemoryCache cache) : IAdminQuizService
 {
     public async Task<List<AdminQuizListViewModel>> GetAllQuizzesAsync(CancellationToken ct = default)
     {
-        return await quizzes.Query()
+        return await db.Quizzes
             .AsNoTracking()
             .Select(q => new AdminQuizListViewModel
             {
@@ -35,7 +29,7 @@ public class AdminQuizService(
 
     public async Task<AdminQuizDetailViewModel?> GetQuizDetailAsync(int quizId, CancellationToken ct = default)
     {
-        var quiz = await quizzes.Query()
+        var quiz = await db.Quizzes
             .AsNoTracking()
             .Include(q => q.Questions.OrderBy(qu => qu.DisplayOrder))
             .ThenInclude(q => q.Answers)
@@ -58,15 +52,15 @@ public class AdminQuizService(
             CreatedByEmail = userEmail
         };
 
-        await quizzes.AddAsync(quiz);
-        await quizzes.SaveChangesAsync();
+        db.Add(quiz);
+        await db.SaveChangesAsync(ct);
 
         return MapToDetail(quiz);
     }
 
     public async Task<AdminQuizDetailViewModel?> UpdateQuizAsync(int quizId, UpdateQuizRequest request, CancellationToken ct = default)
     {
-        var quiz = await quizzes.Query()
+        var quiz = await db.Quizzes
             .Include(q => q.Questions.OrderBy(qu => qu.DisplayOrder))
             .ThenInclude(q => q.Answers)
             .FirstOrDefaultAsync(q => q.Id == quizId, ct);
@@ -77,8 +71,7 @@ public class AdminQuizService(
         quiz.Description = request.Description;
         quiz.PublishedAt = request.PublishedAt;
 
-        quizzes.Update(quiz);
-        await quizzes.SaveChangesAsync();
+        await db.SaveChangesAsync(ct);
 
         cache.Remove(QuizService.ActiveQuizzesCacheKey);
 
@@ -87,26 +80,24 @@ public class AdminQuizService(
 
     public async Task<bool> DeleteQuizAsync(int quizId, CancellationToken ct = default)
     {
-        var quiz = await quizzes.Query()
+        var quiz = await db.Quizzes
             .Include(q => q.Questions)
             .FirstOrDefaultAsync(q => q.Id == quizId, ct);
         if (quiz is null) return false;
 
         var questionIds = quiz.Questions.Select(q => q.Id).ToList();
-        var relatedAttemptAnswers = await attemptAnswers.Query()
+        var relatedAttemptAnswers = await db.QuizAttemptAnswers
             .Where(aa => questionIds.Contains(aa.QuestionId))
             .ToListAsync(ct);
-        foreach (var aa in relatedAttemptAnswers)
-            attemptAnswers.Remove(aa);
+        db.RemoveRange(relatedAttemptAnswers);
 
-        var relatedAttempts = await attempts.Query()
+        var relatedAttempts = await db.QuizAttempts
             .Where(a => a.QuizId == quizId)
             .ToListAsync(ct);
-        foreach (var attempt in relatedAttempts)
-            attempts.Remove(attempt);
+        db.RemoveRange(relatedAttempts);
 
-        quizzes.Remove(quiz);
-        await quizzes.SaveChangesAsync();
+        db.Remove(quiz);
+        await db.SaveChangesAsync(ct);
 
         cache.Remove(QuizService.ActiveQuizzesCacheKey);
         return true;
@@ -126,8 +117,8 @@ public class AdminQuizService(
             }).ToList()
         };
 
-        await questions.AddAsync(question);
-        await questions.SaveChangesAsync();
+        db.Add(question);
+        await db.SaveChangesAsync(ct);
 
         cache.Remove(QuizService.ActiveQuizzesCacheKey);
 
@@ -136,7 +127,7 @@ public class AdminQuizService(
 
     public async Task<AdminQuestionViewModel?> UpdateQuestionAsync(int questionId, UpsertQuestionRequest request, CancellationToken ct = default)
     {
-        var question = await questions.Query()
+        var question = await db.Questions
             .Include(q => q.Answers)
             .FirstOrDefaultAsync(q => q.Id == questionId, ct);
 
@@ -146,15 +137,13 @@ public class AdminQuizService(
         question.DisplayOrder = request.DisplayOrder;
 
         // Remove attempt answers referencing this question before replacing answers
-        var relatedAttemptAnswers = await attemptAnswers.Query()
+        var relatedAttemptAnswers = await db.QuizAttemptAnswers
             .Where(aa => aa.QuestionId == questionId)
             .ToListAsync(ct);
-        foreach (var aa in relatedAttemptAnswers)
-            attemptAnswers.Remove(aa);
+        db.RemoveRange(relatedAttemptAnswers);
 
         // Remove old answers and replace with new set
-        foreach (var existing in question.Answers.ToList())
-            answers.Remove(existing);
+        db.RemoveRange(question.Answers);
 
         question.Answers = request.Answers.Select(a => new Answer
         {
@@ -163,8 +152,7 @@ public class AdminQuizService(
             IsCorrect = a.IsCorrect
         }).ToList();
 
-        questions.Update(question);
-        await questions.SaveChangesAsync();
+        await db.SaveChangesAsync(ct);
 
         cache.Remove(QuizService.ActiveQuizzesCacheKey);
 
@@ -173,17 +161,16 @@ public class AdminQuizService(
 
     public async Task<bool> DeleteQuestionAsync(int questionId, CancellationToken ct = default)
     {
-        var question = await questions.Query().FirstOrDefaultAsync(q => q.Id == questionId, ct);
+        var question = await db.Questions.FirstOrDefaultAsync(q => q.Id == questionId, ct);
         if (question is null) return false;
 
-        var relatedAttemptAnswers = await attemptAnswers.Query()
+        var relatedAttemptAnswers = await db.QuizAttemptAnswers
             .Where(aa => aa.QuestionId == questionId)
             .ToListAsync(ct);
-        foreach (var aa in relatedAttemptAnswers)
-            attemptAnswers.Remove(aa);
+        db.RemoveRange(relatedAttemptAnswers);
 
-        questions.Remove(question);
-        await questions.SaveChangesAsync();
+        db.Remove(question);
+        await db.SaveChangesAsync(ct);
 
         cache.Remove(QuizService.ActiveQuizzesCacheKey);
         return true;
