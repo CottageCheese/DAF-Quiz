@@ -10,7 +10,7 @@ public class AdminQuizServiceTests : DomainTestBase
 
     public AdminQuizServiceTests()
     {
-        _svc = new AdminQuizService(QuizRepo, QuestionRepo, AnswerRepo, AttemptRepo, AttemptAnswerRepo, Cache);
+        _svc = new AdminQuizService(Db, Cache);
     }
 
     [Fact]

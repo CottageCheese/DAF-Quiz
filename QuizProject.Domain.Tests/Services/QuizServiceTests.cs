@@ -11,7 +11,7 @@ public class QuizServiceTests : DomainTestBase
 
     public QuizServiceTests()
     {
-        _svc = new QuizService(QuizRepo, QuestionRepo, AttemptRepo, AttemptAnswerRepo, Cache);
+        _svc = new QuizService(Db, Cache);
     }
 
     [Fact]

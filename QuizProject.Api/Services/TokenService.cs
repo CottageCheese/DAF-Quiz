@@ -3,17 +3,18 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using QuizProject.Domain.Data;
 using QuizProject.Domain.Models.Domain;
-using QuizProject.Domain.Repositories;
 
 namespace QuizProject.Api.Services;
 
 public sealed class TokenService(
     IOptions<JwtSettings> jwtOptions,
     UserManager<ApplicationUser> userManager,
-    IRepository<RefreshToken> refreshTokenRepo) : ITokenService
+    ApplicationDbContext db) : ITokenService
 {
     private readonly JwtSettings _jwt = jwtOptions.Value;
 
@@ -56,8 +57,8 @@ public sealed class TokenService(
             ExpiresAt = DateTime.UtcNow.AddDays(_jwt.RefreshTokenExpiryDays)
         };
 
-        await refreshTokenRepo.AddAsync(entity);
-        await refreshTokenRepo.SaveChangesAsync();
+        db.Add(entity);
+        await db.SaveChangesAsync();
 
         return rawToken;
     }
@@ -65,7 +66,7 @@ public sealed class TokenService(
     public async Task<(string AccessToken, string RefreshToken)?> RotateRefreshTokenAsync(string rawRefreshToken)
     {
         var hash = HashToken(rawRefreshToken);
-        var existing = (await refreshTokenRepo.FindAsync(r => r.TokenHash == hash)).FirstOrDefault();
+        var existing = await db.RefreshTokens.FirstOrDefaultAsync(r => r.TokenHash == hash);
 
         if (existing is null) return null;
 
@@ -85,17 +86,15 @@ public sealed class TokenService(
 
         existing.UsedAt = DateTime.UtcNow;
         existing.ReplacedByTokenHash = newHash;
-        refreshTokenRepo.Update(existing);
 
-        var newEntity = new RefreshToken
+        db.Add(new RefreshToken
         {
             TokenHash = newHash,
             UserId = user.Id,
             CreatedAt = DateTime.UtcNow,
             ExpiresAt = DateTime.UtcNow.AddDays(_jwt.RefreshTokenExpiryDays)
-        };
-        await refreshTokenRepo.AddAsync(newEntity);
-        await refreshTokenRepo.SaveChangesAsync();
+        });
+        await db.SaveChangesAsync();
 
         return (await GenerateAccessTokenAsync(user), newRaw);
     }
@@ -103,29 +102,26 @@ public sealed class TokenService(
     public async Task<bool> RevokeRefreshTokenAsync(string rawRefreshToken)
     {
         var hash = HashToken(rawRefreshToken);
-        var existing = (await refreshTokenRepo.FindAsync(r => r.TokenHash == hash)).FirstOrDefault();
+        var existing = await db.RefreshTokens.FirstOrDefaultAsync(r => r.TokenHash == hash);
 
         if (existing is null || !existing.IsActive) return false;
 
         existing.RevokedAt = DateTime.UtcNow;
-        refreshTokenRepo.Update(existing);
-        await refreshTokenRepo.SaveChangesAsync();
+        await db.SaveChangesAsync();
         return true;
     }
 
     public async Task RevokeAllRefreshTokensForUserAsync(string userId)
     {
-        var active = (await refreshTokenRepo.FindAsync(
-            r => r.UserId == userId && r.RevokedAt == null && r.UsedAt == null)).ToList();
+        var active = await db.RefreshTokens
+            .Where(r => r.UserId == userId && r.RevokedAt == null && r.UsedAt == null)
+            .ToListAsync();
 
         foreach (var token in active)
-        {
             token.RevokedAt = DateTime.UtcNow;
-            refreshTokenRepo.Update(token);
-        }
 
         if (active.Count > 0)
-            await refreshTokenRepo.SaveChangesAsync();
+            await db.SaveChangesAsync();
     }
 
     private static string GenerateRawToken()
