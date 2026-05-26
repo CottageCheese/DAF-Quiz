@@ -219,7 +219,9 @@
               "script": {
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                  "const j = pm.response.json();",
+                  "pm.test('Has items array', () => pm.expect(j.items).to.be.an('array'));",
+                  "pm.test('Has totalCount', () => pm.expect(j.totalCount).to.be.a('number'));"
                 ]
               }
             }
