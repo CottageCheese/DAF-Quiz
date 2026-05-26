@@ -33,7 +33,7 @@ module.exports = function (config) {
       ]
     },
     reporters: ['progress', 'kjhtml'],
-    browsers: ['Chrome'],
+    browsers: [process.env.CI ? 'ChromeHeadless' : 'Chrome'],
     restartOnFileChange: true
   });
 };
