@@ -100,6 +100,7 @@ public class AuthController(
     /// <summary>Exchange a refresh token for a new access token + rotated refresh token.</summary>
     [HttpPost("refresh")]
     [AllowAnonymous]
+    [EnableRateLimiting("auth")]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Refresh([FromBody] RefreshRequest request)
