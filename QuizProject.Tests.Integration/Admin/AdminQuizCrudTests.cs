@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using QuizProject.Contracts;
 using QuizProject.Domain.Services;
@@ -12,10 +12,10 @@ namespace QuizProject.Tests.Integration.Admin;
 [Collection("AdminTests")]
 public class AdminQuizCrudTests(CustomWebApplicationFactory factory) : IntegrationTestBase(factory)
 {
-    private void EvictQuizCache()
+    private async Task EvictQuizCacheAsync()
     {
-        var cache = Factory.Services.GetRequiredService<IMemoryCache>();
-        cache.Remove(QuizService.ActiveQuizzesCacheKey);
+        var cache = Factory.Services.GetRequiredService<IDistributedCache>();
+        await cache.RemoveAsync(QuizService.ActiveQuizzesCacheKey);
     }
 
     [Fact]
@@ -124,7 +124,7 @@ public class AdminQuizCrudTests(CustomWebApplicationFactory factory) : Integrati
         });
         var created = await createResponse.Content.ReadFromJsonAsync<AdminQuizDetailViewModel>();
 
-        EvictQuizCache();
+        await EvictQuizCacheAsync();
 
         var updateResponse = await client.PutAsJsonAsync($"/api/admin/quizzes/{created!.Id}", new
         {
@@ -148,7 +148,7 @@ public class AdminQuizCrudTests(CustomWebApplicationFactory factory) : Integrati
             publishedAt = (string?)null
         });
 
-        EvictQuizCache();
+        await EvictQuizCacheAsync();
 
         updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var updated = await updateResponse.Content.ReadFromJsonAsync<AdminQuizDetailViewModel>();
@@ -160,7 +160,7 @@ public class AdminQuizCrudTests(CustomWebApplicationFactory factory) : Integrati
             title = Seed.PublishedQuizTitle,
             publishedAt = DateTime.UtcNow.AddHours(-1).ToString("o")
         });
-        EvictQuizCache();
+        await EvictQuizCacheAsync();
     }
 
     [Fact]

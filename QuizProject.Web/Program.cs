@@ -146,7 +146,13 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers.CacheControl = "public, max-age=31536000";
+    }
+});
 app.UseRateLimiter();
 app.UseRouting();
 app.UseSession(); // Must be before UseAuthentication
