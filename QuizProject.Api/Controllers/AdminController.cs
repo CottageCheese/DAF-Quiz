@@ -14,12 +14,17 @@ public class AdminController(IAdminQuizService adminService) : ControllerBase
 {
     // Quizzes
 
-    /// <summary>Returns all quizzes (published and drafts).</summary>
+    /// <summary>Returns all quizzes (published and drafts), paginated.</summary>
     [HttpGet("quizzes")]
-    [ProducesResponseType(typeof(List<AdminQuizListViewModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetQuizzes(CancellationToken ct)
+    [ProducesResponseType(typeof(PagedResult<AdminQuizListViewModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetQuizzes(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
     {
-        var quizzes = await adminService.GetAllQuizzesAsync(ct);
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+        var quizzes = await adminService.GetAllQuizzesAsync(page, pageSize, ct);
         return Ok(quizzes);
     }
 
@@ -85,9 +90,6 @@ public class AdminController(IAdminQuizService adminService) : ControllerBase
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        if (!request.Answers.Any(a => a.IsCorrect))
-            return BadRequest(new { message = "At least one answer must be marked as correct." });
-
         var question = await adminService.AddQuestionAsync(quizId, request, ct);
         return StatusCode(StatusCodes.Status201Created, question);
     }
@@ -100,9 +102,6 @@ public class AdminController(IAdminQuizService adminService) : ControllerBase
     public async Task<IActionResult> UpdateQuestion(int quizId, int questionId, [FromBody] UpsertQuestionRequest request, CancellationToken ct)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-
-        if (!request.Answers.Any(a => a.IsCorrect))
-            return BadRequest(new { message = "At least one answer must be marked as correct." });
 
         var question = await adminService.UpdateQuestionAsync(questionId, request, ct);
         if (question is null) return NotFound();

@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using QuizProject.Domain.Data;
@@ -14,7 +15,8 @@ namespace QuizProject.Api.Services;
 public sealed class TokenService(
     IOptions<JwtSettings> jwtOptions,
     UserManager<ApplicationUser> userManager,
-    ApplicationDbContext db) : ITokenService
+    ApplicationDbContext db,
+    ILogger<TokenService> logger) : ITokenService
 {
     private readonly JwtSettings _jwt = jwtOptions.Value;
 
@@ -72,6 +74,7 @@ public sealed class TokenService(
 
         if (existing.IsUsed)
         {
+            logger.LogWarning("Refresh token reuse detected for user {UserId} — revoking all tokens", existing.UserId);
             await RevokeAllRefreshTokensForUserAsync(existing.UserId);
             return null;
         }
@@ -108,6 +111,7 @@ public sealed class TokenService(
 
         existing.RevokedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
+        logger.LogInformation("Refresh token revoked for user {UserId}", existing.UserId);
         return true;
     }
 

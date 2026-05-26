@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using QuizProject.Domain.Data;
 using QuizProject.Domain.Models.Domain;
 using QuizProject.Domain.Services;
+using QuizProject.Api.Infrastructure;
 using QuizProject.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -98,7 +99,7 @@ builder.Services.AddHealthChecks()
 builder.Services.AddProblemDetails();
 
 // Controllers
-builder.Services.AddControllers();
+builder.Services.AddControllers(o => o.Filters.Add<DomainValidationExceptionFilter>());
 
 var app = builder.Build();
 

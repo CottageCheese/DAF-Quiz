@@ -1,17 +1,21 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using QuizProject.Contracts;
 using QuizProject.Domain.Data;
+using QuizProject.Domain.Exceptions;
 using QuizProject.Domain.Models.Domain;
 
 namespace QuizProject.Domain.Services;
 
-public class AdminQuizService(ApplicationDbContext db, IMemoryCache cache) : IAdminQuizService
+public class AdminQuizService(ApplicationDbContext db, IMemoryCache cache, ILogger<AdminQuizService> logger) : IAdminQuizService
 {
-    public async Task<List<AdminQuizListViewModel>> GetAllQuizzesAsync(CancellationToken ct = default)
+    public async Task<PagedResult<AdminQuizListViewModel>> GetAllQuizzesAsync(int page = 1, int pageSize = 20, CancellationToken ct = default)
     {
-        return await db.Quizzes
-            .AsNoTracking()
+        var query = db.Quizzes.AsNoTracking();
+        var total = await query.CountAsync(ct);
+
+        var items = await query
             .Select(q => new AdminQuizListViewModel
             {
                 Id = q.Id,
@@ -24,7 +28,17 @@ public class AdminQuizService(ApplicationDbContext db, IMemoryCache cache) : IAd
                 QuestionCount = q.Questions.Count()
             })
             .OrderByDescending(q => q.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync(ct);
+
+        return new PagedResult<AdminQuizListViewModel>
+        {
+            Items = items,
+            TotalCount = total,
+            Page = page,
+            PageSize = pageSize
+        };
     }
 
     public async Task<AdminQuizDetailViewModel?> GetQuizDetailAsync(int quizId, CancellationToken ct = default)
@@ -55,6 +69,7 @@ public class AdminQuizService(ApplicationDbContext db, IMemoryCache cache) : IAd
         db.Add(quiz);
         await db.SaveChangesAsync(ct);
 
+        logger.LogInformation("Quiz {QuizId} created by {UserEmail}", quiz.Id, userEmail);
         return MapToDetail(quiz);
     }
 
@@ -74,7 +89,7 @@ public class AdminQuizService(ApplicationDbContext db, IMemoryCache cache) : IAd
         await db.SaveChangesAsync(ct);
 
         cache.Remove(QuizService.ActiveQuizzesCacheKey);
-
+        logger.LogInformation("Quiz {QuizId} updated", quizId);
         return MapToDetail(quiz);
     }
 
@@ -100,11 +115,15 @@ public class AdminQuizService(ApplicationDbContext db, IMemoryCache cache) : IAd
         await db.SaveChangesAsync(ct);
 
         cache.Remove(QuizService.ActiveQuizzesCacheKey);
+        logger.LogInformation("Quiz {QuizId} deleted", quizId);
         return true;
     }
 
     public async Task<AdminQuestionViewModel> AddQuestionAsync(int quizId, UpsertQuestionRequest request, CancellationToken ct = default)
     {
+        if (!request.Answers.Any(a => a.IsCorrect))
+            throw new DomainValidationException("At least one answer must be marked as correct.");
+
         var question = new Question
         {
             QuizId = quizId,
@@ -121,12 +140,15 @@ public class AdminQuizService(ApplicationDbContext db, IMemoryCache cache) : IAd
         await db.SaveChangesAsync(ct);
 
         cache.Remove(QuizService.ActiveQuizzesCacheKey);
-
+        logger.LogInformation("Question {QuestionId} added to quiz {QuizId}", question.Id, quizId);
         return MapToQuestion(question);
     }
 
     public async Task<AdminQuestionViewModel?> UpdateQuestionAsync(int questionId, UpsertQuestionRequest request, CancellationToken ct = default)
     {
+        if (!request.Answers.Any(a => a.IsCorrect))
+            throw new DomainValidationException("At least one answer must be marked as correct.");
+
         var question = await db.Questions
             .Include(q => q.Answers)
             .FirstOrDefaultAsync(q => q.Id == questionId, ct);
@@ -155,7 +177,7 @@ public class AdminQuizService(ApplicationDbContext db, IMemoryCache cache) : IAd
         await db.SaveChangesAsync(ct);
 
         cache.Remove(QuizService.ActiveQuizzesCacheKey);
-
+        logger.LogInformation("Question {QuestionId} updated", questionId);
         return MapToQuestion(question);
     }
 
@@ -173,6 +195,7 @@ public class AdminQuizService(ApplicationDbContext db, IMemoryCache cache) : IAd
         await db.SaveChangesAsync(ct);
 
         cache.Remove(QuizService.ActiveQuizzesCacheKey);
+        logger.LogInformation("Question {QuestionId} deleted", questionId);
         return true;
     }
 

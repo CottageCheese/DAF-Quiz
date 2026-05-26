@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using QuizProject.Domain.Models.Domain;
 using QuizProject.Domain.Services;
 using QuizProject.Domain.Tests.Infrastructure;
@@ -10,7 +11,7 @@ public class LeaderboardServiceTests : DomainTestBase
 
     public LeaderboardServiceTests()
     {
-        _svc = new LeaderboardService(Db);
+        _svc = new LeaderboardService(Db, Cache, NullLogger<LeaderboardService>.Instance);
     }
 
     [Fact]

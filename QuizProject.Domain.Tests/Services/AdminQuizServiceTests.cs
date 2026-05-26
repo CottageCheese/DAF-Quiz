@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using QuizProject.Contracts;
 using QuizProject.Domain.Services;
 using QuizProject.Domain.Tests.Infrastructure;
@@ -10,7 +11,7 @@ public class AdminQuizServiceTests : DomainTestBase
 
     public AdminQuizServiceTests()
     {
-        _svc = new AdminQuizService(Db, Cache);
+        _svc = new AdminQuizService(Db, Cache, NullLogger<AdminQuizService>.Instance);
     }
 
     [Fact]
@@ -20,9 +21,9 @@ public class AdminQuizServiceTests : DomainTestBase
 
         var result = await _svc.GetAllQuizzesAsync();
 
-        result.Should().HaveCount(2);
-        result.Should().Contain(q => q.Title == seed.PublishedQuiz.Title);
-        result.Should().Contain(q => q.Title == seed.DraftQuiz.Title);
+        result.Items.Should().HaveCount(2);
+        result.Items.Should().Contain(q => q.Title == seed.PublishedQuiz.Title);
+        result.Items.Should().Contain(q => q.Title == seed.DraftQuiz.Title);
     }
 
     [Fact]
@@ -32,7 +33,7 @@ public class AdminQuizServiceTests : DomainTestBase
 
         var result = await _svc.GetAllQuizzesAsync();
 
-        result.Should().BeInDescendingOrder(q => q.CreatedAt);
+        result.Items.Should().BeInDescendingOrder(q => q.CreatedAt);
     }
 
     [Fact]
@@ -44,7 +45,7 @@ public class AdminQuizServiceTests : DomainTestBase
 
         result.Title.Should().Be("New Quiz");
         result.Description.Should().Be("Desc");
-        (await _svc.GetAllQuizzesAsync()).Should().ContainSingle(q => q.Title == "New Quiz");
+        (await _svc.GetAllQuizzesAsync()).Items.Should().ContainSingle(q => q.Title == "New Quiz");
     }
 
     [Fact]
@@ -82,7 +83,7 @@ public class AdminQuizServiceTests : DomainTestBase
         var deleted = await _svc.DeleteQuizAsync(seed.DraftQuiz.Id);
 
         deleted.Should().BeTrue();
-        (await _svc.GetAllQuizzesAsync()).Should().NotContain(q => q.Title == seed.DraftQuiz.Title);
+        (await _svc.GetAllQuizzesAsync()).Items.Should().NotContain(q => q.Title == seed.DraftQuiz.Title);
     }
 
     [Fact]

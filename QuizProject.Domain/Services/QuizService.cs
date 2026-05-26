@@ -1,12 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using QuizProject.Contracts;
 using QuizProject.Domain.Data;
 using QuizProject.Domain.Models.Domain;
 
 namespace QuizProject.Domain.Services;
 
-public class QuizService(ApplicationDbContext db, IMemoryCache cache) : IQuizService
+public class QuizService(ApplicationDbContext db, IMemoryCache cache, ILogger<QuizService> logger) : IQuizService
 {
     public const string ActiveQuizzesCacheKey = "quizzes:active";
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
@@ -16,6 +17,7 @@ public class QuizService(ApplicationDbContext db, IMemoryCache cache) : IQuizSer
         if (cache.TryGetValue(ActiveQuizzesCacheKey, out List<QuizListViewModel>? cached))
             return cached!;
 
+        logger.LogInformation("Cache miss for active quizzes — querying database");
         var now = DateTime.UtcNow;
         var result = await db.Quizzes
             .AsNoTracking()
@@ -126,6 +128,7 @@ public class QuizService(ApplicationDbContext db, IMemoryCache cache) : IQuizSer
 
         attempt.Score = score;
         attempt.CompletedAt = DateTime.UtcNow;
+        logger.LogDebug("Attempt {AttemptId} submitted: score {Score}/{Total}", attempt.Id, score, attempt.TotalQuestions);
         db.AddRange(attemptAnswerList);
         await db.SaveChangesAsync(ct);
 
