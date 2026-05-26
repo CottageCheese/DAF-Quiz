@@ -1,21 +1,26 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using QuizProject.Contracts;
 using QuizProject.Domain.Data;
+using QuizProject.Domain.Extensions;
 using QuizProject.Domain.Models.Domain;
 
 namespace QuizProject.Domain.Services;
 
-public class QuizService(ApplicationDbContext db, IMemoryCache cache, ILogger<QuizService> logger) : IQuizService
+public class QuizService(ApplicationDbContext db, IDistributedCache cache, ILogger<QuizService> logger) : IQuizService
 {
     public const string ActiveQuizzesCacheKey = "quizzes:active";
-    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
+
+    private static readonly DistributedCacheEntryOptions CacheOptions = new()
+    {
+        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+    };
 
     public async Task<List<QuizListViewModel>> GetActiveQuizzesAsync(CancellationToken ct = default)
     {
-        if (cache.TryGetValue(ActiveQuizzesCacheKey, out List<QuizListViewModel>? cached))
-            return cached!;
+        var cached = await cache.GetAsync<List<QuizListViewModel>>(ActiveQuizzesCacheKey, ct);
+        if (cached is not null) return cached;
 
         logger.LogInformation("Cache miss for active quizzes — querying database");
         var now = DateTime.UtcNow;
@@ -34,7 +39,7 @@ public class QuizService(ApplicationDbContext db, IMemoryCache cache, ILogger<Qu
             .OrderBy(q => q.Title)
             .ToListAsync(ct);
 
-        cache.Set(ActiveQuizzesCacheKey, result, CacheDuration);
+        await cache.SetAsync(ActiveQuizzesCacheKey, result, CacheOptions, ct);
         return result;
     }
 
@@ -182,7 +187,7 @@ public class QuizService(ApplicationDbContext db, IMemoryCache cache, ILogger<Qu
             {
                 QuestionText = aa.Question.Text,
                 SelectedAnswerText = aa.SelectedAnswer.Text,
-                CorrectAnswerText = aa.Question.Answers.FirstOrDefault(a => a.IsCorrect)?.Text ?? string.Empty,
+                CorrectAnswerText = aa.Question.CorrectAnswer?.Text ?? string.Empty,
                 IsCorrect = aa.IsCorrect
             })
             .ToList();

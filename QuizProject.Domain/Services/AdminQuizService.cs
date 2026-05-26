@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using QuizProject.Contracts;
 using QuizProject.Domain.Data;
@@ -8,7 +8,7 @@ using QuizProject.Domain.Models.Domain;
 
 namespace QuizProject.Domain.Services;
 
-public class AdminQuizService(ApplicationDbContext db, IMemoryCache cache, ILogger<AdminQuizService> logger) : IAdminQuizService
+public class AdminQuizService(ApplicationDbContext db, IDistributedCache cache, ILogger<AdminQuizService> logger) : IAdminQuizService
 {
     public async Task<PagedResult<AdminQuizListViewModel>> GetAllQuizzesAsync(int page = 1, int pageSize = 20, CancellationToken ct = default)
     {
@@ -88,7 +88,7 @@ public class AdminQuizService(ApplicationDbContext db, IMemoryCache cache, ILogg
 
         await db.SaveChangesAsync(ct);
 
-        cache.Remove(QuizService.ActiveQuizzesCacheKey);
+        await cache.RemoveAsync(QuizService.ActiveQuizzesCacheKey);
         logger.LogInformation("Quiz {QuizId} updated", quizId);
         return MapToDetail(quiz);
     }
@@ -101,20 +101,18 @@ public class AdminQuizService(ApplicationDbContext db, IMemoryCache cache, ILogg
         if (quiz is null) return false;
 
         var questionIds = quiz.Questions.Select(q => q.Id).ToList();
-        var relatedAttemptAnswers = await db.QuizAttemptAnswers
+        await db.QuizAttemptAnswers
             .Where(aa => questionIds.Contains(aa.QuestionId))
-            .ToListAsync(ct);
-        db.RemoveRange(relatedAttemptAnswers);
+            .ExecuteDeleteAsync(ct);
 
-        var relatedAttempts = await db.QuizAttempts
+        await db.QuizAttempts
             .Where(a => a.QuizId == quizId)
-            .ToListAsync(ct);
-        db.RemoveRange(relatedAttempts);
+            .ExecuteDeleteAsync(ct);
 
         db.Remove(quiz);
         await db.SaveChangesAsync(ct);
 
-        cache.Remove(QuizService.ActiveQuizzesCacheKey);
+        await cache.RemoveAsync(QuizService.ActiveQuizzesCacheKey);
         logger.LogInformation("Quiz {QuizId} deleted", quizId);
         return true;
     }
@@ -139,7 +137,7 @@ public class AdminQuizService(ApplicationDbContext db, IMemoryCache cache, ILogg
         db.Add(question);
         await db.SaveChangesAsync(ct);
 
-        cache.Remove(QuizService.ActiveQuizzesCacheKey);
+        await cache.RemoveAsync(QuizService.ActiveQuizzesCacheKey);
         logger.LogInformation("Question {QuestionId} added to quiz {QuizId}", question.Id, quizId);
         return MapToQuestion(question);
     }
@@ -159,10 +157,9 @@ public class AdminQuizService(ApplicationDbContext db, IMemoryCache cache, ILogg
         question.DisplayOrder = request.DisplayOrder;
 
         // Remove attempt answers referencing this question before replacing answers
-        var relatedAttemptAnswers = await db.QuizAttemptAnswers
+        await db.QuizAttemptAnswers
             .Where(aa => aa.QuestionId == questionId)
-            .ToListAsync(ct);
-        db.RemoveRange(relatedAttemptAnswers);
+            .ExecuteDeleteAsync(ct);
 
         // Remove old answers and replace with new set
         db.RemoveRange(question.Answers);
@@ -176,7 +173,7 @@ public class AdminQuizService(ApplicationDbContext db, IMemoryCache cache, ILogg
 
         await db.SaveChangesAsync(ct);
 
-        cache.Remove(QuizService.ActiveQuizzesCacheKey);
+        await cache.RemoveAsync(QuizService.ActiveQuizzesCacheKey);
         logger.LogInformation("Question {QuestionId} updated", questionId);
         return MapToQuestion(question);
     }
@@ -186,15 +183,14 @@ public class AdminQuizService(ApplicationDbContext db, IMemoryCache cache, ILogg
         var question = await db.Questions.FirstOrDefaultAsync(q => q.Id == questionId, ct);
         if (question is null) return false;
 
-        var relatedAttemptAnswers = await db.QuizAttemptAnswers
+        await db.QuizAttemptAnswers
             .Where(aa => aa.QuestionId == questionId)
-            .ToListAsync(ct);
-        db.RemoveRange(relatedAttemptAnswers);
+            .ExecuteDeleteAsync(ct);
 
         db.Remove(question);
         await db.SaveChangesAsync(ct);
 
-        cache.Remove(QuizService.ActiveQuizzesCacheKey);
+        await cache.RemoveAsync(QuizService.ActiveQuizzesCacheKey);
         logger.LogInformation("Question {QuestionId} deleted", questionId);
         return true;
     }
@@ -207,7 +203,7 @@ public class AdminQuizService(ApplicationDbContext db, IMemoryCache cache, ILogg
         CreatedAt = quiz.CreatedAt,
         CreatedByEmail = quiz.CreatedByEmail,
         PublishedAt = quiz.PublishedAt,
-        IsPublished = quiz.PublishedAt != null && quiz.PublishedAt <= DateTime.UtcNow,
+        IsPublished = quiz.IsPublished,
         Questions = quiz.Questions
             .OrderBy(q => q.DisplayOrder)
             .Select(MapToQuestion)

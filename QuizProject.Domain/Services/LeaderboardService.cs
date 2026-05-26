@@ -1,20 +1,24 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using QuizProject.Contracts;
 using QuizProject.Domain.Data;
+using QuizProject.Domain.Extensions;
 
 namespace QuizProject.Domain.Services;
 
-public class LeaderboardService(ApplicationDbContext db, IMemoryCache cache, ILogger<LeaderboardService> logger) : ILeaderboardService
+public class LeaderboardService(ApplicationDbContext db, IDistributedCache cache, ILogger<LeaderboardService> logger) : ILeaderboardService
 {
-    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(12);
+    private static readonly DistributedCacheEntryOptions CacheOptions = new()
+    {
+        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(12)
+    };
 
     public async Task<List<TopQuizViewModel>> GetTopQuizzesAsync(int count = 10, CancellationToken ct = default)
     {
         var cacheKey = $"leaderboard:top-quizzes:{count}";
-        if (cache.TryGetValue(cacheKey, out List<TopQuizViewModel>? cached))
-            return cached!;
+        var cached = await cache.GetAsync<List<TopQuizViewModel>>(cacheKey, ct);
+        if (cached is not null) return cached;
 
         logger.LogDebug("Cache miss for top-quizzes (count={Count}) — querying database", count);
 
@@ -41,15 +45,15 @@ public class LeaderboardService(ApplicationDbContext db, IMemoryCache cache, ILo
             })
             .ToList();
 
-        cache.Set(cacheKey, topQuizzes, CacheDuration);
+        await cache.SetAsync(cacheKey, topQuizzes, CacheOptions, ct);
         return topQuizzes;
     }
 
     public async Task<List<TopUserViewModel>> GetTopUsersAsync(int count = 10, CancellationToken ct = default)
     {
         var cacheKey = $"leaderboard:top-users:{count}";
-        if (cache.TryGetValue(cacheKey, out List<TopUserViewModel>? cached))
-            return cached!;
+        var cached = await cache.GetAsync<List<TopUserViewModel>>(cacheKey, ct);
+        if (cached is not null) return cached;
 
         logger.LogDebug("Cache miss for top-users (count={Count}) — querying database", count);
 
@@ -70,7 +74,7 @@ public class LeaderboardService(ApplicationDbContext db, IMemoryCache cache, ILo
 
         if (topUsers.Count == 0)
         {
-            cache.Set(cacheKey, new List<TopUserViewModel>(), CacheDuration);
+            await cache.SetAsync(cacheKey, new List<TopUserViewModel>(), CacheOptions, ct);
             return [];
         }
 
@@ -100,7 +104,7 @@ public class LeaderboardService(ApplicationDbContext db, IMemoryCache cache, ILo
             })
             .ToList();
 
-        cache.Set(cacheKey, topUserResult, CacheDuration);
+        await cache.SetAsync(cacheKey, topUserResult, CacheOptions, ct);
         return topUserResult;
     }
 }

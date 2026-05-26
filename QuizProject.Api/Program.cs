@@ -89,7 +89,19 @@ builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IAdminQuizService, AdminQuizService>();
 
 // Caching
-builder.Services.AddMemoryCache();
+var redisConnection = builder.Configuration.GetConnectionString("Redis");
+if (!string.IsNullOrEmpty(redisConnection))
+{
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnection;
+        options.InstanceName = "QuizProject:";
+    });
+}
+else
+{
+    builder.Services.AddDistributedMemoryCache();
+}
 
 // Health checks
 builder.Services.AddHealthChecks()

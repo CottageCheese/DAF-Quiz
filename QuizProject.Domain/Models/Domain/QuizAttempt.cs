@@ -16,5 +16,11 @@ public class QuizAttempt
     public int Score { get; set; }
     public int TotalQuestions { get; set; }
 
+    /// <summary>In-memory only — do not use in EF LINQ queries.</summary>
+    public bool IsCompleted => CompletedAt != null;
+
+    /// <summary>In-memory only — do not use in EF LINQ queries.</summary>
+    public double ScorePercentage => TotalQuestions > 0 ? (double)Score / TotalQuestions * 100 : 0;
+
     public ICollection<QuizAttemptAnswer> AttemptAnswers { get; set; } = new List<QuizAttemptAnswer>();
 }

@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  test:
+  test-dotnet:
     runs-on: ubuntu-latest
 
     steps:
@@ -31,5 +31,33 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: unit-test-results
+          name: dotnet-test-results
           path: "**/*.trx"
+
+  test-angular:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: quiz-angular/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: quiz-angular
+
+      - name: Build
+        run: npm run build
+        working-directory: quiz-angular
+
+      - name: Test
+        run: xvfb-run --auto-servernum npm test -- --watch=false
+        working-directory: quiz-angular
+        env:
+          CI: "true"
+          CHROME_BIN: /usr/bin/google-chrome-stable

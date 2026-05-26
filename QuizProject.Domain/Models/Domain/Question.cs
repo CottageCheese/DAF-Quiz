@@ -14,5 +14,8 @@ public class Question
 
     public int DisplayOrder { get; set; }
 
+    /// <summary>Requires Answers navigation loaded. In-memory only.</summary>
+    public Answer? CorrectAnswer => Answers?.FirstOrDefault(a => a.IsCorrect);
+
     public ICollection<Answer> Answers { get; set; } = new List<Answer>();
 }

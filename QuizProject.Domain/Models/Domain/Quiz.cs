@@ -27,6 +27,9 @@ public class Quiz
     /// </summary>
     public DateTime? PublishedAt { get; set; }
 
+    /// <summary>In-memory only — do not use in EF LINQ queries.</summary>
+    public bool IsPublished => PublishedAt != null && PublishedAt <= DateTime.UtcNow;
+
     public ICollection<Question> Questions { get; set; } = new List<Question>();
     public ICollection<QuizAttempt> Attempts { get; set; } = new List<QuizAttempt>();
 }
