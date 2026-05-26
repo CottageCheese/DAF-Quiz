@@ -56,7 +56,7 @@ jobs:
         working-directory: quiz-angular
 
       - name: Test
-        run: npm test -- --watch=false
+        run: xvfb-run --auto-servernum npm test -- --watch=false
         working-directory: quiz-angular
         env:
           CI: "true"
