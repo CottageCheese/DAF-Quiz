@@ -77,8 +77,8 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
         policy.WithOrigins(allowedOrigins)
-            .AllowAnyMethod()
-            .AllowAnyHeader());
+            .WithMethods("GET", "POST", "PUT", "DELETE")
+            .WithHeaders("Content-Type", "Authorization"));
 });
 
 // Application services
@@ -101,6 +101,18 @@ builder.Services.AddProblemDetails();
 builder.Services.AddControllers();
 
 var app = builder.Build();
+
+// Fail fast if JWT secret is still a placeholder
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    var jwtKey = app.Configuration["JwtSettings:SecretKey"] ?? "";
+    if (jwtKey.Contains("REPLACE", StringComparison.OrdinalIgnoreCase) || jwtKey.Length < 32)
+    {
+        throw new InvalidOperationException(
+            "JwtSettings:SecretKey must be a real secret (>=32 chars). "
+            + "Set it via User Secrets or environment variable JwtSettings__SecretKey.");
+    }
+}
 
 // Database migration + seed
 // Integration tests use a separate SQLite seed path in CustomWebApplicationFactory.

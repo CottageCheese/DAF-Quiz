@@ -54,6 +54,7 @@ jobs:
         env:
           ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=QuizDbCi;User ID=sa;Password=DevCi_Strong@Passw0rd;TrustServerCertificate=True;"
           AdminSettings__Password: ${{ secrets.POSTMAN_ADMIN_PASSWORD }}
+          JwtSettings__SecretKey: ${{ secrets.POSTMAN_JWT_SECRET }}
         run: |
           nohup dotnet run --project QuizProject.Api/QuizProject.Api.csproj --configuration Release --urls http://localhost:5169 > api.log 2>&1 &
           echo $! > api.pid

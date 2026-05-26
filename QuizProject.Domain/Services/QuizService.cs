@@ -25,7 +25,7 @@ public class QuizService(ApplicationDbContext db, IMemoryCache cache) : IQuizSer
                 Id = q.Id,
                 Title = q.Title,
                 Description = q.Description,
-                QuestionCount = q.Questions.Count,
+                QuestionCount = q.Questions.Count(),
                 AttemptCount = q.Attempts.Count(a => a.CompletedAt != null),
                 CreatedAt = q.CreatedAt
             })

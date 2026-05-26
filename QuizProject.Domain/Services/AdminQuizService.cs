@@ -21,7 +21,7 @@ public class AdminQuizService(ApplicationDbContext db, IMemoryCache cache) : IAd
                 CreatedByEmail = q.CreatedByEmail,
                 PublishedAt = q.PublishedAt,
                 IsPublished = q.PublishedAt != null && q.PublishedAt <= DateTime.UtcNow,
-                QuestionCount = q.Questions.Count
+                QuestionCount = q.Questions.Count()
             })
             .OrderByDescending(q => q.CreatedAt)
             .ToListAsync(ct);
