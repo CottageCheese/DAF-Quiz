@@ -60,3 +60,4 @@ jobs:
         working-directory: quiz-angular
         env:
           CI: "true"
+          CHROME_BIN: /usr/bin/google-chrome-stable
