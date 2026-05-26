@@ -19,6 +19,7 @@ public class TokenServiceTests : ApiTestBase
         var token = await TokenService.GenerateAccessTokenAsync(user);
 
         var handler = new JwtSecurityTokenHandler();
+        handler.InboundClaimTypeMap.Clear();
         var validationParams = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -88,9 +89,9 @@ public class TokenServiceTests : ApiTestBase
         var result = await TokenService.RotateRefreshTokenAsync(raw);
 
         result.Should().NotBeNull();
-        result!.AccessToken.Should().NotBeNullOrEmpty();
-        result.RefreshToken.Should().NotBeNullOrEmpty();
-        result.RefreshToken.Should().NotBe(raw);
+        result!.Value.AccessToken.Should().NotBeNullOrEmpty();
+        result.Value.RefreshToken.Should().NotBeNullOrEmpty();
+        result.Value.RefreshToken.Should().NotBe(raw);
     }
 
     [Fact]
