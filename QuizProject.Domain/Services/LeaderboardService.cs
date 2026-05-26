@@ -1,13 +1,23 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using QuizProject.Contracts;
 using QuizProject.Domain.Data;
 
 namespace QuizProject.Domain.Services;
 
-public class LeaderboardService(ApplicationDbContext db) : ILeaderboardService
+public class LeaderboardService(ApplicationDbContext db, IMemoryCache cache, ILogger<LeaderboardService> logger) : ILeaderboardService
 {
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(12);
+
     public async Task<List<TopQuizViewModel>> GetTopQuizzesAsync(int count = 10, CancellationToken ct = default)
     {
+        var cacheKey = $"leaderboard:top-quizzes:{count}";
+        if (cache.TryGetValue(cacheKey, out List<TopQuizViewModel>? cached))
+            return cached!;
+
+        logger.LogDebug("Cache miss for top-quizzes (count={Count}) — querying database", count);
+
         var results = await db.QuizAttempts
             .AsNoTracking()
             .Where(a => a.CompletedAt != null)
@@ -22,7 +32,7 @@ public class LeaderboardService(ApplicationDbContext db) : ILeaderboardService
             .Take(count)
             .ToListAsync(ct);
 
-        return results
+        var topQuizzes = results
             .Select((r, i) => new TopQuizViewModel
             {
                 Rank = i + 1,
@@ -30,10 +40,19 @@ public class LeaderboardService(ApplicationDbContext db) : ILeaderboardService
                 AttemptCount = r.AttemptCount
             })
             .ToList();
+
+        cache.Set(cacheKey, topQuizzes, CacheDuration);
+        return topQuizzes;
     }
 
     public async Task<List<TopUserViewModel>> GetTopUsersAsync(int count = 10, CancellationToken ct = default)
     {
+        var cacheKey = $"leaderboard:top-users:{count}";
+        if (cache.TryGetValue(cacheKey, out List<TopUserViewModel>? cached))
+            return cached!;
+
+        logger.LogDebug("Cache miss for top-users (count={Count}) — querying database", count);
+
         // Step 1: DB-level grouping to find top N users by best score percentage.
         var topUsers = await db.QuizAttempts
             .AsNoTracking()
@@ -49,7 +68,11 @@ public class LeaderboardService(ApplicationDbContext db) : ILeaderboardService
             .Take(count)
             .ToListAsync(ct);
 
-        if (topUsers.Count == 0) return [];
+        if (topUsers.Count == 0)
+        {
+            cache.Set(cacheKey, new List<TopUserViewModel>(), CacheDuration);
+            return [];
+        }
 
         // Step 2: Fetch attempts for those users only to resolve the best quiz title.
         var topUserIds = topUsers.Select(u => u.UserId).ToList();
@@ -60,7 +83,7 @@ public class LeaderboardService(ApplicationDbContext db) : ILeaderboardService
             .ToListAsync(ct);
 
         // Step 3: In-memory join (at most `count` users, bounded by the clamp in the controller).
-        return topUsers
+        var topUserResult = topUsers
             .Select((u, i) =>
             {
                 var best = bestAttempts
@@ -76,5 +99,8 @@ public class LeaderboardService(ApplicationDbContext db) : ILeaderboardService
                 };
             })
             .ToList();
+
+        cache.Set(cacheKey, topUserResult, CacheDuration);
+        return topUserResult;
     }
 }

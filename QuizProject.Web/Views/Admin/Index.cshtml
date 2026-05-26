@@ -1,4 +1,4 @@
-@model List<AdminQuizListViewModel>
+@model PagedResult<AdminQuizListViewModel>
 @{
     ViewData["Title"] = "Admin — Quiz Management";
 }
@@ -8,7 +8,7 @@
     <a asp-action="Create" class="btn btn-primary">+ New Quiz</a>
 </div>
 
-@if (!Model.Any())
+@if (!Model.Items.Any())
 {
     <div class="alert alert-info">No quizzes yet. Create one to get started.</div>
 }
@@ -28,7 +28,7 @@ else
             </tr>
             </thead>
             <tbody>
-            @foreach (var quiz in Model)
+            @foreach (var quiz in Model.Items)
             {
                 <tr>
                     <td>
@@ -85,4 +85,39 @@ else
             </tbody>
         </table>
     </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav aria-label="Quiz list pagination">
+            <ul class="pagination justify-content-center">
+                @if (Model.Page > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="Index"
+                           asp-route-page="@(Model.Page - 1)"
+                           asp-route-pageSize="@Model.PageSize">Previous</a>
+                    </li>
+                }
+                @for (var i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.Page ? "active" : "")">
+                        <a class="page-link" asp-action="Index"
+                           asp-route-page="@i"
+                           asp-route-pageSize="@Model.PageSize">@i</a>
+                    </li>
+                }
+                @if (Model.Page < Model.TotalPages)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="Index"
+                           asp-route-page="@(Model.Page + 1)"
+                           asp-route-pageSize="@Model.PageSize">Next</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+        <p class="text-center text-muted small">
+            Showing @((Model.Page - 1) * Model.PageSize + 1)–@(Math.Min(Model.Page * Model.PageSize, Model.TotalCount)) of @Model.TotalCount quizzes
+        </p>
+    }
 }

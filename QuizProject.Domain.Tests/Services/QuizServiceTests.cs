@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using QuizProject.Contracts;
 using QuizProject.Domain.Models.Domain;
 using QuizProject.Domain.Services;
@@ -11,7 +12,7 @@ public class QuizServiceTests : DomainTestBase
 
     public QuizServiceTests()
     {
-        _svc = new QuizService(Db, Cache);
+        _svc = new QuizService(Db, Cache, NullLogger<QuizService>.Instance);
     }
 
     [Fact]

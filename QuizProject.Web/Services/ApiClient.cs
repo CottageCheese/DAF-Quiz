@@ -97,11 +97,12 @@ public class ApiClient(
 
     // Admin
 
-    public async Task<List<AdminQuizListViewModel>> GetAdminQuizzesAsync()
+    public async Task<PagedResult<AdminQuizListViewModel>> GetAdminQuizzesAsync(int page = 1, int pageSize = 20)
     {
-        var response = await SendWithAuthAsync(HttpMethod.Get, "api/admin/quizzes");
-        if (response is null || !response.IsSuccessStatusCode) return [];
-        return await response.Content.ReadFromJsonAsync<List<AdminQuizListViewModel>>(JsonOpts) ?? [];
+        var response = await SendWithAuthAsync(HttpMethod.Get, $"api/admin/quizzes?page={page}&pageSize={pageSize}");
+        if (response is null || !response.IsSuccessStatusCode) return new PagedResult<AdminQuizListViewModel>();
+        return await response.Content.ReadFromJsonAsync<PagedResult<AdminQuizListViewModel>>(JsonOpts)
+               ?? new PagedResult<AdminQuizListViewModel>();
     }
 
     public async Task<AdminQuizDetailViewModel?> GetAdminQuizAsync(int id)

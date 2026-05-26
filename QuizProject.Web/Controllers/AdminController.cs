@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using QuizProject.Contracts;
 using QuizProject.Web.Models.ViewModels;
 using QuizProject.Web.Services;
 
@@ -11,9 +12,11 @@ public class AdminController(IApiClient apiClient) : Controller
     // Quiz List
 
     [HttpGet]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
-        var quizzes = await apiClient.GetAdminQuizzesAsync();
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+        var quizzes = await apiClient.GetAdminQuizzesAsync(page, pageSize);
         return View(quizzes);
     }
 

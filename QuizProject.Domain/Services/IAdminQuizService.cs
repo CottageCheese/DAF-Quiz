@@ -4,7 +4,7 @@ namespace QuizProject.Domain.Services;
 
 public interface IAdminQuizService
 {
-    Task<List<AdminQuizListViewModel>> GetAllQuizzesAsync(CancellationToken ct = default);
+    Task<PagedResult<AdminQuizListViewModel>> GetAllQuizzesAsync(int page = 1, int pageSize = 20, CancellationToken ct = default);
     Task<AdminQuizDetailViewModel?> GetQuizDetailAsync(int quizId, CancellationToken ct = default);
     Task<AdminQuizDetailViewModel> CreateQuizAsync(CreateQuizRequest request, string userId, string userEmail, CancellationToken ct = default);
     Task<AdminQuizDetailViewModel?> UpdateQuizAsync(int quizId, UpdateQuizRequest request, CancellationToken ct = default);

@@ -20,7 +20,7 @@ public interface IApiClient
     Task<LeaderboardViewModel> GetLeaderboardAsync();
 
     // Admin
-    Task<List<AdminQuizListViewModel>> GetAdminQuizzesAsync();
+    Task<PagedResult<AdminQuizListViewModel>> GetAdminQuizzesAsync(int page = 1, int pageSize = 20);
     Task<AdminQuizDetailViewModel?> GetAdminQuizAsync(int id);
     Task<AdminQuizDetailViewModel?> CreateQuizAsync(string title, string? description);
     Task<AdminQuizDetailViewModel?> UpdateQuizAsync(int id, string title, string? description, DateTime? publishedAt);

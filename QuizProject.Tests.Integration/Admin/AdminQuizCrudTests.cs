@@ -25,9 +25,9 @@ public class AdminQuizCrudTests(CustomWebApplicationFactory factory) : Integrati
         var response = await client.GetAsync("/api/admin/quizzes");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var quizzes = await response.Content.ReadFromJsonAsync<List<AdminQuizListViewModel>>();
-        quizzes.Should().Contain(q => q.Id == Seed.PublishedQuizId);
-        quizzes.Should().Contain(q => q.Id == Seed.DraftQuizId);
+        var paged = await response.Content.ReadFromJsonAsync<PagedResult<AdminQuizListViewModel>>();
+        paged!.Items.Should().Contain(q => q.Id == Seed.PublishedQuizId);
+        paged.Items.Should().Contain(q => q.Id == Seed.DraftQuizId);
     }
 
     [Fact]
