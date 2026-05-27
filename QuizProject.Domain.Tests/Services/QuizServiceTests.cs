@@ -12,7 +12,7 @@ public class QuizServiceTests : DomainTestBase
 
     public QuizServiceTests()
     {
-        _svc = new QuizService(Db, Cache, NullLogger<QuizService>.Instance);
+        _svc = new QuizService(Db, Cache, NullLogger<QuizService>.Instance, new NullQuizEventPublisher());
     }
 
     [Fact]

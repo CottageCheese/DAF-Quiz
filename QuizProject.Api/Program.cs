@@ -8,8 +8,11 @@ using Microsoft.IdentityModel.Tokens;
 using QuizProject.Domain.Data;
 using QuizProject.Domain.Models.Domain;
 using QuizProject.Domain.Services;
+using Azure.Messaging.ServiceBus;
 using QuizProject.Api.Infrastructure;
+using QuizProject.Api.Messaging;
 using QuizProject.Api.Services;
+using QuizProject.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -101,6 +104,20 @@ if (!string.IsNullOrEmpty(redisConnection))
 else
 {
     builder.Services.AddDistributedMemoryCache();
+}
+
+// Service Bus
+var serviceBusConnection = builder.Configuration.GetConnectionString("ServiceBus");
+if (!string.IsNullOrWhiteSpace(serviceBusConnection))
+{
+    builder.Services.AddSingleton(new ServiceBusClient(serviceBusConnection));
+    builder.Services.AddSingleton<IQuizEventPublisher, ServiceBusQuizEventPublisher>();
+    builder.Services.AddHostedService<LeaderboardInvalidationConsumer>();
+    builder.Services.AddHostedService<QuizResultNotificationConsumer>();
+}
+else
+{
+    builder.Services.AddSingleton<IQuizEventPublisher, NullQuizEventPublisher>();
 }
 
 // Health checks
