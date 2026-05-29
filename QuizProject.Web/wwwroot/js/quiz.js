@@ -29,7 +29,10 @@
         if (target) {
             target.classList.remove('d-none');
             const legend = target.querySelector('legend');
-            if (legend) { legend.setAttribute('tabindex', '-1'); legend.focus(); }
+            if (legend) {
+                legend.setAttribute('tabindex', '-1');
+                legend.focus();
+            }
         }
         updateProgress(index);
     }

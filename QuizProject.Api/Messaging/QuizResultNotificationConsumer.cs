@@ -1,13 +1,13 @@
+using System.Text.Json;
 using Azure.Messaging.ServiceBus;
 using QuizProject.Contracts;
-using System.Text.Json;
 
 namespace QuizProject.Api.Messaging;
 
 public sealed class QuizResultNotificationConsumer : BackgroundService
 {
-    private readonly ServiceBusProcessor _processor;
     private readonly ILogger<QuizResultNotificationConsumer> _logger;
+    private readonly ServiceBusProcessor _processor;
 
     public QuizResultNotificationConsumer(
         ServiceBusClient client,
@@ -15,8 +15,8 @@ public sealed class QuizResultNotificationConsumer : BackgroundService
     {
         _logger = logger;
         _processor = client.CreateProcessor(
-            topicName: "quiz-events",
-            subscriptionName: "quiz-result-notification",
+            "quiz-events",
+            "quiz-result-notification",
             new ServiceBusProcessorOptions { MaxConcurrentCalls = 2 });
 
         _processor.ProcessMessageAsync += HandleMessageAsync;
@@ -49,5 +49,4 @@ public sealed class QuizResultNotificationConsumer : BackgroundService
             "Error in {Processor}: {ErrorSource}", nameof(QuizResultNotificationConsumer), args.ErrorSource);
         return Task.CompletedTask;
     }
-
 }

@@ -13,8 +13,7 @@ public class QuestionFormModel
     [Display(Name = "Question")]
     public string Text { get; set; } = string.Empty;
 
-    [Display(Name = "Display Order")]
-    public int DisplayOrder { get; set; } = 1;
+    [Display(Name = "Display Order")] public int DisplayOrder { get; set; } = 1;
 
     [Required]
     [MaxLength(500)]

@@ -2,27 +2,24 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Data.SqlClient;
 using QuizProject.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Session (server-side JWT token storage)
 var sessionConnection = builder.Configuration.GetConnectionString("SessionConnection")
-    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+                        ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
 if (builder.Environment.IsDevelopment() || sessionConnection is null)
-{
     builder.Services.AddDistributedMemoryCache();
-}
 else
-{
     builder.Services.AddDistributedSqlServerCache(options =>
     {
         options.ConnectionString = sessionConnection;
         options.SchemaName = "dbo";
         options.TableName = "SessionCache";
     });
-}
 builder.Services.AddSession(options =>
 {
     options.Cookie.HttpOnly = true;
@@ -83,12 +80,9 @@ builder.Services.AddRateLimiter(options =>
 
 // HTTP client + services
 var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"]
-    ?? throw new InvalidOperationException("ApiSettings:BaseUrl is not configured.");
+                 ?? throw new InvalidOperationException("ApiSettings:BaseUrl is not configured.");
 
-builder.Services.AddHttpClient<IApiClient, ApiClient>(client =>
-{
-    client.BaseAddress = new Uri(apiBaseUrl);
-});
+builder.Services.AddHttpClient<IApiClient, ApiClient>(client => { client.BaseAddress = new Uri(apiBaseUrl); });
 
 builder.Services.AddScoped<ITokenStorageService, TokenStorageService>();
 builder.Services.AddHttpContextAccessor();
@@ -102,22 +96,22 @@ var app = builder.Build();
 // Ensure SQL session cache table exists (production only)
 if (!app.Environment.IsDevelopment() && sessionConnection is not null)
 {
-    using var conn = new Microsoft.Data.SqlClient.SqlConnection(sessionConnection);
+    using var conn = new SqlConnection(sessionConnection);
     await conn.OpenAsync();
-    await new Microsoft.Data.SqlClient.SqlCommand("""
-        IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'SessionCache' AND schema_id = SCHEMA_ID('dbo'))
-        BEGIN
-            CREATE TABLE [dbo].[SessionCache] (
-                [Id]                         NVARCHAR(449)       NOT NULL,
-                [Value]                      VARBINARY(MAX)      NOT NULL,
-                [ExpiresAtTime]              DATETIMEOFFSET(7)   NOT NULL,
-                [SlidingExpirationInSeconds] BIGINT              NULL,
-                [AbsoluteExpiration]         DATETIMEOFFSET(7)   NULL,
-                CONSTRAINT [pk_Id] PRIMARY KEY ([Id] ASC)
-            );
-            CREATE NONCLUSTERED INDEX [Index_ExpiresAtTime] ON [dbo].[SessionCache] ([ExpiresAtTime] ASC);
-        END
-        """, conn).ExecuteNonQueryAsync();
+    await new SqlCommand("""
+                         IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'SessionCache' AND schema_id = SCHEMA_ID('dbo'))
+                         BEGIN
+                             CREATE TABLE [dbo].[SessionCache] (
+                                 [Id]                         NVARCHAR(449)       NOT NULL,
+                                 [Value]                      VARBINARY(MAX)      NOT NULL,
+                                 [ExpiresAtTime]              DATETIMEOFFSET(7)   NOT NULL,
+                                 [SlidingExpirationInSeconds] BIGINT              NULL,
+                                 [AbsoluteExpiration]         DATETIMEOFFSET(7)   NULL,
+                                 CONSTRAINT [pk_Id] PRIMARY KEY ([Id] ASC)
+                             );
+                             CREATE NONCLUSTERED INDEX [Index_ExpiresAtTime] ON [dbo].[SessionCache] ([ExpiresAtTime] ASC);
+                         END
+                         """, conn).ExecuteNonQueryAsync();
 }
 
 // Security headers
@@ -148,10 +142,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles(new StaticFileOptions
 {
-    OnPrepareResponse = ctx =>
-    {
-        ctx.Context.Response.Headers.CacheControl = "public, max-age=31536000";
-    }
+    OnPrepareResponse = ctx => { ctx.Context.Response.Headers.CacheControl = "public, max-age=31536000"; }
 });
 app.UseRateLimiter();
 app.UseRouting();

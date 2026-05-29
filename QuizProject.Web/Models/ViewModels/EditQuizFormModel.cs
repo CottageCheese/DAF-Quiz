@@ -10,9 +10,7 @@ public class EditQuizFormModel
     [MaxLength(200)]
     public string Title { get; set; } = string.Empty;
 
-    [MaxLength(1000)]
-    public string? Description { get; set; }
+    [MaxLength(1000)] public string? Description { get; set; }
 
-    [Display(Name = "Publish Date (UTC)")]
-    public DateTime? PublishedAt { get; set; }
+    [Display(Name = "Publish Date (UTC)")] public DateTime? PublishedAt { get; set; }
 }

@@ -77,13 +77,11 @@ public class LoginTests(CustomWebApplicationFactory factory) : IntegrationTestBa
 
         // Send 5 wrong password attempts
         for (var i = 0; i < 5; i++)
-        {
             await Client.PostAsJsonAsync("/api/auth/login", new
             {
                 email = lockoutEmail,
                 password = "WrongPass@99"
             });
-        }
 
         // 6th attempt — account should be locked
         var response = await Client.PostAsJsonAsync("/api/auth/login", new

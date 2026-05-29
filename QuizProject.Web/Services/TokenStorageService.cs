@@ -15,9 +15,15 @@ public class TokenStorageService(IHttpContextAccessor httpContextAccessor) : ITo
         Session.SetString(ExpiryKey, expiresAt.Ticks.ToString());
     }
 
-    public string? GetAccessToken() => Session.GetString(AccessTokenKey);
+    public string? GetAccessToken()
+    {
+        return Session.GetString(AccessTokenKey);
+    }
 
-    public string? GetRefreshToken() => Session.GetString(RefreshTokenKey);
+    public string? GetRefreshToken()
+    {
+        return Session.GetString(RefreshTokenKey);
+    }
 
     public DateTime? GetAccessTokenExpiry()
     {
@@ -27,5 +33,8 @@ public class TokenStorageService(IHttpContextAccessor httpContextAccessor) : ITo
             : null;
     }
 
-    public void Clear() => Session.Clear();
+    public void Clear()
+    {
+        Session.Clear();
+    }
 }

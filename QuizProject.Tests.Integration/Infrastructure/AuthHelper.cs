@@ -5,13 +5,13 @@ using QuizProject.Contracts;
 namespace QuizProject.Tests.Integration.Infrastructure;
 
 /// <summary>
-/// Calls the real POST /api/auth/login endpoint and caches the AuthResponse
-/// per (email, password) to avoid repeated roundtrips within the same factory lifetime.
+///     Calls the real POST /api/auth/login endpoint and caches the AuthResponse
+///     per (email, password) to avoid repeated roundtrips within the same factory lifetime.
 /// </summary>
 public sealed class AuthHelper
 {
-    private readonly HttpClient _client;
     private readonly ConcurrentDictionary<string, AuthResponse> _cache = new();
+    private readonly HttpClient _client;
 
     public AuthHelper(HttpClient client)
     {
@@ -28,7 +28,7 @@ public sealed class AuthHelper
         response.EnsureSuccessStatusCode();
 
         var auth = await response.Content.ReadFromJsonAsync<AuthResponse>()
-            ?? throw new InvalidOperationException("Login returned null body.");
+                   ?? throw new InvalidOperationException("Login returned null body.");
 
         _cache[key] = auth;
         return auth;

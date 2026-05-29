@@ -4,7 +4,6 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using QuizProject.Domain.Data;
@@ -32,16 +31,16 @@ public sealed class TokenService(
             new(JwtRegisteredClaimNames.Sub, user.Id),
             new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new("display_name", user.DisplayName),
+            new("display_name", user.DisplayName)
         };
 
         foreach (var role in roles)
             claims.Add(new Claim(ClaimTypes.Role, role));
 
         var token = new JwtSecurityToken(
-            issuer: _jwt.Issuer,
-            audience: _jwt.Audience,
-            claims: claims,
+            _jwt.Issuer,
+            _jwt.Audience,
+            claims,
             expires: DateTime.UtcNow.AddMinutes(_jwt.AccessTokenExpiryMinutes),
             signingCredentials: creds);
 

@@ -1,15 +1,15 @@
+using System.Text.Json;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Caching.Distributed;
 using QuizProject.Contracts;
-using System.Text.Json;
 
 namespace QuizProject.Api.Messaging;
 
 public sealed class LeaderboardInvalidationConsumer : BackgroundService
 {
-    private readonly ServiceBusProcessor _processor;
     private readonly IDistributedCache _cache;
     private readonly ILogger<LeaderboardInvalidationConsumer> _logger;
+    private readonly ServiceBusProcessor _processor;
 
     public LeaderboardInvalidationConsumer(
         ServiceBusClient client,
@@ -19,8 +19,8 @@ public sealed class LeaderboardInvalidationConsumer : BackgroundService
         _cache = cache;
         _logger = logger;
         _processor = client.CreateProcessor(
-            topicName: "quiz-events",
-            subscriptionName: "leaderboard-invalidation",
+            "quiz-events",
+            "leaderboard-invalidation",
             new ServiceBusProcessorOptions { MaxConcurrentCalls = 1 });
 
         _processor.ProcessMessageAsync += HandleMessageAsync;
@@ -53,5 +53,4 @@ public sealed class LeaderboardInvalidationConsumer : BackgroundService
             "Error in {Processor}: {ErrorSource}", nameof(LeaderboardInvalidationConsumer), args.ErrorSource);
         return Task.CompletedTask;
     }
-
 }

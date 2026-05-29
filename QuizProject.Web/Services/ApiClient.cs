@@ -34,7 +34,8 @@ public class ApiClient(
         }
 
         var tokens = await ReadAuthResponse(response);
-        return new ApiResult<AuthTokens>(tokens, tokens is not null, tokens is null ? "Failed to read auth response." : null);
+        return new ApiResult<AuthTokens>(tokens, tokens is not null,
+            tokens is null ? "Failed to read auth response." : null);
     }
 
     public async Task<ApiResult<AuthTokens>> RegisterAsync(string email, string password, string displayName)
@@ -49,7 +50,8 @@ public class ApiClient(
         }
 
         var tokens = await ReadAuthResponse(response);
-        return new ApiResult<AuthTokens>(tokens, tokens is not null, tokens is null ? "Failed to read auth response." : null);
+        return new ApiResult<AuthTokens>(tokens, tokens is not null,
+            tokens is null ? "Failed to read auth response." : null);
     }
 
     public async Task RevokeTokenAsync(string refreshToken)
@@ -294,7 +296,11 @@ public class ApiClient(
                 return errorsProp.GetString();
             }
         }
-        catch { /* ignored */ }
+        catch
+        {
+            /* ignored */
+        }
+
         return null;
     }
 }

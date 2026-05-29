@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using QuizProject.Contracts;
 using QuizProject.Web.Models.ViewModels;
 using QuizProject.Web.Services;
 
@@ -23,7 +22,10 @@ public class AdminController(IApiClient apiClient) : Controller
     // Create Quiz
 
     [HttpGet]
-    public IActionResult Create() => View(new CreateQuizFormModel());
+    public IActionResult Create()
+    {
+        return View(new CreateQuizFormModel());
+    }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -94,13 +96,9 @@ public class AdminController(IApiClient apiClient) : Controller
     {
         var deleted = await apiClient.DeleteQuizAsync(id);
         if (!deleted)
-        {
             TempData["Error"] = "Failed to delete quiz.";
-        }
         else
-        {
             TempData["Success"] = "Quiz deleted successfully.";
-        }
 
         return RedirectToAction(nameof(Index));
     }

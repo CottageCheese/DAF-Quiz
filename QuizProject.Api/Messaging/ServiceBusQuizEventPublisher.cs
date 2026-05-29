@@ -1,18 +1,23 @@
+using System.Text.Json;
 using Azure.Messaging.ServiceBus;
 using QuizProject.Contracts;
-using System.Text.Json;
 
 namespace QuizProject.Api.Messaging;
 
 public sealed class ServiceBusQuizEventPublisher : IQuizEventPublisher, IAsyncDisposable
 {
-    private readonly ServiceBusSender _sender;
     private readonly ILogger<ServiceBusQuizEventPublisher> _logger;
+    private readonly ServiceBusSender _sender;
 
     public ServiceBusQuizEventPublisher(ServiceBusClient client, ILogger<ServiceBusQuizEventPublisher> logger)
     {
         _sender = client.CreateSender("quiz-events");
         _logger = logger;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _sender.DisposeAsync();
     }
 
     public async Task PublishQuizAttemptCompletedAsync(QuizAttemptCompletedEvent evt, CancellationToken ct = default)
@@ -25,8 +30,7 @@ public sealed class ServiceBusQuizEventPublisher : IQuizEventPublisher, IAsyncDi
             MessageId = $"attempt-{evt.AttemptId}"
         };
         await _sender.SendMessageAsync(message, ct);
-        _logger.LogInformation("Published {Event} for attempt {AttemptId}", nameof(QuizAttemptCompletedEvent), evt.AttemptId);
+        _logger.LogInformation("Published {Event} for attempt {AttemptId}", nameof(QuizAttemptCompletedEvent),
+            evt.AttemptId);
     }
-
-    public async ValueTask DisposeAsync() => await _sender.DisposeAsync();
 }

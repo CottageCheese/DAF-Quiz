@@ -8,7 +8,11 @@ using QuizProject.Domain.Models.Domain;
 
 namespace QuizProject.Domain.Services;
 
-public class QuizService(ApplicationDbContext db, IDistributedCache cache, ILogger<QuizService> logger, IQuizEventPublisher publisher) : IQuizService
+public class QuizService(
+    ApplicationDbContext db,
+    IDistributedCache cache,
+    ILogger<QuizService> logger,
+    IQuizEventPublisher publisher) : IQuizService
 {
     public const string ActiveQuizzesCacheKey = "quizzes:active";
 
@@ -92,7 +96,8 @@ public class QuizService(ApplicationDbContext db, IDistributedCache cache, ILogg
         };
     }
 
-    public async Task<QuizResultViewModel?> SubmitAttemptAsync(SubmitQuizViewModel submission, string userId, CancellationToken ct = default)
+    public async Task<QuizResultViewModel?> SubmitAttemptAsync(SubmitQuizViewModel submission, string userId,
+        CancellationToken ct = default)
     {
         var attempt = await db.QuizAttempts
             .Where(a => a.Id == submission.AttemptId && a.UserId == userId && a.CompletedAt == null)
@@ -134,7 +139,8 @@ public class QuizService(ApplicationDbContext db, IDistributedCache cache, ILogg
 
         attempt.Score = score;
         attempt.CompletedAt = DateTime.UtcNow;
-        logger.LogDebug("Attempt {AttemptId} submitted: score {Score}/{Total}", attempt.Id, score, attempt.TotalQuestions);
+        logger.LogDebug("Attempt {AttemptId} submitted: score {Score}/{Total}", attempt.Id, score,
+            attempt.TotalQuestions);
         db.AddRange(attemptAnswerList);
         await db.SaveChangesAsync(ct);
 
@@ -172,7 +178,8 @@ public class QuizService(ApplicationDbContext db, IDistributedCache cache, ILogg
         return await BuildResultViewModelAsync(attemptId, ct);
     }
 
-    public async Task<List<UserAttemptHistoryViewModel>> GetUserAttemptHistoryAsync(string userId, CancellationToken ct = default)
+    public async Task<List<UserAttemptHistoryViewModel>> GetUserAttemptHistoryAsync(string userId,
+        CancellationToken ct = default)
     {
         return await db.QuizAttempts
             .AsNoTracking()
@@ -197,10 +204,10 @@ public class QuizService(ApplicationDbContext db, IDistributedCache cache, ILogg
             .AsNoTracking()
             .Include(a => a.Quiz)
             .Include(a => a.AttemptAnswers)
-                .ThenInclude(aa => aa.Question)
-                    .ThenInclude(q => q.Answers)
+            .ThenInclude(aa => aa.Question)
+            .ThenInclude(q => q.Answers)
             .Include(a => a.AttemptAnswers)
-                .ThenInclude(aa => aa.SelectedAnswer)
+            .ThenInclude(aa => aa.SelectedAnswer)
             .FirstAsync(a => a.Id == attemptId, ct);
 
         var answerDetails = attempt.AttemptAnswers

@@ -38,7 +38,8 @@ public class AccountController(IApiClient apiClient, ITokenStorageService tokenS
         if (!result.Succeeded || result.Data is null)
         {
             ModelState.AddModelError(string.Empty,
-                result.ErrorMessage ?? "Registration failed. The email may already be in use or the password does not meet requirements.");
+                result.ErrorMessage ??
+                "Registration failed. The email may already be in use or the password does not meet requirements.");
             return View(model);
         }
 
@@ -95,10 +96,13 @@ public class AccountController(IApiClient apiClient, ITokenStorageService tokenS
 
     [HttpGet]
     [AllowAnonymous]
-    public IActionResult AccessDenied() => View();
+    public IActionResult AccessDenied()
+    {
+        return View();
+    }
 
     // Helpers
-    
+
     private async Task SignInFromTokensAsync(string accessToken, string refreshToken, int expiresIn)
     {
         // Read identity claims from the JWT without full validation
@@ -120,8 +124,8 @@ public class AccountController(IApiClient apiClient, ITokenStorageService tokenS
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, userId),
-            new(ClaimTypes.Name, displayName),  // used by User.Identity.Name (navbar display)
-            new(ClaimTypes.Email, email),
+            new(ClaimTypes.Name, displayName), // used by User.Identity.Name (navbar display)
+            new(ClaimTypes.Email, email)
         };
 
         claims.AddRange(roleClaims);

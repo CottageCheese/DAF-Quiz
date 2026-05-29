@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
@@ -11,8 +10,8 @@ using QuizProject.Domain.Data;
 namespace QuizProject.Tests.Integration.Infrastructure;
 
 /// <summary>
-/// Shared test host: SQL Server replaced with SQLite in-memory,
-/// production SeedData bypassed, rate limiter disabled, test appsettings loaded.
+///     Shared test host: SQL Server replaced with SQLite in-memory,
+///     production SeedData bypassed, rate limiter disabled, test appsettings loaded.
 /// </summary>
 public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
@@ -20,29 +19,6 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
         new($"Data Source=QuizTestDb_{Guid.NewGuid():N};Mode=Memory;Cache=Shared");
 
     public TestSeedContext Seed { get; private set; } = default!;
-
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
-    {
-        // Load test-specific appsettings (overrides production appsettings.json)
-        builder.ConfigureAppConfiguration((_, config) =>
-        {
-            config.AddJsonFile("appsettings.Test.json", optional: false, reloadOnChange: false);
-        });
-
-        builder.ConfigureServices(services =>
-        {
-            // Replace SQL Server with SQLite
-            services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
-            services.RemoveAll<ApplicationDbContext>();
-
-            services.AddSingleton(_connection);
-
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlite(_connection));
-        });
-
-        builder.UseEnvironment("Testing");
-    }
 
     public async Task InitializeAsync()
     {
@@ -63,5 +39,28 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
         await _connection.CloseAsync();
         await _connection.DisposeAsync();
         await base.DisposeAsync();
+    }
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        // Load test-specific appsettings (overrides production appsettings.json)
+        builder.ConfigureAppConfiguration((_, config) =>
+        {
+            config.AddJsonFile("appsettings.Test.json", false, false);
+        });
+
+        builder.ConfigureServices(services =>
+        {
+            // Replace SQL Server with SQLite
+            services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
+            services.RemoveAll<ApplicationDbContext>();
+
+            services.AddSingleton(_connection);
+
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlite(_connection));
+        });
+
+        builder.UseEnvironment("Testing");
     }
 }

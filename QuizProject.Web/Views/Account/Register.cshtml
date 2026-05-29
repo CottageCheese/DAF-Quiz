@@ -12,7 +12,8 @@
                 <input type="hidden" name="returnUrl" value="@(ViewData["ReturnUrl"] as string)"/>
                 @Html.AntiForgeryToken()
 
-                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert" aria-live="assertive"></div>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"
+                     aria-live="assertive"></div>
 
                 <div class="mb-3">
                     <label asp-for="DisplayName" class="form-label fw-semibold"></label>
@@ -21,7 +22,8 @@
                            autocomplete="nickname"
                            aria-required="true"
                            aria-describedby="displayname-hint"/>
-                    <div id="displayname-hint" class="form-text">This is the name others will see on the leaderboard.</div>
+                    <div id="displayname-hint" class="form-text">This is the name others will see on the leaderboard.
+                    </div>
                     <span asp-validation-for="DisplayName" class="text-danger" role="alert" aria-live="polite"></span>
                 </div>
 
@@ -57,7 +59,8 @@
                            class="form-control"
                            autocomplete="new-password"
                            aria-required="true"/>
-                    <span asp-validation-for="ConfirmPassword" class="text-danger" role="alert" aria-live="polite"></span>
+                    <span asp-validation-for="ConfirmPassword" class="text-danger" role="alert"
+                          aria-live="polite"></span>
                 </div>
 
                 <button type="submit" class="btn btn-primary w-100 mb-3">Create account</button>

@@ -3,15 +3,15 @@ using System.Net.Http.Headers;
 namespace QuizProject.Tests.Integration.Infrastructure;
 
 /// <summary>
-/// Base class for integration tests. Exposes a plain HttpClient (no auth)
-/// and helpers to obtain authenticated clients using seeded credentials.
+///     Base class for integration tests. Exposes a plain HttpClient (no auth)
+///     and helpers to obtain authenticated clients using seeded credentials.
 /// </summary>
 public abstract class IntegrationTestBase : IClassFixture<CustomWebApplicationFactory>
 {
-    protected readonly CustomWebApplicationFactory Factory;
-    protected readonly HttpClient Client;
-    protected readonly TestSeedContext Seed;
     private readonly AuthHelper _authHelper;
+    protected readonly HttpClient Client;
+    protected readonly CustomWebApplicationFactory Factory;
+    protected readonly TestSeedContext Seed;
 
     protected IntegrationTestBase(CustomWebApplicationFactory factory)
     {
