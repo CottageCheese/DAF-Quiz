@@ -1,0 +1,16 @@
+{
+  "name": "daf-quiz-accessibility-tests",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:mvc": "playwright test --project=mvc",
+    "test:angular": "playwright test --project=angular",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.1",
+    "@playwright/test": "^1.49.0",
+    "dotenv": "^16.0.0"
+  }
+}

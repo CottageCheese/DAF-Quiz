@@ -23,6 +23,7 @@ import { LoadingSpinnerComponent } from "../../../shared/components/loading-spin
                   [attr.aria-valuenow]="progress()"
                   aria-valuemin="0"
                   aria-valuemax="100"
+                  [attr.aria-label]="'Question ' + (currentIndex() + 1) + ' of ' + quiz.totalQuestions"
                 ></div>
               </div>
               <small class="text-muted">
