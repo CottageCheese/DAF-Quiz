@@ -15,7 +15,7 @@ import { LoadingSpinnerComponent } from "../../../shared/components/loading-spin
         <div class="col-lg-8">
           <div class="card shadow-sm mb-4">
             <div class="card-body text-center p-5">
-              <h2 class="mb-4">{{ r.quizTitle }}</h2>
+              <h1 class="mb-4 h2">{{ r.quizTitle }}</h1>
 
               <div
                 class="score-circle mb-4"
@@ -49,9 +49,9 @@ import { LoadingSpinnerComponent } from "../../../shared/components/loading-spin
 
           <div class="card shadow-sm">
             <div class="card-header">
-              <h5 class="mb-0">Answer Breakdown</h5>
+              <h2 class="mb-0 h5">Answer Breakdown</h2>
             </div>
-            <div class="table-responsive">
+            <div class="table-responsive" tabindex="0">
               <table class="table table-hover mb-0">
                 <thead>
                   <tr>

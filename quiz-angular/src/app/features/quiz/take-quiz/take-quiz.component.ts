@@ -14,7 +14,7 @@ import { LoadingSpinnerComponent } from "../../../shared/components/loading-spin
         <div class="col-lg-8">
           <div class="card shadow-sm">
             <div class="card-header">
-              <h4 class="mb-1">{{ quiz.quizTitle }}</h4>
+              <h1 class="mb-1 h4">{{ quiz.quizTitle }}</h1>
               <div class="progress" style="height: 6px;">
                 <div
                   class="progress-bar"
@@ -23,6 +23,7 @@ import { LoadingSpinnerComponent } from "../../../shared/components/loading-spin
                   [attr.aria-valuenow]="progress()"
                   aria-valuemin="0"
                   aria-valuemax="100"
+                  [attr.aria-label]="'Question ' + (currentIndex() + 1) + ' of ' + quiz.totalQuestions"
                 ></div>
               </div>
               <small class="text-muted">

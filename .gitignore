@@ -32,3 +32,9 @@ riderModule.iml
 ## OS
 .DS_Store
 Thumbs.db
+
+## Playwright local secrets
+tests/playwright/.env
+
+## Claude Code local settings
+.claude/settings.local.json

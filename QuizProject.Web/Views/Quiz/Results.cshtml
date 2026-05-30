@@ -2,7 +2,7 @@
 @{
     ViewData["Title"] = $"Results: {Model.QuizTitle}";
     var scoreClass = Model.Percentage >= 70 ? "success" : Model.Percentage >= 50 ? "warning" : "danger";
-    var textClass = Model.Percentage >= 50 ? "" : "text-white";
+    var textClass = Model.Percentage >= 70 ? "" : Model.Percentage >= 50 ? "text-dark" : "text-white";
 }
 
 <nav aria-label="Quiz breadcrumb" class="mb-3">
@@ -33,7 +33,7 @@
 
     <h2 class="h4 mb-3">Answer breakdown</h2>
 
-    <div class="table-responsive">
+    <div class="table-responsive" tabindex="0">
         <table class="table table-bordered align-middle" aria-label="Detailed answer breakdown">
             <caption class="visually-hidden">Each question, your answer, the correct answer, and whether it was
                 correct

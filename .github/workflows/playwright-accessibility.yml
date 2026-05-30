@@ -1,0 +1,164 @@
+name: Accessibility Tests (Playwright + axe-core)
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  accessibility:
+    runs-on: ubuntu-latest
+
+    services:
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          SA_PASSWORD: "DevCi_Strong@Passw0rd"
+          ACCEPT_EULA: "Y"
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "bash -c 'cat < /dev/null > /dev/tcp/localhost/1433'"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Generate dev certificate (Playwright ignores HTTPS errors)
+        run: dotnet dev-certs https
+
+      - name: Build API
+        run: dotnet build QuizProject.Api/QuizProject.Api.csproj --configuration Release
+
+      - name: Build MVC Web
+        run: dotnet build QuizProject.Web/QuizProject.Web.csproj --configuration Release
+
+      - name: Wait for SQL Server
+        run: |
+          echo "Waiting for SQL Server on port 1433..."
+          timeout 90 bash -c 'until nc -z localhost 1433; do sleep 2; done'
+          echo "Allowing SQL Server to finish initializing..."
+          sleep 8
+          echo "SQL Server ready"
+
+      - name: Start API
+        env:
+          ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=QuizDbA11y;User ID=sa;Password=DevCi_Strong@Passw0rd;TrustServerCertificate=True;"
+          AdminSettings__Email: ${{ vars.POSTMAN_ADMIN_EMAIL || 'admin@quiz.local' }}
+          AdminSettings__Password: ${{ secrets.POSTMAN_ADMIN_PASSWORD }}
+          JwtSettings__SecretKey: ${{ secrets.POSTMAN_JWT_SECRET }}
+          AllowedOrigins__0: "http://localhost:4200"
+          AllowedOrigins__1: "https://localhost:5001"
+        run: |
+          nohup dotnet run --project QuizProject.Api/QuizProject.Api.csproj \
+            --configuration Release \
+            --urls http://localhost:7000 > api.log 2>&1 &
+          echo $! > api.pid
+
+      - name: Wait for API
+        run: |
+          for i in {1..40}; do
+            if curl -fsS http://localhost:7000/health > /dev/null; then
+              echo "API is up"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "API did not become ready in time"
+          tail -n 200 api.log || true
+          exit 1
+
+      - name: Start MVC Web
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+          ApiSettings__BaseUrl: "http://localhost:7000"
+        run: |
+          nohup dotnet run --project QuizProject.Web/QuizProject.Web.csproj \
+            --configuration Release \
+            --urls https://localhost:5001 > web.log 2>&1 &
+          echo $! > web.pid
+
+      - name: Wait for MVC Web
+        run: |
+          for i in {1..30}; do
+            if curl -fsSk https://localhost:5001/ > /dev/null; then
+              echo "MVC Web is up"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "MVC Web did not become ready in time"
+          tail -n 200 web.log || true
+          exit 1
+
+      - name: Build Angular (CI config)
+        run: npm ci && npm run build -- --configuration ci
+        working-directory: quiz-angular
+
+      - name: Start Angular static server
+        run: |
+          npx serve dist/quiz-angular/browser --single --listen 4200 --no-clipboard &
+        working-directory: quiz-angular
+
+      - name: Wait for Angular
+        run: |
+          for i in {1..30}; do
+            if curl -fsS http://localhost:4200/ > /dev/null 2>&1; then
+              echo "Angular server is up"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Angular server did not become ready in time"
+          exit 1
+
+      - name: Install Playwright dependencies
+        run: npm ci
+        working-directory: tests/playwright
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+        working-directory: tests/playwright
+
+      - name: Run accessibility tests
+        env:
+          MVC_BASE_URL: "https://localhost:5001"
+          ANGULAR_BASE_URL: "http://localhost:4200"
+          API_BASE_URL: "http://localhost:7000"
+          PLAYWRIGHT_ADMIN_EMAIL: ${{ vars.POSTMAN_ADMIN_EMAIL || 'admin@quiz.local' }}
+          PLAYWRIGHT_ADMIN_PASSWORD: ${{ secrets.POSTMAN_ADMIN_PASSWORD }}
+        run: npx playwright test
+        working-directory: tests/playwright
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-accessibility-report
+          path: tests/playwright/playwright-report/
+
+      - name: Show API logs on failure
+        if: failure()
+        run: |
+          echo "=== API logs ===" && tail -n 100 api.log || true
+          echo "=== Web logs ===" && tail -n 100 web.log || true
+
+      - name: Stop servers
+        if: always()
+        run: |
+          [ -f api.pid ] && kill "$(cat api.pid)" || true
+          [ -f web.pid ] && kill "$(cat web.pid)" || true

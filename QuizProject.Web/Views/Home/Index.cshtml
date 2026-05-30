@@ -26,7 +26,7 @@
                 <div class="card-body p-0">
                     @if (Model.TopQuizzes.Any())
                     {
-                        <div class="table-responsive">
+                        <div class="table-responsive" tabindex="0">
                             <table class="table table-hover mb-0" aria-describedby="top-quizzes-heading">
                                 <caption class="visually-hidden">Ranking of quizzes by number of attempts</caption>
                                 <thead class="table-light">
@@ -70,7 +70,7 @@
                 <div class="card-body p-0">
                     @if (Model.TopUsers.Any())
                     {
-                        <div class="table-responsive">
+                        <div class="table-responsive" tabindex="0">
                             <table class="table table-hover mb-0" aria-describedby="top-users-heading">
                                 <caption class="visually-hidden">Top users ranked by their best quiz score percentage
                                 </caption>

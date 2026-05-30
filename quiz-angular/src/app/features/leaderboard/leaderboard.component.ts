@@ -17,9 +17,9 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
         <div class="col-lg-6">
           <div class="card shadow-sm h-100">
             <div class="card-header">
-              <h5 class="mb-0">Most Taken Quizzes</h5>
+              <h2 class="mb-0 h5">Most Taken Quizzes</h2>
             </div>
-            <div class="table-responsive">
+            <div class="table-responsive" tabindex="0">
               <table class="table table-hover mb-0">
                 <thead>
                   <tr>
@@ -48,9 +48,9 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
         <div class="col-lg-6">
           <div class="card shadow-sm h-100">
             <div class="card-header">
-              <h5 class="mb-0">Top Scorers</h5>
+              <h2 class="mb-0 h5">Top Scorers</h2>
             </div>
-            <div class="table-responsive">
+            <div class="table-responsive" tabindex="0">
               <table class="table table-hover mb-0">
                 <thead>
                   <tr>

@@ -10,7 +10,7 @@ import { AuthService } from '../../../core/auth/auth.service';
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
       <div class="container">
         <a class="navbar-brand" routerLink="/">DAF Quiz</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
@@ -30,7 +30,7 @@ import { AuthService } from '../../../core/auth/auth.service';
           <ul class="navbar-nav">
             @if (authService.isLoggedIn()) {
               <li class="nav-item">
-                <span class="nav-link text-light opacity-75">
+                <span class="nav-link text-white">
                   {{ authService.currentUser()?.displayName }}
                 </span>
               </li>
