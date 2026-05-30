@@ -14,7 +14,7 @@ import { LoginRequest } from '../../../core/models/auth.models';
       <div class="col-md-5">
         <div class="card shadow-sm">
           <div class="card-body p-4">
-            <h2 class="card-title mb-4">Sign In</h2>
+            <h1 class="card-title mb-4 h2">Sign In</h1>
 
             @if (error()) {
               <div class="alert alert-danger">{{ error() }}</div>

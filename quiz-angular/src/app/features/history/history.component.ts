@@ -23,7 +23,7 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
       </div>
     } @else {
       <div class="card shadow-sm">
-        <div class="table-responsive">
+        <div class="table-responsive" tabindex="0">
           <table class="table table-hover mb-0">
             <thead>
               <tr>

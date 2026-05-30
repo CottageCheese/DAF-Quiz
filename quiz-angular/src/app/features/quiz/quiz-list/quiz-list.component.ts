@@ -24,7 +24,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
           <div class="col-md-6 col-lg-4">
             <div class="card h-100 shadow-sm">
               <div class="card-body d-flex flex-column">
-                <h5 class="card-title">{{ quiz.title }}</h5>
+                <h2 class="card-title h5">{{ quiz.title }}</h2>
                 @if (quiz.description) {
                   <p class="card-text text-muted flex-grow-1">{{ quiz.description }}</p>
                 } @else {

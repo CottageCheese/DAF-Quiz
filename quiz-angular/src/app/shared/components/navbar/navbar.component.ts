@@ -30,7 +30,7 @@ import { AuthService } from '../../../core/auth/auth.service';
           <ul class="navbar-nav">
             @if (authService.isLoggedIn()) {
               <li class="nav-item">
-                <span class="nav-link text-light opacity-75">
+                <span class="nav-link text-white">
                   {{ authService.currentUser()?.displayName }}
                 </span>
               </li>

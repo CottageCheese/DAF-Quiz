@@ -58,7 +58,7 @@
                             <input type="text" name="@fieldName" class="form-control"
                                    placeholder="Answer @(i + 1)@(isRequired ? "" : " (optional)")"
                                    aria-label="Answer @(i + 1)@(isRequired ? "" : " (optional)")"
-                                   @(isRequired ? "aria-required=\"true\"" : "")
+                                   aria-required="@(isRequired ? "true" : "false")"
                                    value="@(i == 0 ? Model.Answer1 : i == 1 ? Model.Answer2 : i == 2 ? Model.Answer3 : Model.Answer4)"/>
                         </div>
                     }

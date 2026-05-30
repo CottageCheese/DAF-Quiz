@@ -93,14 +93,15 @@ setup('prepare accessibility test state', async ({ browser, request }) => {
   const quizData = await startResp.json();
   const attemptId: number = quizData.attemptId;
 
-  const answers = quizData.questions.map((q: { id: number; answers: { id: number }[] }) => ({
-    questionId: q.id,
-    selectedAnswerId: q.answers[0].id,
+  const selections = quizData.questions.map((q: { questionId: number; answers: { answerId: number }[] }) => ({
+    questionId: q.questionId,
+    selectedAnswerId: q.answers[0].answerId,
   }));
-  await request.post(`${API_BASE_URL}/api/quizzes/attempts/${attemptId}/submit`, {
+  const submitResp = await request.post(`${API_BASE_URL}/api/quizzes/attempts/${attemptId}/submit`, {
     headers: { Authorization: `Bearer ${userToken}` },
-    data: { attemptId, answers },
+    data: selections,
   });
+  expect(submitResp.ok()).toBeTruthy();
 
   fs.writeFileSync(TEST_DATA_PATH, JSON.stringify({ quizId, questionId, attemptId }, null, 2));
 });
