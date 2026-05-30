@@ -1,15 +1,19 @@
 using System.Text;
+using Microsoft.Extensions.Caching.Distributed;
 using System.Threading.RateLimiting;
+using Azure.Messaging.ServiceBus;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using QuizProject.Api.Infrastructure;
+using QuizProject.Api.Messaging;
+using QuizProject.Api.Services;
+using QuizProject.Contracts;
 using QuizProject.Domain.Data;
 using QuizProject.Domain.Models.Domain;
 using QuizProject.Domain.Services;
-using QuizProject.Api.Infrastructure;
-using QuizProject.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,7 +76,7 @@ builder.Services.AddRateLimiter(options =>
 
 // CORS (Web frontend only)
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
-    ?? ["https://localhost:5001", "http://localhost:5000"];
+                     ?? ["https://localhost:5001", "http://localhost:5000"];
 
 builder.Services.AddCors(options =>
 {
@@ -89,18 +93,38 @@ builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IAdminQuizService, AdminQuizService>();
 
 // Caching
-var redisConnection = builder.Configuration.GetConnectionString("Redis");
-if (!string.IsNullOrEmpty(redisConnection))
+var cacheMode = builder.Configuration["Cache:Mode"] ?? "None";
+switch (cacheMode.ToLowerInvariant())
 {
-    builder.Services.AddStackExchangeRedisCache(options =>
-    {
-        options.Configuration = redisConnection;
-        options.InstanceName = "QuizProject:";
-    });
+    case "redis":
+        var redisConnection = builder.Configuration.GetConnectionString("Redis")
+            ?? throw new InvalidOperationException("Cache:Mode=Redis requires ConnectionStrings:Redis");
+        builder.Services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = redisConnection;
+            options.InstanceName = "QuizProject:";
+        });
+        break;
+    case "memory":
+        builder.Services.AddDistributedMemoryCache();
+        break;
+    default: // "None"
+        builder.Services.AddSingleton<IDistributedCache, NullDistributedCache>();
+        break;
+}
+
+// Service Bus
+var serviceBusConnection = builder.Configuration.GetConnectionString("ServiceBus");
+if (!string.IsNullOrWhiteSpace(serviceBusConnection))
+{
+    builder.Services.AddSingleton(new ServiceBusClient(serviceBusConnection));
+    builder.Services.AddSingleton<IQuizEventPublisher, ServiceBusQuizEventPublisher>();
+    builder.Services.AddHostedService<LeaderboardInvalidationConsumer>();
+    builder.Services.AddHostedService<QuizResultNotificationConsumer>();
 }
 else
 {
-    builder.Services.AddDistributedMemoryCache();
+    builder.Services.AddSingleton<IQuizEventPublisher, NullQuizEventPublisher>();
 }
 
 // Health checks
@@ -120,11 +144,9 @@ if (!app.Environment.IsEnvironment("Testing"))
 {
     var jwtKey = app.Configuration["JwtSettings:SecretKey"] ?? "";
     if (jwtKey.Contains("REPLACE", StringComparison.OrdinalIgnoreCase) || jwtKey.Length < 32)
-    {
         throw new InvalidOperationException(
             "JwtSettings:SecretKey must be a real secret (>=32 chars). "
             + "Set it via User Secrets or environment variable JwtSettings__SecretKey.");
-    }
 }
 
 // Database migration + seed
@@ -162,4 +184,6 @@ app.MapHealthChecks("/health");
 
 app.Run();
 
-public partial class Program { }
+public partial class Program
+{
+}

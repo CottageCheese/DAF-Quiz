@@ -12,7 +12,7 @@ public class QuizServiceTests : DomainTestBase
 
     public QuizServiceTests()
     {
-        _svc = new QuizService(Db, Cache, NullLogger<QuizService>.Instance);
+        _svc = new QuizService(Db, Cache, NullLogger<QuizService>.Instance, new NullQuizEventPublisher());
     }
 
     [Fact]
@@ -75,7 +75,8 @@ public class QuizServiceTests : DomainTestBase
         {
             AttemptId = takeVm!.AttemptId,
             Selections = seed.QuestionIds
-                .Zip(seed.CorrectAnswerIds, (q, a) => new QuestionAnswerSelection { QuestionId = q, SelectedAnswerId = a })
+                .Zip(seed.CorrectAnswerIds,
+                    (q, a) => new QuestionAnswerSelection { QuestionId = q, SelectedAnswerId = a })
                 .ToList()
         };
 
@@ -95,7 +96,8 @@ public class QuizServiceTests : DomainTestBase
         {
             AttemptId = takeVm!.AttemptId,
             Selections = seed.QuestionIds
-                .Zip(seed.WrongAnswerIds, (q, a) => new QuestionAnswerSelection { QuestionId = q, SelectedAnswerId = a })
+                .Zip(seed.WrongAnswerIds,
+                    (q, a) => new QuestionAnswerSelection { QuestionId = q, SelectedAnswerId = a })
                 .ToList()
         };
 
@@ -113,7 +115,8 @@ public class QuizServiceTests : DomainTestBase
         {
             AttemptId = takeVm!.AttemptId,
             Selections = seed.QuestionIds
-                .Zip(seed.CorrectAnswerIds, (q, a) => new QuestionAnswerSelection { QuestionId = q, SelectedAnswerId = a })
+                .Zip(seed.CorrectAnswerIds,
+                    (q, a) => new QuestionAnswerSelection { QuestionId = q, SelectedAnswerId = a })
                 .ToList()
         };
         await _svc.SubmitAttemptAsync(submission, seed.User.Id);
@@ -133,7 +136,8 @@ public class QuizServiceTests : DomainTestBase
         {
             AttemptId = takeVm!.AttemptId,
             Selections = seed.QuestionIds
-                .Zip(seed.CorrectAnswerIds, (q, a) => new QuestionAnswerSelection { QuestionId = q, SelectedAnswerId = a })
+                .Zip(seed.CorrectAnswerIds,
+                    (q, a) => new QuestionAnswerSelection { QuestionId = q, SelectedAnswerId = a })
                 .ToList()
         };
         await _svc.SubmitAttemptAsync(submission, seed.User.Id);

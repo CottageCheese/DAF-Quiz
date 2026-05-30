@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using QuizProject.Api.Services;
 using QuizProject.Contracts;
 using QuizProject.Domain.Models.Domain;
-using QuizProject.Api.Services;
 
 namespace QuizProject.Api.Controllers;
 
@@ -77,7 +77,7 @@ public class AuthController(
         var user = await userManager.FindByEmailAsync(request.Email);
         if (user is null) return Unauthorized(new { message = "Invalid credentials." });
 
-        var result = await signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
+        var result = await signInManager.CheckPasswordSignInAsync(user, request.Password, true);
 
         if (result.IsLockedOut)
             return StatusCode(StatusCodes.Status429TooManyRequests,

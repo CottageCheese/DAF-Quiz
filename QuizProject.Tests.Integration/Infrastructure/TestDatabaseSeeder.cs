@@ -6,7 +6,7 @@ using QuizProject.Domain.Models.Domain;
 namespace QuizProject.Tests.Integration.Infrastructure;
 
 /// <summary>
-/// Typed record returned by seeding so tests can reference known IDs without hitting the DB.
+///     Typed record returned by seeding so tests can reference known IDs without hitting the DB.
 /// </summary>
 public sealed record TestSeedContext(
     string AdminEmail,
@@ -52,7 +52,8 @@ public static class TestDatabaseSeeder
         };
         var adminResult = await userManager.CreateAsync(admin, AdminPassword);
         if (!adminResult.Succeeded)
-            throw new InvalidOperationException($"Could not create admin: {string.Join(", ", adminResult.Errors.Select(e => e.Description))}");
+            throw new InvalidOperationException(
+                $"Could not create admin: {string.Join(", ", adminResult.Errors.Select(e => e.Description))}");
         await userManager.AddToRoleAsync(admin, "Admin");
 
         // Regular user
@@ -65,7 +66,8 @@ public static class TestDatabaseSeeder
         };
         var userResult = await userManager.CreateAsync(user, UserPassword);
         if (!userResult.Succeeded)
-            throw new InvalidOperationException($"Could not create user: {string.Join(", ", userResult.Errors.Select(e => e.Description))}");
+            throw new InvalidOperationException(
+                $"Could not create user: {string.Join(", ", userResult.Errors.Select(e => e.Description))}");
 
         // Published quiz (3 questions, 4 answers each — 1 correct, 3 wrong)
         var publishedQuiz = new Quiz
@@ -98,7 +100,8 @@ public static class TestDatabaseSeeder
 
             questionIds[i] = question.Id;
 
-            var correctAnswer = new Answer { QuestionId = question.Id, Text = $"Correct Answer {i + 1}", IsCorrect = true };
+            var correctAnswer = new Answer
+                { QuestionId = question.Id, Text = $"Correct Answer {i + 1}", IsCorrect = true };
             var wrongAnswer1 = new Answer { QuestionId = question.Id, Text = $"Wrong A {i + 1}", IsCorrect = false };
             var wrongAnswer2 = new Answer { QuestionId = question.Id, Text = $"Wrong B {i + 1}", IsCorrect = false };
             var wrongAnswer3 = new Answer { QuestionId = question.Id, Text = $"Wrong C {i + 1}", IsCorrect = false };
@@ -136,7 +139,6 @@ public static class TestDatabaseSeeder
         await db.SaveChangesAsync();
 
         for (var i = 0; i < 3; i++)
-        {
             db.QuizAttemptAnswers.Add(new QuizAttemptAnswer
             {
                 AttemptId = completedAttempt.Id,
@@ -144,22 +146,21 @@ public static class TestDatabaseSeeder
                 SelectedAnswerId = correctAnswerIds[i],
                 IsCorrect = true
             });
-        }
         await db.SaveChangesAsync();
 
         return new TestSeedContext(
-            AdminEmail: AdminEmail,
-            AdminPassword: AdminPassword,
-            UserEmail: UserEmail,
-            UserPassword: UserPassword,
-            PublishedQuizId: publishedQuiz.Id,
-            PublishedQuizTitle: publishedQuiz.Title,
-            QuestionIds: questionIds,
-            CorrectAnswerIds: correctAnswerIds,
-            WrongAnswerIds: wrongAnswerIds,
-            DraftQuizId: draftQuiz.Id,
-            CompletedAttemptId: completedAttempt.Id,
-            UserId: user.Id
+            AdminEmail,
+            AdminPassword,
+            UserEmail,
+            UserPassword,
+            publishedQuiz.Id,
+            publishedQuiz.Title,
+            questionIds,
+            correctAnswerIds,
+            wrongAnswerIds,
+            draftQuiz.Id,
+            completedAttempt.Id,
+            user.Id
         );
     }
 }

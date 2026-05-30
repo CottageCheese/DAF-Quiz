@@ -12,11 +12,6 @@ namespace QuizProject.Api.Tests.Infrastructure;
 
 public abstract class ApiTestBase : IDisposable
 {
-    private readonly SqliteConnection _connection;
-    protected readonly ApplicationDbContext Db;
-    protected readonly UserManager<ApplicationUser> UserManager;
-    protected readonly TokenService TokenService;
-
     protected static readonly IOptions<JwtSettings> JwtOptions = Options.Create(new JwtSettings
     {
         Issuer = "test-issuer",
@@ -25,6 +20,11 @@ public abstract class ApiTestBase : IDisposable
         AccessTokenExpiryMinutes = 15,
         RefreshTokenExpiryDays = 7
     });
+
+    private readonly SqliteConnection _connection;
+    protected readonly ApplicationDbContext Db;
+    protected readonly TokenService TokenService;
+    protected readonly UserManager<ApplicationUser> UserManager;
 
     protected ApiTestBase()
     {
@@ -53,6 +53,14 @@ public abstract class ApiTestBase : IDisposable
         TokenService = new TokenService(JwtOptions, UserManager, Db, NullLogger<TokenService>.Instance);
     }
 
+    public void Dispose()
+    {
+        UserManager.Dispose();
+        Db.Dispose();
+        _connection.Close();
+        _connection.Dispose();
+    }
+
     protected async Task<ApplicationUser> CreateUserAsync(string email = "test@test.local", string role = "")
     {
         var user = new ApplicationUser
@@ -66,13 +74,5 @@ public abstract class ApiTestBase : IDisposable
         if (!string.IsNullOrEmpty(role))
             await UserManager.AddToRoleAsync(user, role);
         return user;
-    }
-
-    public void Dispose()
-    {
-        UserManager.Dispose();
-        Db.Dispose();
-        _connection.Close();
-        _connection.Dispose();
     }
 }

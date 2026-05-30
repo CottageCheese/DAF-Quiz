@@ -10,8 +10,8 @@ namespace QuizProject.Domain.Tests.Infrastructure;
 public abstract class DomainTestBase : IDisposable
 {
     private readonly SqliteConnection _connection;
-    protected readonly ApplicationDbContext Db;
     protected readonly IDistributedCache Cache;
+    protected readonly ApplicationDbContext Db;
 
     protected DomainTestBase()
     {

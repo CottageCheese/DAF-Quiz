@@ -7,7 +7,8 @@ using QuizProject.Domain.Extensions;
 
 namespace QuizProject.Domain.Services;
 
-public class LeaderboardService(ApplicationDbContext db, IDistributedCache cache, ILogger<LeaderboardService> logger) : ILeaderboardService
+public class LeaderboardService(ApplicationDbContext db, IDistributedCache cache, ILogger<LeaderboardService> logger)
+    : ILeaderboardService
 {
     private static readonly DistributedCacheEntryOptions CacheOptions = new()
     {

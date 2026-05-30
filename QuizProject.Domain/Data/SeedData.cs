@@ -1,3 +1,4 @@
+using System.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -19,22 +20,22 @@ public static class SeedData
     }
 
     /// <summary>
-    /// Applies schema changes that may not yet be tracked by a migration.
-    /// Safe to call on every startup — each statement is guarded by an existence check.
+    ///     Applies schema changes that may not yet be tracked by a migration.
+    ///     Safe to call on every startup — each statement is guarded by an existence check.
     /// </summary>
     private static async Task EnsureSchemaAsync(ApplicationDbContext context)
     {
         var conn = context.Database.GetDbConnection();
-        if (conn.State != System.Data.ConnectionState.Open)
+        if (conn.State != ConnectionState.Open)
             await conn.OpenAsync();
 
         // DisplayName column on AspNetUsers
         using (var cmd = conn.CreateCommand())
         {
             cmd.CommandText = """
-                SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-                WHERE TABLE_NAME = 'AspNetUsers' AND COLUMN_NAME = 'DisplayName'
-                """;
+                              SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+                              WHERE TABLE_NAME = 'AspNetUsers' AND COLUMN_NAME = 'DisplayName'
+                              """;
             var exists = (int)(await cmd.ExecuteScalarAsync())! > 0;
             if (!exists)
             {
@@ -48,10 +49,10 @@ public static class SeedData
         using (var cmd = conn.CreateCommand())
         {
             cmd.CommandText = """
-                SELECT COUNT(*) FROM sys.indexes
-                WHERE name = 'IX_QuizAttempts_CompletedAt'
-                  AND object_id = OBJECT_ID('QuizAttempts')
-                """;
+                              SELECT COUNT(*) FROM sys.indexes
+                              WHERE name = 'IX_QuizAttempts_CompletedAt'
+                                AND object_id = OBJECT_ID('QuizAttempts')
+                              """;
             var exists = (int)(await cmd.ExecuteScalarAsync())! > 0;
             if (!exists)
             {
@@ -64,10 +65,10 @@ public static class SeedData
         using (var cmd = conn.CreateCommand())
         {
             cmd.CommandText = """
-                SELECT COUNT(*) FROM sys.indexes
-                WHERE name = 'IX_Quizzes_PublishedAt'
-                  AND object_id = OBJECT_ID('Quizzes')
-                """;
+                              SELECT COUNT(*) FROM sys.indexes
+                              WHERE name = 'IX_Quizzes_PublishedAt'
+                                AND object_id = OBJECT_ID('Quizzes')
+                              """;
             var exists = (int)(await cmd.ExecuteScalarAsync())! > 0;
             if (!exists)
             {
@@ -90,10 +91,11 @@ public static class SeedData
 
         // Ensure default admin user exists
         var adminEmail = config["AdminSettings:Email"]
-            ?? throw new InvalidOperationException("AdminSettings:Email is not configured.");
+                         ?? throw new InvalidOperationException("AdminSettings:Email is not configured.");
         var adminPassword = config["AdminSettings:Password"];
         if (string.IsNullOrWhiteSpace(adminPassword))
-            throw new InvalidOperationException("AdminSettings:Password is not configured. Set it via User Secrets or an environment variable.");
+            throw new InvalidOperationException(
+                "AdminSettings:Password is not configured. Set it via User Secrets or an environment variable.");
 
         var adminUser = await userManager.FindByEmailAsync(adminEmail);
         if (adminUser is null)

@@ -72,7 +72,8 @@
                     {
                         <div class="table-responsive">
                             <table class="table table-hover mb-0" aria-describedby="top-users-heading">
-                                <caption class="visually-hidden">Top users ranked by their best quiz score percentage</caption>
+                                <caption class="visually-hidden">Top users ranked by their best quiz score percentage
+                                </caption>
                                 <thead class="table-light">
                                 <tr>
                                     <th scope="col" class="ps-3">#</th>
@@ -96,9 +97,11 @@
                                             }
                                             @maskedEmail
                                         </td>
-                                        <td class="text-truncate col-title-truncate" title="@user.QuizTitle">@user.QuizTitle</td>
+                                        <td class="text-truncate col-title-truncate"
+                                            title="@user.QuizTitle">@user.QuizTitle</td>
                                         <td class="text-end pe-3">
-                                            <span class="badge @(user.BestScorePercent >= 70 ? "bg-success" : user.BestScorePercent >= 50 ? "bg-warning text-dark" : "bg-danger") rounded-pill">
+                                            <span
+                                                class="badge @(user.BestScorePercent >= 70 ? "bg-success" : user.BestScorePercent >= 50 ? "bg-warning text-dark" : "bg-danger") rounded-pill">
                                                 @user.BestScorePercent%
                                             </span>
                                         </td>

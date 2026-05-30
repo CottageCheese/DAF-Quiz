@@ -1,4 +1,4 @@
-@model QuizProject.Web.Models.ViewModels.QuestionFormModel
+@model QuestionFormModel
 @{
     ViewData["Title"] = "Add Question";
 }
@@ -17,26 +17,34 @@
                     <div class="mb-3">
                         <label asp-for="Text" class="form-label fw-semibold"></label>
                         <textarea asp-for="Text" class="form-control" rows="2"
-                                  placeholder="e.g. What is the capital of Australia?" autofocus aria-required="true"></textarea>
-                        <span asp-validation-for="Text" class="text-danger small" role="alert" aria-live="polite"></span>
+                                  placeholder="e.g. What is the capital of Australia?" autofocus
+                                  aria-required="true"></textarea>
+                        <span asp-validation-for="Text" class="text-danger small" role="alert"
+                              aria-live="polite"></span>
                     </div>
 
                     <div class="mb-3">
                         <label asp-for="DisplayOrder" class="form-label fw-semibold"></label>
-                        <input asp-for="DisplayOrder" type="number" class="form-control input-number-sm" min="1" aria-required="true"/>
-                        <span asp-validation-for="DisplayOrder" class="text-danger small" role="alert" aria-live="polite"></span>
+                        <input asp-for="DisplayOrder" type="number" class="form-control input-number-sm" min="1"
+                               aria-required="true"/>
+                        <span asp-validation-for="DisplayOrder" class="text-danger small" role="alert"
+                              aria-live="polite"></span>
                     </div>
 
                     <hr/>
-                    <p class="fw-semibold mb-2">Answers <small class="text-muted fw-normal">(at least 2 required)</small></p>
+                    <p class="fw-semibold mb-2">Answers <small class="text-muted fw-normal">(at least 2
+                            required)</small></p>
                     <p class="text-muted small mb-3">Select the radio button next to the correct answer.</p>
 
                     @{
-                        var answers = new[] { (nameof(Model.Answer1), "Answer1"), (nameof(Model.Answer2), "Answer2"),
-                            (nameof(Model.Answer3), "Answer3"), (nameof(Model.Answer4), "Answer4") };
+                        var answers = new[]
+                        {
+                            (nameof(Model.Answer1), "Answer1"), (nameof(Model.Answer2), "Answer2"),
+                            (nameof(Model.Answer3), "Answer3"), (nameof(Model.Answer4), "Answer4")
+                        };
                     }
 
-                    @for (int i = 0; i < answers.Length; i++)
+                    @for (var i = 0; i < answers.Length; i++)
                     {
                         var (displayName, fieldName) = answers[i];
                         var isRequired = i < 2;
@@ -54,7 +62,8 @@
                                    value="@(i == 0 ? Model.Answer1 : i == 1 ? Model.Answer2 : i == 2 ? Model.Answer3 : Model.Answer4)"/>
                         </div>
                     }
-                    <span asp-validation-for="CorrectAnswerIndex" class="text-danger small" role="alert" aria-live="polite"></span>
+                    <span asp-validation-for="CorrectAnswerIndex" class="text-danger small" role="alert"
+                          aria-live="polite"></span>
 
                     <div class="d-flex gap-2 mt-4">
                         <button type="submit" class="btn btn-primary">Save Question</button>

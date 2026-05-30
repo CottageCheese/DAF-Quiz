@@ -44,7 +44,8 @@ public class QuizzesController(IQuizService quizService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> SubmitAttempt(int attemptId, [FromBody] List<QuestionAnswerSelection> selections, CancellationToken ct)
+    public async Task<IActionResult> SubmitAttempt(int attemptId, [FromBody] List<QuestionAnswerSelection> selections,
+        CancellationToken ct)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 

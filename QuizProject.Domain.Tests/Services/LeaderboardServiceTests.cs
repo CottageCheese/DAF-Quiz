@@ -21,7 +21,6 @@ public class LeaderboardServiceTests : DomainTestBase
 
         // 2 completed attempts on published quiz
         for (var i = 0; i < 2; i++)
-        {
             Db.QuizAttempts.Add(new QuizAttempt
             {
                 UserId = seed.User.Id,
@@ -31,10 +30,9 @@ public class LeaderboardServiceTests : DomainTestBase
                 Score = 1,
                 TotalQuestions = 2
             });
-        }
         await Db.SaveChangesAsync();
 
-        var result = await _svc.GetTopQuizzesAsync(10);
+        var result = await _svc.GetTopQuizzesAsync();
 
         result.Should().ContainSingle();
         result[0].QuizTitle.Should().Be(seed.PublishedQuiz.Title);
@@ -58,7 +56,7 @@ public class LeaderboardServiceTests : DomainTestBase
         });
         await Db.SaveChangesAsync();
 
-        var result = await _svc.GetTopQuizzesAsync(10);
+        var result = await _svc.GetTopQuizzesAsync();
 
         result.Should().BeEmpty();
     }
@@ -103,7 +101,7 @@ public class LeaderboardServiceTests : DomainTestBase
         });
         await Db.SaveChangesAsync();
 
-        var result = await _svc.GetTopUsersAsync(10);
+        var result = await _svc.GetTopUsersAsync();
 
         result.Should().HaveCount(2);
         result[0].UserName.Should().Be(seed.User.DisplayName);
@@ -128,7 +126,7 @@ public class LeaderboardServiceTests : DomainTestBase
         });
         await Db.SaveChangesAsync();
 
-        var result = await _svc.GetTopUsersAsync(10);
+        var result = await _svc.GetTopUsersAsync();
 
         result[0].BestScorePercent.Should().Be(33.3);
     }

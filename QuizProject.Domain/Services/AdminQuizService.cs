@@ -8,9 +8,11 @@ using QuizProject.Domain.Models.Domain;
 
 namespace QuizProject.Domain.Services;
 
-public class AdminQuizService(ApplicationDbContext db, IDistributedCache cache, ILogger<AdminQuizService> logger) : IAdminQuizService
+public class AdminQuizService(ApplicationDbContext db, IDistributedCache cache, ILogger<AdminQuizService> logger)
+    : IAdminQuizService
 {
-    public async Task<PagedResult<AdminQuizListViewModel>> GetAllQuizzesAsync(int page = 1, int pageSize = 20, CancellationToken ct = default)
+    public async Task<PagedResult<AdminQuizListViewModel>> GetAllQuizzesAsync(int page = 1, int pageSize = 20,
+        CancellationToken ct = default)
     {
         var query = db.Quizzes.AsNoTracking();
         var total = await query.CountAsync(ct);
@@ -73,7 +75,8 @@ public class AdminQuizService(ApplicationDbContext db, IDistributedCache cache, 
         return MapToDetail(quiz);
     }
 
-    public async Task<AdminQuizDetailViewModel?> UpdateQuizAsync(int quizId, UpdateQuizRequest request, CancellationToken ct = default)
+    public async Task<AdminQuizDetailViewModel?> UpdateQuizAsync(int quizId, UpdateQuizRequest request,
+        CancellationToken ct = default)
     {
         var quiz = await db.Quizzes
             .Include(q => q.Questions.OrderBy(qu => qu.DisplayOrder))
@@ -117,7 +120,8 @@ public class AdminQuizService(ApplicationDbContext db, IDistributedCache cache, 
         return true;
     }
 
-    public async Task<AdminQuestionViewModel> AddQuestionAsync(int quizId, UpsertQuestionRequest request, CancellationToken ct = default)
+    public async Task<AdminQuestionViewModel> AddQuestionAsync(int quizId, UpsertQuestionRequest request,
+        CancellationToken ct = default)
     {
         if (!request.Answers.Any(a => a.IsCorrect))
             throw new DomainValidationException("At least one answer must be marked as correct.");
@@ -142,7 +146,8 @@ public class AdminQuizService(ApplicationDbContext db, IDistributedCache cache, 
         return MapToQuestion(question);
     }
 
-    public async Task<AdminQuestionViewModel?> UpdateQuestionAsync(int questionId, UpsertQuestionRequest request, CancellationToken ct = default)
+    public async Task<AdminQuestionViewModel?> UpdateQuestionAsync(int questionId, UpsertQuestionRequest request,
+        CancellationToken ct = default)
     {
         if (!request.Answers.Any(a => a.IsCorrect))
             throw new DomainValidationException("At least one answer must be marked as correct.");
@@ -195,31 +200,37 @@ public class AdminQuizService(ApplicationDbContext db, IDistributedCache cache, 
         return true;
     }
 
-    private static AdminQuizDetailViewModel MapToDetail(Quiz quiz) => new()
+    private static AdminQuizDetailViewModel MapToDetail(Quiz quiz)
     {
-        Id = quiz.Id,
-        Title = quiz.Title,
-        Description = quiz.Description,
-        CreatedAt = quiz.CreatedAt,
-        CreatedByEmail = quiz.CreatedByEmail,
-        PublishedAt = quiz.PublishedAt,
-        IsPublished = quiz.IsPublished,
-        Questions = quiz.Questions
-            .OrderBy(q => q.DisplayOrder)
-            .Select(MapToQuestion)
-            .ToList()
-    };
-
-    private static AdminQuestionViewModel MapToQuestion(Question q) => new()
-    {
-        Id = q.Id,
-        Text = q.Text,
-        DisplayOrder = q.DisplayOrder,
-        Answers = q.Answers.Select(a => new AdminAnswerViewModel
+        return new AdminQuizDetailViewModel
         {
-            Id = a.Id,
-            Text = a.Text,
-            IsCorrect = a.IsCorrect
-        }).ToList()
-    };
+            Id = quiz.Id,
+            Title = quiz.Title,
+            Description = quiz.Description,
+            CreatedAt = quiz.CreatedAt,
+            CreatedByEmail = quiz.CreatedByEmail,
+            PublishedAt = quiz.PublishedAt,
+            IsPublished = quiz.IsPublished,
+            Questions = quiz.Questions
+                .OrderBy(q => q.DisplayOrder)
+                .Select(MapToQuestion)
+                .ToList()
+        };
+    }
+
+    private static AdminQuestionViewModel MapToQuestion(Question q)
+    {
+        return new AdminQuestionViewModel
+        {
+            Id = q.Id,
+            Text = q.Text,
+            DisplayOrder = q.DisplayOrder,
+            Answers = q.Answers.Select(a => new AdminAnswerViewModel
+            {
+                Id = a.Id,
+                Text = a.Text,
+                IsCorrect = a.IsCorrect
+            }).ToList()
+        };
+    }
 }

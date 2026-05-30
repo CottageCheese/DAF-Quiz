@@ -1,0 +1,23 @@
+{
+  "UserConfig": {
+    "Namespaces": [
+      {
+        "Name": "daf-quiz",
+        "Queues": [],
+        "Topics": [
+          {
+            "Name": "quiz-events",
+            "Properties": {},
+            "Subscriptions": [
+              { "Name": "leaderboard-invalidation", "Properties": {} },
+              { "Name": "quiz-result-notification", "Properties": {} }
+            ]
+          }
+        ]
+      }
+    ],
+    "LoggingConfig": {
+      "Type": "File"
+    }
+  }
+}

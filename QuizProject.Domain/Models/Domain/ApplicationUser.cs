@@ -5,6 +5,5 @@ namespace QuizProject.Domain.Models.Domain;
 
 public class ApplicationUser : IdentityUser
 {
-    [Required, MaxLength(50)]
-    public string DisplayName { get; set; } = string.Empty;
+    [Required] [MaxLength(50)] public string DisplayName { get; set; } = string.Empty;
 }

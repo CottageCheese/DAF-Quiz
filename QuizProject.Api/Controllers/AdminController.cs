@@ -49,7 +49,7 @@ public class AdminController(IAdminQuizService adminService) : ControllerBase
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
         var userEmail = User.FindFirstValue(ClaimTypes.Email)
-            ?? User.FindFirstValue("email") ?? string.Empty;
+                        ?? User.FindFirstValue("email") ?? string.Empty;
 
         var quiz = await adminService.CreateQuizAsync(request, userId, userEmail, ct);
         return CreatedAtAction(nameof(GetQuiz), new { id = quiz.Id }, quiz);
@@ -86,7 +86,8 @@ public class AdminController(IAdminQuizService adminService) : ControllerBase
     [HttpPost("quizzes/{quizId:int}/questions")]
     [ProducesResponseType(typeof(AdminQuestionViewModel), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> AddQuestion(int quizId, [FromBody] UpsertQuestionRequest request, CancellationToken ct)
+    public async Task<IActionResult> AddQuestion(int quizId, [FromBody] UpsertQuestionRequest request,
+        CancellationToken ct)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
@@ -99,7 +100,8 @@ public class AdminController(IAdminQuizService adminService) : ControllerBase
     [ProducesResponseType(typeof(AdminQuestionViewModel), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateQuestion(int quizId, int questionId, [FromBody] UpsertQuestionRequest request, CancellationToken ct)
+    public async Task<IActionResult> UpdateQuestion(int quizId, int questionId,
+        [FromBody] UpsertQuestionRequest request, CancellationToken ct)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 

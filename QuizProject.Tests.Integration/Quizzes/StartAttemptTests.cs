@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using FluentAssertions;
 using QuizProject.Contracts;
 using QuizProject.Tests.Integration.Infrastructure;
@@ -31,13 +32,10 @@ public class StartAttemptTests(CustomWebApplicationFactory factory) : Integratio
         var response = await client.PostAsync($"/api/quizzes/{Seed.PublishedQuizId}/start", null);
 
         var raw = await response.Content.ReadAsStringAsync();
-        var model = System.Text.Json.JsonSerializer.Deserialize<TakeQuizViewModel>(raw,
-            new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        var model = JsonSerializer.Deserialize<TakeQuizViewModel>(raw,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-        foreach (var question in model!.Questions)
-        {
-            question.Answers.Should().HaveCountGreaterThanOrEqualTo(2);
-        }
+        foreach (var question in model!.Questions) question.Answers.Should().HaveCountGreaterThanOrEqualTo(2);
 
         // Confirm IsCorrect is NOT present in the raw JSON response
         raw.Should().NotContain("\"isCorrect\"", "isCorrect must not be exposed to users");

@@ -9,18 +9,21 @@ namespace QuizProject.Tests.Integration.Admin;
 [Collection("AdminTests")]
 public class AdminQuestionCrudTests(CustomWebApplicationFactory factory) : IntegrationTestBase(factory)
 {
-    private static object ValidQuestionPayload(string suffix = "") => new
+    private static object ValidQuestionPayload(string suffix = "")
     {
-        text = $"What is 2+2? {suffix}",
-        displayOrder = 99,
-        answers = new[]
+        return new
         {
-            new { text = "4", isCorrect = true },
-            new { text = "3", isCorrect = false },
-            new { text = "5", isCorrect = false },
-            new { text = "6", isCorrect = false }
-        }
-    };
+            text = $"What is 2+2? {suffix}",
+            displayOrder = 99,
+            answers = new[]
+            {
+                new { text = "4", isCorrect = true },
+                new { text = "3", isCorrect = false },
+                new { text = "5", isCorrect = false },
+                new { text = "6", isCorrect = false }
+            }
+        };
+    }
 
     [Fact]
     public async Task AddQuestion_ValidRequest_Returns201()
