@@ -1,11 +1,11 @@
 using System.Text;
-using Microsoft.Extensions.Caching.Distributed;
 using System.Threading.RateLimiting;
 using Azure.Messaging.ServiceBus;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.IdentityModel.Tokens;
 using QuizProject.Api.Infrastructure;
 using QuizProject.Api.Messaging;
@@ -98,7 +98,8 @@ switch (cacheMode.ToLowerInvariant())
 {
     case "redis":
         var redisConnection = builder.Configuration.GetConnectionString("Redis")
-            ?? throw new InvalidOperationException("Cache:Mode=Redis requires ConnectionStrings:Redis");
+                              ?? throw new InvalidOperationException(
+                                  "Cache:Mode=Redis requires ConnectionStrings:Redis");
         builder.Services.AddStackExchangeRedisCache(options =>
         {
             options.Configuration = redisConnection;
