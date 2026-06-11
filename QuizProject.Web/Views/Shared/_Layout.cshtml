@@ -50,16 +50,6 @@
                                     Quizzes
                                 </a>
                             </li>
-                            @if (User.IsInRole("Admin"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Admin" ? "active" : "")"
-                                       href="/Admin"
-                                       @(ViewContext.RouteData.Values["controller"]?.ToString() == "Admin" ? "aria-current=\"page\"" : "")>
-                                        Admin
-                                    </a>
-                                </li>
-                            }
                         }
                     </ul>
                 </nav>

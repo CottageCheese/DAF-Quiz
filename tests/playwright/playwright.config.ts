@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 import { config } from 'dotenv';
-import { MVC_BASE_URL, ANGULAR_BASE_URL } from './config';
+import { MVC_BASE_URL, MVC_ADMIN_BASE_URL, ANGULAR_BASE_URL } from './config';
 
 config(); // loads .env if present (ignored in CI where env vars are set directly)
 
@@ -20,11 +20,21 @@ export default defineConfig({
     },
     {
       name: 'mvc',
-      testMatch: /mvc\/.+\.spec\.ts/,
+      testMatch: /mvc\/(?!admin).+\.spec\.ts/,
       dependencies: ['setup'],
       use: {
         ...devices['Desktop Chrome'],
         baseURL: MVC_BASE_URL,
+        ignoreHTTPSErrors: true,
+      },
+    },
+    {
+      name: 'mvc-admin',
+      testMatch: /mvc\/admin\.spec\.ts/,
+      dependencies: ['setup'],
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: MVC_ADMIN_BASE_URL,
         ignoreHTTPSErrors: true,
       },
     },

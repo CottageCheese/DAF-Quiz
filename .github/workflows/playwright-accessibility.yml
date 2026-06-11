@@ -47,6 +47,9 @@ jobs:
       - name: Build MVC Web
         run: dotnet build QuizProject.Web/QuizProject.Web.csproj --configuration Release
 
+      - name: Build MVC Admin
+        run: dotnet build QuizProject.Web.Admin/QuizProject.Web.Admin.csproj --configuration Release
+
       - name: Wait for SQL Server
         run: |
           echo "Waiting for SQL Server on port 1433..."
@@ -63,6 +66,7 @@ jobs:
           JwtSettings__SecretKey: ${{ secrets.POSTMAN_JWT_SECRET }}
           AllowedOrigins__0: "http://localhost:4200"
           AllowedOrigins__1: "https://localhost:5001"
+          AllowedOrigins__2: "https://localhost:5003"
         run: |
           nohup dotnet run --project QuizProject.Api/QuizProject.Api.csproj \
             --configuration Release \
@@ -103,6 +107,29 @@ jobs:
           done
           echo "MVC Web did not become ready in time"
           tail -n 200 web.log || true
+          exit 1
+
+      - name: Start MVC Admin
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+          ApiSettings__BaseUrl: "http://localhost:7000"
+        run: |
+          nohup dotnet run --project QuizProject.Web.Admin/QuizProject.Web.Admin.csproj \
+            --configuration Release \
+            --urls https://localhost:5003 > admin.log 2>&1 &
+          echo $! > admin.pid
+
+      - name: Wait for MVC Admin
+        run: |
+          for i in {1..30}; do
+            if curl -fsSk https://localhost:5003/ > /dev/null; then
+              echo "MVC Admin is up"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "MVC Admin did not become ready in time"
+          tail -n 200 admin.log || true
           exit 1
 
       - name: Build Angular (CI config)
@@ -156,9 +183,11 @@ jobs:
         run: |
           echo "=== API logs ===" && tail -n 100 api.log || true
           echo "=== Web logs ===" && tail -n 100 web.log || true
+          echo "=== Admin logs ===" && tail -n 100 admin.log || true
 
       - name: Stop servers
         if: always()
         run: |
           [ -f api.pid ] && kill "$(cat api.pid)" || true
           [ -f web.pid ] && kill "$(cat web.pid)" || true
+          [ -f admin.pid ] && kill "$(cat admin.pid)" || true

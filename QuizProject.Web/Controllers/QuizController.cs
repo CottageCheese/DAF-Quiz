@@ -6,7 +6,7 @@ using QuizProject.Web.Services;
 namespace QuizProject.Web.Controllers;
 
 [Authorize]
-public class QuizController(IApiClient apiClient) : Controller
+public class QuizController(IPublicApiClient apiClient) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index()

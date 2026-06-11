@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
+using QuizProject.Web.Common.Models;
 using QuizProject.Web.Services;
 
 namespace QuizProject.Web.Controllers;
 
-public class HomeController(IApiClient apiClient) : Controller
+public class HomeController(IPublicApiClient apiClient) : Controller
 {
     public async Task<IActionResult> Index()
     {

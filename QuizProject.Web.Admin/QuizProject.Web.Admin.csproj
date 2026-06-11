@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>QuizProject.Web.Admin</RootNamespace>
+        <AssemblyName>QuizProject.Web.Admin</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\QuizProject.Web.Common\QuizProject.Web.Common.csproj"/>
+        <ProjectReference Include="..\QuizProject.Contracts\QuizProject.Contracts.csproj"/>
+    </ItemGroup>
+
+</Project>
