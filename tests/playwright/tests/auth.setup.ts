@@ -2,7 +2,7 @@ import { test as setup, expect } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
 import {
-  MVC_BASE_URL, ANGULAR_BASE_URL, API_BASE_URL,
+  MVC_BASE_URL, MVC_ADMIN_BASE_URL, ANGULAR_BASE_URL, API_BASE_URL,
   ADMIN_EMAIL, ADMIN_PASSWORD, USER_EMAIL, USER_PASSWORD,
   MVC_ADMIN_STATE_PATH, MVC_USER_STATE_PATH,
   ANGULAR_USER_STATE_PATH, TEST_DATA_PATH,
@@ -21,7 +21,7 @@ setup('prepare accessibility test state', async ({ browser, request }) => {
   {
     const ctx = await browser.newContext({ ignoreHTTPSErrors: true });
     const page = await ctx.newPage();
-    await page.goto(`${MVC_BASE_URL}/Account/Login`);
+    await page.goto(`${MVC_ADMIN_BASE_URL}/Account/Login`);
     await page.locator('#Email').fill(ADMIN_EMAIL);
     await page.locator('#Password').fill(ADMIN_PASSWORD);
     await page.locator('[type="submit"]').click();

@@ -1,6 +1,7 @@
 import * as path from 'path';
 
 export const MVC_BASE_URL = process.env.MVC_BASE_URL ?? 'https://localhost:5001';
+export const MVC_ADMIN_BASE_URL = process.env.MVC_ADMIN_BASE_URL ?? 'https://localhost:5003';
 export const ANGULAR_BASE_URL = process.env.ANGULAR_BASE_URL ?? 'http://localhost:4200';
 export const API_BASE_URL = process.env.API_BASE_URL ?? 'http://localhost:7000';
 

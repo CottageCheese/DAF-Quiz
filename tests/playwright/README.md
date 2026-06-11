@@ -5,9 +5,10 @@ End-to-end accessibility tests for DAF-Quiz using [Playwright](https://playwrigh
 ## Prerequisites
 
 - Node.js 18+
-- All three apps running:
+- All four apps running:
   - **API** — `https://localhost:7001` (or `http://localhost:7000`)
-  - **MVC** — `https://localhost:5001`
+  - **MVC (public)** — `https://localhost:5001`
+  - **MVC (admin)** — `https://localhost:5003`
   - **Angular** — `http://localhost:4200`
 
 ## Setup
@@ -31,6 +32,7 @@ cp .env.example .env
 | `PLAYWRIGHT_ADMIN_PASSWORD` | _(none)_ | **Yes** |
 | `API_BASE_URL` | `https://localhost:7001` | No |
 | `MVC_BASE_URL` | `https://localhost:5001` | No |
+| `MVC_ADMIN_BASE_URL` | `https://localhost:5003` | No |
 | `ANGULAR_BASE_URL` | `http://localhost:4200` | No |
 
 ## Running Tests
@@ -56,7 +58,7 @@ npm run report
 Runs once before all suites. It:
 
 1. Registers the test user (`playwright-a11y@test.local`) — idempotent, safe to re-run.
-2. Logs in as admin and user on MVC, saves cookie storage state to `.auth/`.
+2. Logs in as admin on the **admin site** (`MVC_ADMIN_BASE_URL`) and as user on the **public site** (`MVC_BASE_URL`), saves cookie storage state to `.auth/`.
 3. Logs in as user on Angular, saves `localStorage` state to `.auth/`.
 4. Creates a completed quiz attempt via the API and writes `quizId` / `attemptId` to `.auth/test-data.json`.
 
@@ -68,7 +70,7 @@ Storage state files are loaded per project in `playwright.config.ts` — tests n
 |---|---|---|
 | `tests/mvc/public.spec.ts` | `mvc` | none |
 | `tests/mvc/user.spec.ts` | `mvc` | MVC user cookie |
-| `tests/mvc/admin.spec.ts` | `mvc` | MVC admin cookie |
+| `tests/mvc/admin.spec.ts` | `mvc-admin` | MVC admin cookie (port 5003) |
 | `tests/angular/public.spec.ts` | `angular` | none |
 | `tests/angular/user.spec.ts` | `angular` | Angular user localStorage |
 
@@ -90,6 +92,7 @@ export async function checkPageA11y(page: Page, testInfo: TestInfo): Promise<voi
 
 ```
 setup  →  mvc
+       →  mvc-admin
        →  angular
 ```
 
@@ -123,6 +126,7 @@ env:
   PLAYWRIGHT_ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
   API_BASE_URL: http://localhost:7000
   MVC_BASE_URL: http://localhost:5001
+  MVC_ADMIN_BASE_URL: http://localhost:5003
   ANGULAR_BASE_URL: http://localhost:4200
 ```
 
