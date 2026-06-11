@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>QuizProject.Web.Common</RootNamespace>
+        <AssemblyName>QuizProject.Web.Common</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- JWT reading (claims extraction only — no validation in Web projects) -->
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.7.1"/>
+        <!-- SQL Server distributed session (survives app restarts on Azure) -->
+        <PackageReference Include="Microsoft.Extensions.Caching.SqlServer" Version="8.0.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\QuizProject.Contracts\QuizProject.Contracts.csproj"/>
+    </ItemGroup>
+
+</Project>

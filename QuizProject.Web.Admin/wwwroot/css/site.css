@@ -1,0 +1,294 @@
+/* ============================================================
+   QuizProject — site-wide accessible stylesheet
+   WCAG 2.1 AA compliant; Bootstrap 5 base
+   Modern UI enhancements
+   ============================================================ */
+
+:root {
+    /* Color tokens */
+    --color-primary: #0d6efd;
+    --color-primary-dark: #0a58ca;
+    --color-primary-focus-ring: rgba(13, 110, 253, 0.25);
+    --color-primary-hover-bg: #f0f4ff;
+    --color-primary-selected-bg: #e7f1ff;
+    --color-primary-selected-text: #084298;
+    --color-text: #212529;
+    --color-text-muted: #636b72;
+    --color-border: #ced4da;
+    --color-border-light: #dee2e6;
+    --color-surface: #ffffff;
+    --color-bg: #f8f9fa;
+
+    /* Gradient & shadow tokens */
+    --primary-gradient: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    --card-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --card-shadow-hover: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+
+    /* Spacing scale */
+    --space-1: 0.25rem; /*  4px */
+    --space-2: 0.5rem; /*  8px */
+    --space-3: 0.75rem; /* 12px */
+    --space-4: 1rem; /* 16px */
+    --space-5: 1.25rem; /* 20px */
+    --space-6: 1.5rem; /* 24px */
+    --space-8: 2rem; /* 32px */
+
+    /* Typography tokens */
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-weight-normal: 400;
+    --font-weight-semibold: 600;
+    --line-height-base: 1.6;
+
+    /* Transition */
+    --transition-speed: 0.2s;
+}
+
+/* Skip link */
+.skip-link:focus {
+    position: fixed;
+    top: var(--space-2);
+    left: var(--space-2);
+    z-index: 9999;
+    padding: var(--space-2) var(--space-4);
+    background: var(--color-primary);
+    color: var(--color-surface);
+    border-radius: var(--space-1);
+    font-weight: var(--font-weight-semibold);
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Focus ring */
+:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: var(--space-1);
+    box-shadow: 0 0 0 4px var(--color-primary-focus-ring);
+}
+
+/* Remove default outline only when :focus-visible is supported */
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Target size */
+/* Minimum target size for interactive elements not meeting 24x24px */
+.btn, .nav-link, .navbar-brand {
+    min-height: 2.25rem; /* ~36px */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Checkboxes/radios: size only — inline-flex distorts native controls */
+.form-check-input {
+    min-width: 1.25em;
+    min-height: 1.25em;
+}
+
+/* Body layout */
+html,
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-bg);
+}
+
+main.container {
+    flex: 1;
+}
+
+/* Typography */
+/* Ensure body text meets 4.5:1 against white (#fff) */
+body {
+    color: var(--color-text); /* contrast 16.1:1 */
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+}
+
+.text-muted {
+    color: var(--color-text-muted) !important; /* contrast 5.74:1 on #fff, 5.12:1 on #f8f9fa — AA */
+}
+
+/* Navbar: ensure nav links meet AA contrast on bg-primary (#0d6efd) */
+.navbar-dark .navbar-nav .nav-link {
+    color: #fff !important;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link:focus {
+    color: #fff !important;
+    text-decoration: underline;
+}
+
+.navbar-dark .btn-outline-light {
+    color: #fff;
+    border-color: #fff;
+}
+
+/* btn-outline-secondary: meet AA contrast on bg-light (#f8f9fa) */
+.btn-outline-secondary {
+    color: var(--color-text-muted);
+    border-color: var(--color-text-muted);
+}
+
+/* Default link color: #0d6efd fails AA on #f8f9fa (4.26:1). Darken to meet 4.5:1. */
+a:not(.btn):not(.nav-link):not(.navbar-brand) {
+    color: var(--color-primary-dark); /* #0a58ca — 6.4:1 on #f8f9fa */
+}
+
+/* Quiz answer labels */
+.quiz-answer-label {
+    cursor: pointer;
+    border: 2px solid var(--color-border);
+    border-radius: var(--space-2);
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    transition: background-color var(--transition-speed) ease, border-color var(--transition-speed) ease;
+}
+
+.quiz-answer-label:hover {
+    background-color: var(--color-primary-hover-bg);
+    border-color: var(--color-primary);
+}
+
+.quiz-answer-label.active {
+    background-color: var(--color-primary-selected-bg);
+    border-color: var(--color-primary);
+    color: var(--color-primary-selected-text);
+    font-weight: var(--font-weight-semibold);
+}
+
+/* Progress bar */
+.progress {
+    background-color: var(--color-border-light);
+    border-radius: var(--space-2);
+}
+
+.quiz-progress-bar {
+    height: 10px;
+}
+
+/* Score circle */
+.score-circle {
+    width: 120px;
+    height: 120px;
+}
+
+/* Table column widths */
+.col-num {
+    width: 3rem;
+}
+
+.col-result {
+    width: 5rem;
+}
+
+.col-title-truncate {
+    max-width: 140px;
+}
+
+/* Number input (compact) */
+.input-number-sm {
+    width: 100px;
+}
+
+/* Card enhancements */
+.card {
+    border: none;
+    box-shadow: var(--card-shadow);
+    transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+    border-radius: var(--space-3);
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--card-shadow-hover);
+}
+
+.card-header {
+    border-bottom: none;
+    padding: var(--space-5);
+}
+
+.card-body {
+    padding: var(--space-6);
+}
+
+.card.h-100:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--card-shadow-hover);
+}
+
+/* Buttons */
+.btn {
+    border-radius: var(--space-2);
+    font-weight: var(--font-weight-semibold);
+    transition: all var(--transition-speed) ease;
+    touch-action: manipulation;
+}
+
+.btn-primary {
+    background: var(--primary-gradient);
+    border: none;
+}
+
+.btn-primary:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.badge.rounded-pill {
+    min-width: 2.5rem;
+}
+
+/* Responsive table text */
+@media (max-width: 575.98px) {
+    .table {
+        font-size: var(--font-size-sm);
+    }
+}
+
+/* Reduced-motion (WCAG 2.3 / user preference) */
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --transition-speed: 0s;
+    }
+
+    .card,
+    .card.h-100 {
+        transition: none;
+    }
+
+    .card:hover,
+    .card.h-100:hover {
+        transform: none;
+    }
+
+    .btn {
+        transition: none;
+    }
+
+    .btn-primary:hover {
+        filter: none;
+        transform: none;
+    }
+
+    .quiz-answer-label {
+        transition: none;
+    }
+}
+
+/* Print styles */
+@media print {
+    nav, footer, .btn, form {
+        display: none !important;
+    }
+
+    .card {
+        box-shadow: none !important;
+        border: 1px solid var(--color-border) !important;
+    }
+}

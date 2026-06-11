@@ -76,7 +76,7 @@ builder.Services.AddRateLimiter(options =>
 
 // CORS (Web frontend only)
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
-                     ?? ["https://localhost:5001", "http://localhost:5000"];
+                     ?? ["https://localhost:5001", "http://localhost:5000", "https://localhost:5003", "http://localhost:5002"];
 
 builder.Services.AddCors(options =>
 {

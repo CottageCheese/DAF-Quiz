@@ -1,6 +1,7 @@
+using QuizProject.Web.Admin.Services;
 using QuizProject.Web.Common.Extensions;
 using QuizProject.Web.Common.Middleware;
-using QuizProject.Web.Services;
+using QuizProject.Web.Common.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,20 +11,20 @@ builder.Services.AddWebCommonServices(
     builder.Environment,
     new WebCommonOptions
     {
-        SessionCookieName = ".QuizProject.Session",
-        AuthCookieName = ".QuizProject.Auth"
+        SessionCookieName = ".QuizProject.Admin.Session",
+        AuthCookieName = ".QuizProject.Admin.Auth"
     });
 
 // HTTP client
 var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"]
                  ?? throw new InvalidOperationException("ApiSettings:BaseUrl is not configured.");
 
-builder.Services.AddHttpClient<IPublicApiClient, PublicApiClient>(
+builder.Services.AddHttpClient<IAdminApiClient, AdminApiClient>(
     client => { client.BaseAddress = new Uri(apiBaseUrl); });
 
-// Register IAuthApiClient pointing to the same instance as IPublicApiClient
-builder.Services.AddScoped<QuizProject.Web.Common.Services.IAuthApiClient>(
-    sp => sp.GetRequiredService<IPublicApiClient>());
+// Register IAuthApiClient pointing to same instance as IAdminApiClient
+builder.Services.AddScoped<IAuthApiClient>(
+    sp => sp.GetRequiredService<IAdminApiClient>());
 
 // MVC
 builder.Services.AddControllersWithViews();
@@ -56,6 +57,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     "default",
-    "{controller=Home}/{action=Index}/{id?}");
+    "{controller=Admin}/{action=Index}/{id?}");
 
 app.Run();

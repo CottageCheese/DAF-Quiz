@@ -1,15 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using QuizProject.Web.Common.Models;
-using QuizProject.Web.Services;
 
-namespace QuizProject.Web.Controllers;
+namespace QuizProject.Web.Admin.Controllers;
 
-public class HomeController(IPublicApiClient apiClient) : Controller
+public class HomeController : Controller
 {
-    public async Task<IActionResult> Index()
+    public IActionResult Index()
     {
-        var model = await apiClient.GetLeaderboardAsync();
-        return View(model);
+        return RedirectToAction("Index", "Admin");
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

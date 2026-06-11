@@ -4,8 +4,8 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>QuizProject.Web</RootNamespace>
-        <AssemblyName>QuizProject.Web</AssemblyName>
+        <RootNamespace>QuizProject.Web.Admin</RootNamespace>
+        <AssemblyName>QuizProject.Web.Admin</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>

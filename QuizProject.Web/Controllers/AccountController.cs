@@ -1,17 +1,19 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using QuizProject.Web.Common.Controllers;
+using QuizProject.Web.Common.Services;
 using QuizProject.Web.Models.ViewModels;
 using QuizProject.Web.Services;
 
 namespace QuizProject.Web.Controllers;
 
-public class AccountController(IApiClient apiClient, ITokenStorageService tokenStorage) : Controller
+public class AccountController(IPublicApiClient apiClient, ITokenStorageService tokenStorage)
+    : AccountControllerBase(apiClient, tokenStorage)
 {
+    protected override string DefaultController => "Home";
+    protected override string DefaultAction => "Index";
+
     [HttpGet]
     [AllowAnonymous]
     public IActionResult Register(string? returnUrl = null)
@@ -45,105 +47,5 @@ public class AccountController(IApiClient apiClient, ITokenStorageService tokenS
 
         await SignInFromTokensAsync(result.Data.AccessToken, result.Data.RefreshToken, result.Data.ExpiresIn);
         return RedirectToLocal(returnUrl);
-    }
-
-    [HttpGet]
-    [AllowAnonymous]
-    public IActionResult Login(string? returnUrl = null)
-    {
-        if (User.Identity?.IsAuthenticated == true)
-            return RedirectToAction("Index", "Home");
-
-        ViewData["ReturnUrl"] = returnUrl;
-        return View();
-    }
-
-    [HttpPost]
-    [AllowAnonymous]
-    [ValidateAntiForgeryToken]
-    [EnableRateLimiting("auth")]
-    public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
-    {
-        ViewData["ReturnUrl"] = returnUrl;
-
-        if (!ModelState.IsValid)
-            return View(model);
-
-        var result = await apiClient.LoginAsync(model.Email, model.Password);
-        if (!result.Succeeded || result.Data is null)
-        {
-            ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Invalid email or password.");
-            return View(model);
-        }
-
-        await SignInFromTokensAsync(result.Data.AccessToken, result.Data.RefreshToken, result.Data.ExpiresIn);
-        return RedirectToLocal(returnUrl);
-    }
-
-    [HttpPost]
-    [Authorize]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Logout()
-    {
-        var refreshToken = tokenStorage.GetRefreshToken();
-        if (refreshToken is not null)
-            await apiClient.RevokeTokenAsync(refreshToken);
-
-        tokenStorage.Clear();
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        return RedirectToAction("Login", "Account");
-    }
-
-    [HttpGet]
-    [AllowAnonymous]
-    public IActionResult AccessDenied()
-    {
-        return View();
-    }
-
-    // Helpers
-
-    private async Task SignInFromTokensAsync(string accessToken, string refreshToken, int expiresIn)
-    {
-        // Read identity claims from the JWT without full validation
-        // (the API already validated credentials and issued the token)
-        var handler = new JwtSecurityTokenHandler();
-        var jwt = handler.ReadJwtToken(accessToken);
-
-        var userId = jwt.Subject;
-        var email = jwt.Claims.FirstOrDefault(c =>
-            c.Type is JwtRegisteredClaimNames.Email or "email")?.Value ?? string.Empty;
-        var displayName = jwt.Claims.FirstOrDefault(c => c.Type == "display_name")?.Value ?? email;
-
-        // Extract role claims from the JWT so User.IsInRole() works in MVC
-        var roleClaims = jwt.Claims
-            .Where(c => c.Type is ClaimTypes.Role or "role" or
-                "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")
-            .Select(c => new Claim(ClaimTypes.Role, c.Value));
-
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.NameIdentifier, userId),
-            new(ClaimTypes.Name, displayName), // used by User.Identity.Name (navbar display)
-            new(ClaimTypes.Email, email)
-        };
-
-        claims.AddRange(roleClaims);
-
-        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        var principal = new ClaimsPrincipal(identity);
-
-        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,
-            new AuthenticationProperties { IsPersistent = false });
-
-        tokenStorage.StoreTokens(accessToken, refreshToken,
-            DateTime.UtcNow.AddSeconds(expiresIn));
-    }
-
-    private IActionResult RedirectToLocal(string? returnUrl)
-    {
-        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-            return Redirect(returnUrl);
-        return RedirectToAction("Index", "Home");
     }
 }
