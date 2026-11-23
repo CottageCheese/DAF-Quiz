@@ -542,6 +542,99 @@ footer.bg-light {
     }
 }
 
+/* ---------- Admin shell subdued variant (#29) ---------- */
+
+/* Quieter body backdrop: amber accent, no violet glow */
+body.admin-body {
+    background:
+        radial-gradient(900px 400px at 100% -10%, rgba(251, 191, 36, 0.06), transparent 60%),
+        radial-gradient(700px 400px at 0% 110%, rgba(34, 211, 238, 0.04), transparent 60%),
+        var(--bg);
+}
+
+/* Admin mode banner strip above topbar */
+.admin-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s-2);
+    padding: 6px var(--s-5);
+    background: color-mix(in oklab, var(--warn) 18%, var(--bg-elev));
+    border-bottom: 1px solid color-mix(in oklab, var(--warn) 40%, var(--border));
+    color: var(--warn);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    position: sticky;
+    top: 0;
+    z-index: 11;
+}
+
+.admin-banner svg { opacity: 0.9; }
+
+.admin-banner .env {
+    color: var(--text-mute);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+}
+
+/* Topbar sits under banner when banner present */
+.admin-banner + .topbar { top: 28px; }
+
+/* Topbar admin overrides: tighter radii, muted brand chip */
+.topbar.topbar-admin {
+    background: rgba(21, 27, 46, 0.8);
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+.topbar.topbar-admin .brand { color: var(--text-dim); }
+.topbar.topbar-admin .brand-mark {
+    border-radius: 6px;
+}
+
+.topbar.topbar-admin .topbar-nav a.active {
+    color: var(--text);
+    background: color-mix(in oklab, var(--warn) 14%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--warn) 40%, transparent);
+}
+
+.topbar.topbar-admin .topbar-nav a:focus-visible {
+    outline-color: var(--warn);
+}
+
+/* Data-dense admin content wrapper */
+.admin-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--s-5) 0 var(--s-7);
+}
+
+.admin-page .page-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--s-4);
+    margin-bottom: var(--s-5);
+}
+
+.admin-page .page-head h1 {
+    font-family: var(--font-display);
+    font-size: clamp(22px, 3vw, 28px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 var(--s-1);
+    color: var(--text);
+}
+
+.admin-page .page-head .sub {
+    color: var(--text-dim);
+    font-size: 13px;
+    margin: 0;
+}
+
 /* Print styles */
 @media print {
     nav, footer, .btn, form {
