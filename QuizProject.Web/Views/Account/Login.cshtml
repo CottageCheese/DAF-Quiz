@@ -1,55 +1,75 @@
 @model LoginViewModel
 @{
     ViewData["Title"] = "Sign in";
+    Layout = "_Layout";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <section aria-labelledby="login-heading">
-            <h1 id="login-heading" class="mb-4">Sign in</h1>
+<div class="auth-shell">
+    <section class="auth-card" aria-labelledby="login-heading">
+        <div class="auth-brand">
+            <span class="brand-mark" aria-hidden="true"></span>
+            TriviaRush
+        </div>
 
-            <form asp-action="Login" method="post" novalidate>
-                <input type="hidden" value="@ViewData["ReturnUrl"]" name="returnUrl"/>
-                @Html.AntiForgeryToken()
+        <h1 id="login-heading" class="auth-title">Welcome back.</h1>
+        <p class="auth-sub">Sign in to keep your streak alive.</p>
 
-                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"
-                     aria-live="assertive"></div>
+        <form asp-action="Login" method="post" novalidate>
+            <input type="hidden" value="@ViewData["ReturnUrl"]" name="returnUrl"/>
+            @Html.AntiForgeryToken()
 
-                <div class="mb-3">
-                    <label asp-for="Email" class="form-label fw-semibold"></label>
-                    <input asp-for="Email"
-                           class="form-control"
-                           type="email"
-                           autocomplete="username"
-                           aria-required="true"
-                           placeholder="name@example.com"/>
-                    <span asp-validation-for="Email" class="text-danger" role="alert" aria-live="polite"></span>
-                </div>
+            <div asp-validation-summary="ModelOnly" class="auth-alert" role="alert" aria-live="assertive"></div>
 
-                <div class="mb-3">
-                    <label asp-for="Password" class="form-label fw-semibold"></label>
-                    <input asp-for="Password"
-                           class="form-control"
-                           autocomplete="current-password"
-                           aria-required="true"/>
-                    <span asp-validation-for="Password" class="text-danger" role="alert" aria-live="polite"></span>
-                </div>
+            <div class="auth-field">
+                <input asp-for="Email"
+                       id="Email"
+                       class="auth-input"
+                       type="email"
+                       autocomplete="username"
+                       aria-required="true"
+                       placeholder=" "/>
+                <label asp-for="Email" for="Email" class="auth-label">Email</label>
+                <span asp-validation-for="Email" class="auth-err" role="alert" aria-live="polite"></span>
+            </div>
 
-                <div class="mb-4 form-check">
-                    <input asp-for="RememberMe" class="form-check-input"/>
-                    <label asp-for="RememberMe" class="form-check-label"></label>
-                </div>
+            <div class="auth-field">
+                <input asp-for="Password"
+                       id="Password"
+                       class="auth-input"
+                       autocomplete="current-password"
+                       aria-required="true"
+                       placeholder=" "/>
+                <label asp-for="Password" for="Password" class="auth-label">Password</label>
+                <span asp-validation-for="Password" class="auth-err" role="alert" aria-live="polite"></span>
+            </div>
 
-                <button type="submit" class="btn btn-primary w-100 mb-3">Sign in</button>
+            <label class="auth-check">
+                <input asp-for="RememberMe" type="checkbox"/>
+                <span>Remember me</span>
+            </label>
 
-                <p class="text-center">
-                    No account? <a asp-controller="Account" asp-action="Register">Create one</a>
-                </p>
-            </form>
-        </section>
-    </div>
+            <button type="submit" class="auth-cta">Sign in</button>
+
+            <p class="auth-switch">
+                No account? <a asp-controller="Account" asp-action="Register">Create one</a>
+            </p>
+        </form>
+
+        <div class="auth-footer">Dark mode · Keyboard friendly · WCAG AA</div>
+    </section>
 </div>
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script>
+        (function () {
+            document.querySelectorAll('.auth-input').forEach(function (input) {
+                input.addEventListener('blur', function () {
+                    var err = input.parentElement.querySelector('.auth-err');
+                    if (err && err.textContent.trim()) input.classList.add('input-error');
+                    else input.classList.remove('input-error');
+                });
+            });
+        })();
+    </script>
 }

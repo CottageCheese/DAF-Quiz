@@ -2,10 +2,18 @@
     ViewData["Title"] = "Access denied";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-6 text-center">
-        <h1 class="display-4 mb-3" aria-label="Access denied">403</h1>
-        <p class="lead mb-4">You do not have permission to view this page.</p>
-        <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Go to dashboard</a>
-    </div>
+<div class="auth-shell">
+    <section class="auth-card" aria-labelledby="denied-heading" style="text-align: center;">
+        <div class="auth-brand" style="justify-content: center;">
+            <span class="brand-mark" aria-hidden="true"></span>
+            TriviaRush
+        </div>
+
+        <h1 id="denied-heading" class="auth-title" aria-label="Access denied">403</h1>
+        <p class="auth-sub">You do not have permission to view this page.</p>
+
+        <a asp-controller="Home" asp-action="Index" class="auth-cta" style="display: inline-block; text-decoration: none; text-align: center;">
+            Back to leaderboard
+        </a>
+    </section>
 </div>
