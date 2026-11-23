@@ -12,8 +12,11 @@ QuizProject.sln
 ├── QuizProject.Web.Common/       # Shared web infrastructure (session, cookie auth, ApiClientBase)
 ├── QuizProject.Web/              # Public MVC site (leaderboard, quiz-taking, registration)
 ├── QuizProject.Web.Admin/        # Admin MVC site (quiz/question CRUD, admin-only)
+├── quiz-angular/                 # Angular SPA client (separate frontend)
 ├── QuizProject.Domain.Tests/     # xUnit unit tests for domain services (SQLite in-memory)
-└── QuizProject.Tests.Integration/  # xUnit integration tests (HTTP surface)
+├── QuizProject.Api.Tests/        # xUnit unit tests for API controllers/services (SQLite in-memory)
+├── QuizProject.Tests.Integration/  # xUnit integration tests (HTTP surface)
+└── tests/playwright/             # Playwright + axe-core a11y E2E tests (WCAG 2 AA)
 ```
 
 ## Project Reference Graph
@@ -33,6 +36,7 @@ QuizProject.Tests.Integration
 ```bash
 dotnet restore
 dotnet build
+dotnet format QuizProject.sln   # lint/format
 
 # Run API (https://localhost:7001)
 cd QuizProject.Api && dotnet run
@@ -42,6 +46,9 @@ cd QuizProject.Web && dotnet run
 
 # Run Admin Web (https://localhost:5003) — separate terminal
 cd QuizProject.Web.Admin && dotnet run
+
+# Run Angular SPA (http://localhost:4200) — separate terminal
+cd quiz-angular && npm start
 
 # Run integration tests
 cd QuizProject.Tests.Integration && dotnet test
@@ -98,6 +105,7 @@ dotnet ef database update --project QuizProject.Domain --startup-project QuizPro
 | QuizProject.Api | 7001 | 7000 |
 | QuizProject.Web (Public) | 5001 | 5000 |
 | QuizProject.Web.Admin | 5003 | 5002 |
+| quiz-angular | — | 4200 |
 
 ## Tests
 
@@ -107,19 +115,32 @@ Two test suites:
 - `DomainTestBase`: wires services + `MemoryCache` directly; `IDisposable`
 - `DomainTestSeeder`: seeds entities via `ApplicationDbContext` directly (no `UserManager`)
 
+**API unit tests** (`QuizProject.Api.Tests`) — SQLite in-memory, controller/service-level:
+- `ApiTestBase` wires `ApplicationDbContext` with SQLite directly.
+
 **Integration tests** (`QuizProject.Tests.Integration`) — full HTTP stack via `WebApplicationFactory`:
 - `CustomWebApplicationFactory`, `IntegrationTestBase`, `AuthHelper`, `TestDatabaseSeeder`
 
+**Playwright a11y tests** (`tests/playwright`) — WCAG 2 AA scans across MVC + Angular. Requires all four apps running locally. See `tests/playwright/README.md`.
+
 ```bash
-# Run all tests
+# All .NET tests
 dotnet test QuizProject.sln
 
-# Domain tests only
+# Single project
 dotnet test QuizProject.Domain.Tests
-
-# Integration tests only
+dotnet test QuizProject.Api.Tests
 dotnet test QuizProject.Tests.Integration
+
+# Single test by name filter
+dotnet test --filter "FullyQualifiedName~MyTestName"
+dotnet test --filter "DisplayName~partial name"
 
 # Postman/Newman tests
 ./scripts/run-postman-tests.ps1 -AdminPassword "xxx" -UserPassword "xxx"
+
+# Playwright (from tests/playwright, requires apps running)
+npm test              # all suites
+npm run test:mvc      # MVC only
+npm run test:angular  # Angular only
 ```
