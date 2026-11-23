@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DAF Quiz — Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* palette */
+  --bg: #0B1020;
+  --bg-elev: #151B2E;
+  --surface: #1B2238;
+  --surface-hi: #242C47;
+  --border: #2A3350;
+  --text: #E7ECF5;
+  --text-dim: #9AA4C0;
+  --text-mute: #6B7498;
+
+  /* brand */
+  --violet: #7C5CFF;
+  --violet-hi: #9B82FF;
+  --cyan: #22D3EE;
+
+  /* answer tiles (Kahoot-inspired) */
+  --ans-red:    #FB5A6B;
+  --ans-blue:   #4C7CFF;
+  --ans-amber:  #FBBF24;
+  --ans-green:  #34D399;
+
+  /* semantic */
+  --success: #A3E635;
+  --warn:    #FBBF24;
+  --danger:  #FB7185;
+
+  /* glows */
+  --glow-violet: 0 10px 40px -10px rgba(124,92,255,.55), 0 0 0 1px rgba(124,92,255,.25);
+  --glow-cyan:   0 10px 40px -10px rgba(34,211,238,.45);
+  --shadow-card: 0 1px 0 rgba(255,255,255,.04) inset, 0 20px 50px -20px rgba(0,0,0,.6);
+
+  /* radius / space */
+  --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 24px; --r-pill: 999px;
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 64px;
+
+  /* type */
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* motion */
+  --ease-out: cubic-bezier(.22,.61,.36,1);
+  --ease-spring: cubic-bezier(.34,1.56,.64,1);
+  --t-fast: 120ms;
+  --t-mid: 220ms;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-body);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(124,92,255,.18), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, rgba(34,211,238,.12), transparent 60%),
+    var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-feature-settings: "cv11","ss01","ss03";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- top bar ---------- */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--s-4) var(--s-6);
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  backdrop-filter: blur(10px);
+  position: sticky; top: 0; z-index: 10;
+  background: rgba(11,16,32,.65);
+}
+.brand {
+  display: flex; align-items: center; gap: var(--s-3);
+  font-family: var(--font-display); font-weight: 700; letter-spacing: -.01em;
+  font-size: 18px;
+}
+.brand-mark {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: conic-gradient(from 210deg, var(--violet), var(--cyan), var(--violet));
+  box-shadow: var(--glow-violet);
+}
+.nav { display: flex; gap: var(--s-2); }
+.nav a {
+  color: var(--text-dim); text-decoration: none;
+  padding: 8px 14px; border-radius: var(--r-pill);
+  font-size: 14px; font-weight: 500;
+  transition: color var(--t-fast), background var(--t-fast);
+}
+.nav a:hover { color: var(--text); background: rgba(255,255,255,.04); }
+.nav a.active {
+  color: var(--text);
+  background: rgba(124,92,255,.14);
+  box-shadow: inset 0 0 0 1px rgba(124,92,255,.35);
+}
+.user-chip {
+  display: flex; align-items: center; gap: var(--s-2);
+  padding: 6px 12px 6px 6px; border-radius: var(--r-pill);
+  background: var(--surface); border: 1px solid var(--border);
+  font-size: 13px; color: var(--text-dim);
+}
+.avatar {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--violet), var(--cyan));
+  display: grid; place-items: center;
+  font-family: var(--font-display); font-weight: 700; font-size: 12px; color: #0B1020;
+}
+
+/* ---------- quiz shell ---------- */
+.quiz {
+  max-width: 920px; margin: 0 auto;
+  padding: var(--s-7) var(--s-5) var(--s-8);
+}
+.quiz-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: var(--s-5);
+}
+.quiz-title {
+  font-family: var(--font-display);
+  font-size: 14px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--text-mute);
+}
+.quiz-title span { color: var(--violet-hi); }
+
+.timer {
+  display: flex; align-items: center; gap: var(--s-2);
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono); font-size: 13px;
+  color: var(--text-dim);
+  padding: 6px 12px;
+  border-radius: var(--r-pill);
+  background: var(--surface); border: 1px solid var(--border);
+}
+.timer-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 10px var(--success);
+  animation: pulse 1.6s var(--ease-out) infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.45} }
+
+/* progress */
+.progress {
+  height: 6px; width: 100%;
+  background: rgba(255,255,255,.06);
+  border-radius: var(--r-pill);
+  overflow: hidden; margin-bottom: var(--s-6);
+}
+.progress-fill {
+  height: 100%; width: 42%;
+  background: linear-gradient(90deg, var(--violet), var(--cyan));
+  border-radius: inherit;
+  transition: width 480ms var(--ease-out);
+  box-shadow: 0 0 20px rgba(124,92,255,.5);
+}
+
+/* question card */
+.q-card {
+  background: linear-gradient(180deg, var(--surface-hi), var(--surface));
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: var(--s-7) var(--s-6);
+  box-shadow: var(--shadow-card);
+  position: relative; overflow: hidden;
+}
+.q-card::before {
+  content: ""; position: absolute; inset: -1px;
+  background: linear-gradient(180deg, rgba(124,92,255,.25), transparent 30%);
+  border-radius: inherit; pointer-events: none; mask:
+    linear-gradient(#000,#000) content-box, linear-gradient(#000,#000);
+  mask-composite: exclude; padding: 1px;
+}
+.q-num {
+  display: inline-flex; align-items: center; gap: var(--s-2);
+  font-family: var(--font-mono); font-size: 12px; color: var(--text-mute);
+  margin-bottom: var(--s-3);
+}
+.q-num strong { color: var(--text); font-weight: 600; }
+.q-text {
+  font-family: var(--font-display);
+  font-weight: 600; font-size: clamp(24px, 3.4vw, 36px);
+  line-height: 1.2; letter-spacing: -.02em;
+  color: var(--text);
+  margin: 0 0 var(--s-6);
+}
+
+/* answer grid */
+.answers {
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4);
+}
+@media (max-width: 640px) { .answers { grid-template-columns: 1fr; } }
+
+.ans {
+  --c: var(--ans-blue);
+  position: relative;
+  display: flex; align-items: center; gap: var(--s-4);
+  padding: var(--s-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-weight: 500; font-size: 17px; text-align: left;
+  cursor: pointer;
+  transition: transform var(--t-fast) var(--ease-out),
+              background var(--t-mid),
+              border-color var(--t-mid),
+              box-shadow var(--t-mid);
+  overflow: hidden;
+}
+.ans::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 6px;
+  background: var(--c);
+  transition: width var(--t-mid) var(--ease-out);
+}
+.ans:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--c) 60%, var(--border));
+  box-shadow: 0 10px 30px -15px color-mix(in oklab, var(--c) 70%, transparent),
+              inset 0 0 0 1px color-mix(in oklab, var(--c) 40%, transparent);
+}
+.ans:active { transform: translateY(0) scale(.98); }
+.ans:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--c);
+}
+.ans.selected {
+  background: color-mix(in oklab, var(--c) 18%, var(--surface));
+  border-color: var(--c);
+  box-shadow: 0 10px 40px -15px color-mix(in oklab, var(--c) 80%, transparent);
+}
+.ans.selected::before { width: 10px; }
+
+.ans[data-c="red"]   { --c: var(--ans-red);   }
+.ans[data-c="blue"]  { --c: var(--ans-blue);  }
+.ans[data-c="amber"] { --c: var(--ans-amber); }
+.ans[data-c="green"] { --c: var(--ans-green); }
+
+.key {
+  min-width: 36px; height: 36px;
+  display: grid; place-items: center;
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--c) 22%, var(--bg-elev));
+  color: var(--text);
+  font-family: var(--font-mono); font-weight: 700; font-size: 14px;
+  border: 1px solid color-mix(in oklab, var(--c) 40%, var(--border));
+}
+.ans-text { flex: 1; }
+
+/* footer actions */
+.actions {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: var(--s-6);
+}
+.btn {
+  font-family: var(--font-body); font-weight: 600; font-size: 14px;
+  padding: 12px 20px; border-radius: var(--r-pill); border: 1px solid transparent;
+  cursor: pointer; transition: transform var(--t-fast), background var(--t-mid), box-shadow var(--t-mid);
+}
+.btn-ghost {
+  background: transparent; color: var(--text-dim); border-color: var(--border);
+}
+.btn-ghost:hover { color: var(--text); background: rgba(255,255,255,.04); }
+.btn-primary {
+  background: linear-gradient(135deg, var(--violet), #5b3cff);
+  color: white;
+  box-shadow: var(--glow-violet);
+}
+.btn-primary:hover { transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0) scale(.98); }
+.btn[disabled] { opacity: .4; cursor: not-allowed; }
+
+.hint {
+  font-size: 12px; color: var(--text-mute);
+  font-family: var(--font-mono);
+}
+.hint kbd {
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 2px 6px; border-radius: 6px; color: var(--text-dim);
+  font-family: inherit; font-size: 11px;
+}
+
+/* dots */
+.dots { display: flex; gap: 6px; margin-top: var(--s-5); justify-content: center; }
+.dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,.1);
+}
+.dot.done { background: var(--violet); box-shadow: 0 0 10px var(--violet); }
+.dot.current { background: var(--cyan); box-shadow: 0 0 12px var(--cyan); transform: scale(1.4); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true"></div>
+    DAF Quiz
+  </div>
+  <nav class="nav" aria-label="Primary">
+    <a href="#">Dashboard</a>
+    <a href="#" class="active">Quizzes</a>
+    <a href="#">Leaderboard</a>
+    <a href="#">History</a>
+  </nav>
+  <div class="user-chip">
+    <div class="avatar" aria-hidden="true">DF</div>
+    david
+  </div>
+</header>
+
+<main class="quiz">
+  <div class="quiz-meta">
+    <div class="quiz-title">Quiz · <span>JavaScript Fundamentals</span></div>
+    <div class="timer" role="timer" aria-live="off">
+      <span class="timer-dot" aria-hidden="true"></span>
+      00:42
+    </div>
+  </div>
+
+  <div class="progress" role="progressbar" aria-valuenow="3" aria-valuemin="0" aria-valuemax="7" aria-label="Question progress">
+    <div class="progress-fill"></div>
+  </div>
+
+  <section class="q-card" aria-labelledby="qtext">
+    <div class="q-num">Question <strong>3</strong> of <strong>7</strong></div>
+    <h1 class="q-text" id="qtext">Which array method returns a new array with elements that pass a test?</h1>
+
+    <div class="answers" role="radiogroup" aria-labelledby="qtext">
+      <button class="ans" data-c="red" role="radio" aria-checked="false">
+        <span class="key" aria-hidden="true">A</span>
+        <span class="ans-text">forEach()</span>
+      </button>
+      <button class="ans selected" data-c="blue" role="radio" aria-checked="true">
+        <span class="key" aria-hidden="true">B</span>
+        <span class="ans-text">filter()</span>
+      </button>
+      <button class="ans" data-c="amber" role="radio" aria-checked="false">
+        <span class="key" aria-hidden="true">C</span>
+        <span class="ans-text">map()</span>
+      </button>
+      <button class="ans" data-c="green" role="radio" aria-checked="false">
+        <span class="key" aria-hidden="true">D</span>
+        <span class="ans-text">reduce()</span>
+      </button>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-ghost">← Previous</button>
+      <div class="hint">Shortcuts: <kbd>A</kbd> <kbd>B</kbd> <kbd>C</kbd> <kbd>D</kbd> · <kbd>Enter</kbd> next</div>
+      <button class="btn btn-primary">Next →</button>
+    </div>
+  </section>
+
+  <div class="dots" aria-hidden="true">
+    <span class="dot done"></span>
+    <span class="dot done"></span>
+    <span class="dot current"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
+  </div>
+</main>
+
+<script>
+// interactive answer selection + keyboard shortcuts
+const answers = document.querySelectorAll('.ans');
+const keys = { a: 0, b: 1, c: 2, d: 3 };
+
+function select(idx) {
+  answers.forEach((el, i) => {
+    el.classList.toggle('selected', i === idx);
+    el.setAttribute('aria-checked', i === idx);
+  });
+}
+
+answers.forEach((el, i) => el.addEventListener('click', () => select(i)));
+
+document.addEventListener('keydown', (e) => {
+  const k = e.key.toLowerCase();
+  if (k in keys) { select(keys[k]); e.preventDefault(); }
+});
+</script>
+</body>
+</html>
