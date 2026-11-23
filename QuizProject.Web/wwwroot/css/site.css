@@ -639,6 +639,335 @@ footer.bg-light {
     .btn-neon:hover { transform: none; }
 }
 
+/* ============================================================
+   Quiz take — question card + answer tiles (P1.2 — #23)
+   ============================================================ */
+.quiz-shell {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: var(--s-6) var(--s-4) var(--s-8);
+}
+
+.quiz-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--s-5);
+    gap: var(--s-4);
+    flex-wrap: wrap;
+}
+
+.quiz-eyebrow {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    margin: 0;
+}
+
+.quiz-eyebrow span {
+    color: var(--violet-hi);
+}
+
+.quiz-timer {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-dim);
+    padding: 6px 12px;
+    border-radius: var(--r-pill);
+    background: var(--surface);
+    border: 1px solid var(--border);
+}
+
+.quiz-timer-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 10px var(--success);
+    animation: quiz-timer-pulse 1.6s var(--ease-out) infinite;
+}
+
+@keyframes quiz-timer-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+}
+
+.progress-neon {
+    height: 6px;
+    width: 100%;
+    background: color-mix(in oklab, var(--text) 8%, transparent);
+    border-radius: var(--r-pill);
+    overflow: hidden;
+    margin-bottom: var(--s-6);
+}
+
+.progress-neon-fill {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, var(--violet), var(--cyan));
+    border-radius: inherit;
+    box-shadow: 0 0 20px rgba(124, 92, 255, .5);
+    transition: width 480ms var(--ease-out);
+}
+
+.q-card {
+    position: relative;
+    background: linear-gradient(180deg, var(--surface-hi), var(--surface));
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    padding: var(--s-7) var(--s-6);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+}
+
+.q-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(124, 92, 255, .18), transparent 30%);
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+.q-num {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-mute);
+    margin-bottom: var(--s-3);
+}
+
+.q-num strong {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.q-text {
+    position: relative;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(22px, 3.2vw, 32px);
+    line-height: 1.2;
+    letter-spacing: -.02em;
+    color: var(--text);
+    margin: 0 0 var(--s-6);
+}
+
+.answers {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-4);
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.answers > legend {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .answers { grid-template-columns: 1fr; }
+}
+
+.ans {
+    --c: var(--ans-blue);
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--s-4);
+    padding: var(--s-5);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 16px;
+    text-align: left;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform var(--t-fast) var(--ease-out),
+                background var(--t-mid),
+                border-color var(--t-mid),
+                box-shadow var(--t-mid);
+}
+
+.ans::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    background: var(--c);
+    transition: width var(--t-mid) var(--ease-out);
+}
+
+.ans:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in oklab, var(--c) 60%, var(--border));
+    box-shadow: 0 10px 30px -15px color-mix(in oklab, var(--c) 70%, transparent),
+                inset 0 0 0 1px color-mix(in oklab, var(--c) 40%, transparent);
+}
+
+.ans:active {
+    transform: translateY(0) scale(.98);
+}
+
+.ans:focus-within {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--c);
+}
+
+.ans.selected {
+    background: color-mix(in oklab, var(--c) 18%, var(--surface));
+    border-color: var(--c);
+    box-shadow: 0 10px 40px -15px color-mix(in oklab, var(--c) 80%, transparent);
+}
+
+.ans.selected::before { width: 10px; }
+
+.ans[data-c="red"]   { --c: var(--ans-red); }
+.ans[data-c="blue"]  { --c: var(--ans-blue); }
+.ans[data-c="amber"] { --c: var(--ans-amber); }
+.ans[data-c="green"] { --c: var(--ans-green); }
+
+.ans > .quiz-answer-radio {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 1px;
+    height: 1px;
+}
+
+.ans .key {
+    min-width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: color-mix(in oklab, var(--c) 22%, var(--bg-elev));
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 14px;
+    border: 1px solid color-mix(in oklab, var(--c) 40%, var(--border));
+    flex-shrink: 0;
+}
+
+.ans .ans-text { flex: 1; }
+
+.q-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    margin-top: var(--s-6);
+    flex-wrap: wrap;
+}
+
+.btn-ghost {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 18px;
+    border-radius: var(--r-pill);
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    min-height: 44px;
+    transition: color var(--t-fast), background var(--t-mid);
+}
+
+.btn-ghost:hover {
+    color: var(--text);
+    background: color-mix(in oklab, var(--text) 4%, transparent);
+}
+
+.btn-ghost[disabled],
+.btn-ghost:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+}
+
+.q-hint {
+    font-size: 12px;
+    color: var(--text-mute);
+    font-family: var(--font-mono);
+}
+
+.q-hint kbd {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    border-radius: 6px;
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 11px;
+    margin: 0 1px;
+}
+
+.q-dots {
+    display: flex;
+    gap: 6px;
+    margin-top: var(--s-5);
+    justify-content: center;
+}
+
+.q-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: color-mix(in oklab, var(--text) 10%, transparent);
+    transition: background var(--t-mid), transform var(--t-mid), box-shadow var(--t-mid);
+}
+
+.q-dot.done {
+    background: var(--violet);
+    box-shadow: 0 0 10px rgba(124, 92, 255, .6);
+}
+
+.q-dot.current {
+    background: var(--cyan);
+    box-shadow: 0 0 12px rgba(34, 211, 238, .7);
+    transform: scale(1.4);
+}
+
+.answer-error {
+    position: relative;
+    color: var(--danger);
+    font-size: 13px;
+    margin-top: var(--s-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .quiz-timer-dot { animation: none; }
+    .progress-neon-fill,
+    .ans,
+    .ans::before,
+    .q-dot { transition: none; }
+    .ans:hover,
+    .ans:active { transform: none; }
+}
+
 /* Buttons */
 .btn {
     border-radius: var(--space-2);
