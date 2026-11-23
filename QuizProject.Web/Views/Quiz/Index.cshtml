@@ -1,46 +1,71 @@
 @model List<QuizListViewModel>
 @{
     ViewData["Title"] = "Quizzes";
+
+    string DifficultyFor(int questionCount) => questionCount switch
+    {
+        <= 5 => "easy",
+        <= 10 => "medium",
+        _ => "hard"
+    };
+
+    string DifficultyLabel(string key) => key switch
+    {
+        "easy" => "Easy",
+        "medium" => "Medium",
+        _ => "Hard"
+    };
 }
 
-<h1 class="h2 mb-4">Available Quizzes</h1>
+<header class="mb-5">
+    <h1 class="display mb-2" style="font-size: clamp(28px, 4vw, 40px); font-weight: 700; letter-spacing: -0.02em;">Choose your quiz</h1>
+    <p class="text-dim mb-0" style="color: var(--text-dim); font-size: 15px;">Pick a round. Beat the clock. Climb the leaderboard.</p>
+</header>
 
 @if (!Model.Any())
 {
-    <div class="alert alert-info" role="status">No quizzes are available right now. Check back soon.</div>
+    <div class="quiz-grid-empty" role="status">
+        <div>
+            <h2 class="h5 mb-2">No quizzes yet</h2>
+            <p class="mb-0">Nothing published right now. Check back soon.</p>
+        </div>
+    </div>
 }
 else
 {
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         @foreach (var quiz in Model)
         {
+            var diff = DifficultyFor(quiz.QuestionCount);
             <div class="col">
-                <article class="card h-100" aria-labelledby="quiz-title-@quiz.Id">
-                    <div class="card-body d-flex flex-column">
-                        <h2 id="quiz-title-@quiz.Id" class="h5 card-title">@quiz.Title</h2>
+                <article class="quiz-card" aria-labelledby="quiz-title-@quiz.Id">
+                    <h2 id="quiz-title-@quiz.Id" class="quiz-card__title">@quiz.Title</h2>
 
-                        @if (!string.IsNullOrEmpty(quiz.Description))
-                        {
-                            <p class="card-text text-muted flex-grow-1">@quiz.Description</p>
-                        }
+                    @if (!string.IsNullOrEmpty(quiz.Description))
+                    {
+                        <p class="quiz-card__desc">@quiz.Description</p>
+                    }
 
-                        <dl class="row small text-muted mt-2 mb-3">
-                            <dt class="col-7">Questions</dt>
-                            <dd class="col-5 text-end">@quiz.QuestionCount</dd>
-                            <dt class="col-7">Times taken</dt>
-                            <dd class="col-5 text-end">@quiz.AttemptCount</dd>
-                        </dl>
-
-                        <form asp-controller="Quiz" asp-action="Start" method="post" class="mt-auto">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="quizId" value="@quiz.Id"/>
-                            <button type="submit"
-                                    class="btn btn-primary w-100"
-                                    aria-label="Start quiz: @quiz.Title">
-                                Start quiz
-                            </button>
-                        </form>
+                    <div class="quiz-card__meta">
+                        <span class="chip chip--difficulty-@diff" aria-label="Difficulty: @DifficultyLabel(diff)">@DifficultyLabel(diff)</span>
+                        <span class="chip" aria-label="@quiz.QuestionCount questions">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                            @quiz.QuestionCount
+                        </span>
+                        <span class="chip" aria-label="@quiz.AttemptCount attempts">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                            @quiz.AttemptCount
+                        </span>
                     </div>
+
+                    <form asp-controller="Quiz" asp-action="Start" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="quizId" value="@quiz.Id"/>
+                        <button type="submit" class="btn-neon" aria-label="Start quiz: @quiz.Title">
+                            Start quiz
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                        </button>
+                    </form>
                 </article>
             </div>
         }
