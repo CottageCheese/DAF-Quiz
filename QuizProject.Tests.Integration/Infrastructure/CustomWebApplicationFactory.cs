@@ -51,9 +51,15 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureServices(services =>
         {
-            // Replace SQL Server with SQLite
-            services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
-            services.RemoveAll<ApplicationDbContext>();
+            // Replace SQL Server with SQLite. EF Core 10 registers provider
+            // services keyed on multiple types, so clear them all before re-adding.
+            var efDescriptors = services.Where(d =>
+                d.ServiceType.FullName is not null &&
+                (d.ServiceType.FullName.StartsWith("Microsoft.EntityFrameworkCore")
+                 || d.ServiceType == typeof(ApplicationDbContext)
+                 || d.ServiceType == typeof(DbContextOptions<ApplicationDbContext>)
+                 || d.ServiceType == typeof(DbContextOptions))).ToList();
+            foreach (var d in efDescriptors) services.Remove(d);
 
             services.AddSingleton(_connection);
 
