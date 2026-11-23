@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { HistoryService } from './history.service';
@@ -9,6 +9,7 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
   selector: 'app-history',
   standalone: true,
   imports: [GradeBadgeComponent, LoadingSpinnerComponent, RouterLink, DatePipe],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1>My Quiz History</h1>

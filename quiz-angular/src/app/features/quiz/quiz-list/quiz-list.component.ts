@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { QuizService } from '../quiz.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -7,6 +7,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
   selector: 'app-quiz-list',
   standalone: true,
   imports: [LoadingSpinnerComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1>Available Quizzes</h1>

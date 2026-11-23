@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LeaderboardService } from './leaderboard.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
@@ -7,6 +7,7 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
   selector: 'app-leaderboard',
   standalone: true,
   imports: [LoadingSpinnerComponent, RouterLink],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <h1 class="mb-4">Leaderboard</h1>
 

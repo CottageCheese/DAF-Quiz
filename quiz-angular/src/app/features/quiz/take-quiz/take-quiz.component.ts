@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from "@angular/core";
+import { Component, OnInit, computed, inject, signal, ChangeDetectionStrategy } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { QuizService } from "../quiz.service";
 import { QuestionAnswerSelection } from "../../../core/models/quiz.models";
@@ -8,6 +8,7 @@ import { LoadingSpinnerComponent } from "../../../shared/components/loading-spin
   selector: "app-take-quiz",
   standalone: true,
   imports: [LoadingSpinnerComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     @if (quizService.activeQuiz(); as quiz) {
       <div class="row justify-content-center">
