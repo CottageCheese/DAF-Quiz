@@ -1,83 +1,184 @@
 @model QuizResultViewModel
 @{
     ViewData["Title"] = $"Results: {Model.QuizTitle}";
-    var scoreClass = Model.Percentage >= 70 ? "success" : Model.Percentage >= 50 ? "warning" : "danger";
-    var textClass = Model.Percentage >= 70 ? "" : Model.Percentage >= 50 ? "text-dark" : "text-white";
+
+    var wrong = Model.TotalQuestions - Model.Score;
+    var pct = Model.Percentage;
+    var pctInt = (int)Math.Round(pct);
+    // Circle r=100 → circumference ≈ 628.319. dashoffset = C * (1 - pct/100)
+    var ringTarget = Math.Round(628.319 * (1 - pct / 100.0), 2);
+    var passed = pct >= 50;
+    var showConfetti = pct >= 70;
+
+    string gradeTone = pct switch
+    {
+        >= 70 => "", // success (default)
+        >= 50 => "is-warn",
+        _ => "is-danger"
+    };
+
+    string gradeInitial = Model.Grade switch
+    {
+        "Excellent" => "A",
+        "Good" => "B",
+        "Pass" => "C",
+        _ => "D"
+    };
+
+    string eyebrow = passed ? "Quiz complete" : "Keep practising";
+    string headline = pct switch
+    {
+        >= 90 => "Outstanding run.",
+        >= 70 => "Nice work.",
+        >= 50 => "You got through it.",
+        _ => "Close, but not quite."
+    };
 }
 
-<nav aria-label="Quiz breadcrumb" class="mb-3">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item">
-            <a asp-controller="Quiz" asp-action="Index">Quizzes</a>
-        </li>
-        <li class="breadcrumb-item active" aria-current="page">Results</li>
-    </ol>
-</nav>
+<div class="results-page">
+    <nav aria-label="Quiz breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-controller="Quiz" asp-action="Index">Quizzes</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Results</li>
+        </ol>
+    </nav>
 
-<section aria-labelledby="results-heading">
-    <div class="card shadow-sm mb-4">
-        <div class="card-body text-center py-5">
-            <h1 id="results-heading" class="h2 mb-1">@Model.QuizTitle</h1>
-            <p class="text-muted mb-4">Quiz complete — here is how you did.</p>
+    <div class="verdict">
+        <div class="verdict-eyebrow">@eyebrow</div>
+        <h1 id="results-heading">@headline</h1>
+        <p>@Model.QuizTitle · @Model.TotalQuestions @(Model.TotalQuestions == 1 ? "question" : "questions")</p>
+    </div>
 
-            <div
-                class="d-inline-flex align-items-center justify-content-center rounded-circle bg-@scoreClass @textClass mb-3 score-circle"
-                aria-label="Score: @Model.Score out of @Model.TotalQuestions, @Model.Percentage percent">
-                <span class="display-5 fw-bold">@Model.Score/@Model.TotalQuestions</span>
+    <section class="hero" aria-labelledby="results-heading">
+        <div class="ring-wrap" role="img"
+             aria-label="Score: @Model.Score out of @Model.TotalQuestions, @pctInt percent"
+             style="--ring-target: @ringTarget.ToString(System.Globalization.CultureInfo.InvariantCulture);">
+            <svg class="ring" width="220" height="220" viewBox="0 0 220 220" aria-hidden="true">
+                <defs>
+                    <linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#7C5CFF"/>
+                        <stop offset="100%" stop-color="#22D3EE"/>
+                    </linearGradient>
+                </defs>
+                <circle class="track" cx="110" cy="110" r="100" fill="none" stroke-width="14"/>
+                <circle class="fill" cx="110" cy="110" r="100" fill="none" stroke-width="14"/>
+            </svg>
+            <div class="ring-center">
+                <div>
+                    <div class="ring-score">
+                        <span id="result-score" data-target="@pctInt">0</span><span class="pct">%</span>
+                    </div>
+                    <div class="ring-label">Score</div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-label">Correct</div>
+                    <div class="stat-value correct">@Model.Score</div>
+                    <div class="stat-sub">of @Model.TotalQuestions</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Wrong</div>
+                    <div class="stat-value wrong">@wrong</div>
+                    <div class="stat-sub">of @Model.TotalQuestions</div>
+                </div>
             </div>
 
-            <p class="fs-4 fw-semibold mb-1" aria-hidden="true">@Model.Percentage%</p>
-            <p class="badge bg-@scoreClass fs-6 @textClass">@Model.Grade</p>
+            <div class="grade-pill @gradeTone" role="status"
+                 aria-label="Grade: @Model.Grade">
+                <span class="pill"><span>@gradeInitial</span></span> @Model.Grade
+            </div>
         </div>
+    </section>
+
+    <h2 class="section-title">Answer breakdown</h2>
+
+    <div class="breakdown">
+        @for (var i = 0; i < Model.Answers.Count; i++)
+        {
+            var a = Model.Answers[i];
+            var cls = a.IsCorrect ? "correct" : "wrong";
+            <div class="result-row @cls">
+                <div class="idx" aria-hidden="true">@(i + 1)</div>
+                <div>
+                    <div class="q">@a.QuestionText</div>
+                    <div class="a">
+                        Your answer: <strong>@a.SelectedAnswerText</strong>
+                        @if (!a.IsCorrect)
+                        {
+                            <text> · Correct: <strong>@a.CorrectAnswerText</strong></text>
+                        }
+                    </div>
+                </div>
+                @if (a.IsCorrect)
+                {
+                    <span class="verdict-tag" aria-label="Correct">
+                        <span class="check" aria-hidden="true">&#10003;</span> Correct
+                    </span>
+                }
+                else
+                {
+                    <span class="verdict-tag" aria-label="Incorrect">
+                        <span class="cross" aria-hidden="true">&#10007;</span> Wrong
+                    </span>
+                }
+            </div>
+        }
     </div>
 
-    <h2 class="h4 mb-3">Answer breakdown</h2>
+    <div class="cta-row">
+        <a asp-controller="Home" asp-action="Index" class="btn-ghost">&larr; Leaderboard</a>
+        <a asp-controller="Quiz" asp-action="Index" class="btn-cyan">All quizzes</a>
+        <a asp-controller="Quiz" asp-action="Index" class="btn-neon" style="width: auto; padding-inline: 24px;">
+            Try another &rarr;
+        </a>
+    </div>
+</div>
 
-    <div class="table-responsive" tabindex="0">
-        <table class="table table-bordered align-middle" aria-label="Detailed answer breakdown">
-            <caption class="visually-hidden">Each question, your answer, the correct answer, and whether it was
-                correct
-            </caption>
-            <thead class="table-light">
-            <tr>
-                <th scope="col" class="col-num">#</th>
-                <th scope="col">Question</th>
-                <th scope="col">Your answer</th>
-                <th scope="col">Correct answer</th>
-                <th scope="col" class="text-center col-result">Result</th>
-            </tr>
-            </thead>
-            <tbody>
-            @for (var i = 0; i < Model.Answers.Count; i++)
-            {
-                var a = Model.Answers[i];
-                <tr class="@(a.IsCorrect ? "table-success" : "table-danger")">
-                    <th scope="row">@(i + 1)</th>
-                    <td>@a.QuestionText</td>
-                    <td>@a.SelectedAnswerText</td>
-                    <td>@a.CorrectAnswerText</td>
-                    <td class="text-center">
-                        @if (a.IsCorrect)
-                        {
-                            <span class="badge bg-success" aria-label="Correct">
-                                <span aria-hidden="true">&#10003;</span> Correct
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-danger" aria-label="Incorrect">
-                                <span aria-hidden="true">&#10007;</span> Wrong
-                            </span>
-                        }
-                    </td>
-                </tr>
+@if (showConfetti)
+{
+    <div class="confetti" id="result-confetti" aria-hidden="true"></div>
+}
+
+<script>
+    (function () {
+        var el = document.getElementById('result-score');
+        if (!el) return;
+        var target = parseInt(el.dataset.target, 10) || 0;
+        var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (reduced) {
+            el.textContent = target;
+        } else {
+            var dur = 1600;
+            var t0 = performance.now();
+            function tick(t) {
+                var p = Math.min(1, (t - t0) / dur);
+                var eased = 1 - Math.pow(1 - p, 3);
+                el.textContent = Math.round(eased * target);
+                if (p < 1) requestAnimationFrame(tick);
             }
-            </tbody>
-        </table>
-    </div>
+            requestAnimationFrame(tick);
 
-    <div class="d-flex flex-wrap gap-3 mt-4">
-        <a asp-controller="Quiz" asp-action="Index" class="btn btn-primary">Take another quiz</a>
-        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">View leaderboard</a>
-    </div>
-</section>
+            var root = document.getElementById('result-confetti');
+            if (root) {
+                var colors = ['#7C5CFF', '#22D3EE', '#A3E635', '#FBBF24', '#FB5A6B', '#9B82FF'];
+                for (var i = 0; i < 80; i++) {
+                    var s = document.createElement('span');
+                    s.style.left = (Math.random() * 100) + 'vw';
+                    s.style.background = colors[i % colors.length];
+                    s.style.animationDuration = (2.5 + Math.random() * 2) + 's';
+                    s.style.animationDelay = (Math.random() * 0.6) + 's';
+                    s.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
+                    root.appendChild(s);
+                }
+                setTimeout(function () { root.remove(); }, 6000);
+            }
+        }
+    })();
+</script>
