@@ -5,24 +5,25 @@
    ============================================================ */
 
 :root {
-    /* Color tokens */
-    --color-primary: #0d6efd;
-    --color-primary-dark: #0a58ca;
-    --color-primary-focus-ring: rgba(13, 110, 253, 0.25);
-    --color-primary-hover-bg: #f0f4ff;
-    --color-primary-selected-bg: #e7f1ff;
-    --color-primary-selected-text: #084298;
-    --color-text: #212529;
-    --color-text-muted: #636b72;
-    --color-border: #ced4da;
-    --color-border-light: #dee2e6;
-    --color-surface: #ffffff;
-    --color-bg: #f8f9fa;
+    /* Legacy aliases — now mapped to neon arcade tokens (defined below).
+       Kept so component rules compile until Phase 1 migration retires them. */
+    --color-primary: #7C5CFF;
+    --color-primary-dark: #5B3FE6;
+    --color-primary-focus-ring: rgba(124, 92, 255, 0.35);
+    --color-primary-hover-bg: rgba(124, 92, 255, 0.10);
+    --color-primary-selected-bg: rgba(124, 92, 255, 0.18);
+    --color-primary-selected-text: #E7ECF5;
+    --color-text: #E7ECF5;
+    --color-text-muted: #9AA4C0;
+    --color-border: #2A3350;
+    --color-border-light: #242C47;
+    --color-surface: #1B2238;
+    --color-bg: #0B1020;
 
     /* Gradient & shadow tokens */
-    --primary-gradient: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-    --card-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    --card-shadow-hover: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    --primary-gradient: linear-gradient(135deg, #7C5CFF 0%, #22D3EE 100%);
+    --card-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 10px 30px -15px rgba(0, 0, 0, 0.6);
+    --card-shadow-hover: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 20px 50px -20px rgba(0, 0, 0, 0.7);
 
     /* Spacing scale */
     --space-1: 0.25rem; /*  4px */
@@ -51,6 +52,7 @@
    Theme toggle (dark/light) wired up in P0.3.
    ============================================================ */
 :root {
+    color-scheme: dark light;
     /* palette */
     --bg: #0B1020;
     --bg-elev: #151B2E;
@@ -115,6 +117,7 @@
 
 /* Light theme overrides (P0.3) */
 [data-theme="light"] {
+    color-scheme: light;
     --bg: #F7F8FC;
     --bg-elev: #FFFFFF;
     --surface: #FFFFFF;
@@ -124,7 +127,20 @@
     --text-dim: #4A5272;
     --text-mute: #5A6484;
     --shadow-card: 0 1px 0 rgba(0, 0, 0, .02) inset, 0 12px 30px -18px rgba(11, 16, 32, .18);
+
+    /* Legacy aliases — light theme */
+    --color-primary-selected-text: #0B1020;
+    --color-primary-hover-bg: rgba(124, 92, 255, 0.08);
+    --color-primary-selected-bg: rgba(124, 92, 255, 0.14);
+    --color-text: #0B1020;
+    --color-text-muted: #4A5272;
+    --color-border: #D9DDE8;
+    --color-border-light: #E6E9F2;
+    --color-surface: #FFFFFF;
+    --color-bg: #F7F8FC;
 }
+
+html { scroll-padding-top: 72px; }
 
 /* ============================================================
    Neon Arcade topbar (P0.4)
@@ -261,6 +277,11 @@
     .topbar .topbar-nav { order: 3; width: 100%; justify-content: center; }
 }
 
+@media (max-width: 480px) {
+    .topbar .user-chip { font-size: 0; padding: 4px; }
+    .topbar .user-chip .avatar { margin: 0; }
+}
+
 /* Skip link */
 .skip-link:focus {
     position: fixed;
@@ -278,10 +299,10 @@
 
 /* Focus ring */
 :focus-visible {
-    outline: 3px solid var(--color-primary);
+    outline: 3px solid var(--violet);
     outline-offset: 2px;
     border-radius: var(--space-1);
-    box-shadow: 0 0 0 4px var(--color-primary-focus-ring);
+    box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.35);
 }
 
 /* Remove default outline only when :focus-visible is supported */
@@ -310,7 +331,7 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background-color: var(--color-bg);
+    background-color: var(--bg);
 }
 
 main.container {
@@ -318,11 +339,17 @@ main.container {
 }
 
 /* Typography */
-/* Ensure body text meets 4.5:1 against white (#fff) */
 body {
-    color: var(--color-text); /* contrast 16.1:1 */
+    color: var(--text);
+    background-color: var(--bg);
+    font-family: var(--font-body);
     font-size: var(--font-size-base);
     line-height: var(--line-height-base);
+}
+
+h1, h2, h3, h4, h5, h6, .brand, .display {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
 }
 
 .text-muted {
@@ -414,10 +441,22 @@ a:not(.btn):not(.nav-link):not(.navbar-brand) {
 
 /* Card enhancements */
 .card {
-    border: none;
+    border: 1px solid var(--border);
+    background-color: var(--surface);
+    color: var(--text);
     box-shadow: var(--card-shadow);
     transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
-    border-radius: var(--space-3);
+    border-radius: var(--r-md);
+}
+
+/* Bootstrap bg-light override for theme-awareness */
+.bg-light {
+    background-color: var(--bg-elev) !important;
+    color: var(--text);
+}
+
+footer.bg-light {
+    border-top-color: var(--border) !important;
 }
 
 .card:hover {

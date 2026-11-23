@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta name="description" content="QuizProject Admin — manage quizzes and questions."/>
-    <title>@ViewData["Title"] — QuizProject Admin</title>
+    <meta name="description" content="TriviaRush Admin — manage quizzes and questions."/>
+    <title>@ViewData["Title"] — TriviaRush Admin</title>
 
     <!-- Theme bootstrap: set data-theme before paint to prevent FOUC (P0.3) -->
     <script>
@@ -44,16 +44,16 @@
 }
 
 <header class="topbar topbar-admin" role="banner">
-    <a class="brand" href="/Admin" aria-label="QuizProject Admin home">
+    <a class="brand" href="/Admin" aria-label="TriviaRush Admin home">
         <span class="brand-mark" aria-hidden="true"></span>
-        QuizProject Admin
+        TriviaRush Admin
     </a>
 
     @if (User.Identity?.IsAuthenticated == true)
     {
         <nav class="topbar-nav" aria-label="Primary">
             <a href="/Admin" class="@(ctrl == "Admin" ? "active" : "")"
-               @(ctrl == "Admin" ? "aria-current=page" : "")>Quizzes</a>
+               aria-current="@(ctrl == "Admin" ? "page" : null)">Quizzes</a>
         </nav>
     }
     else
@@ -62,9 +62,9 @@
     }
 
     <div class="topbar-actions">
-        <button type="button" class="theme-toggle" aria-label="Toggle colour theme" aria-pressed="false">
-            <span class="icon-moon" aria-hidden="true">🌙</span>
-            <span class="icon-sun" aria-hidden="true">☀</span>
+        <button type="button" class="theme-toggle" aria-label="Switch to light theme" aria-pressed="false">
+            <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
         </button>
         @if (User.Identity?.IsAuthenticated == true)
         {
@@ -105,7 +105,7 @@
 
 <footer class="bg-light border-top py-3 mt-auto">
     <div class="container text-center text-muted">
-        <small>&copy; @DateTime.Now.Year QuizProject Admin.</small>
+        <small>&copy; @DateTime.Now.Year TriviaRush Admin.</small>
     </div>
 </footer>
 
@@ -119,13 +119,17 @@
     (function () {
         var btn = document.querySelector('.theme-toggle');
         if (!btn) return;
-        btn.setAttribute('aria-pressed', document.documentElement.getAttribute('data-theme') === 'light');
+        function syncLabel(theme) {
+            btn.setAttribute('aria-pressed', theme === 'light');
+            btn.setAttribute('aria-label', theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme');
+        }
+        syncLabel(document.documentElement.getAttribute('data-theme'));
         btn.addEventListener('click', function () {
             var cur = document.documentElement.getAttribute('data-theme');
             var next = cur === 'light' ? 'dark' : 'light';
             document.documentElement.setAttribute('data-theme', next);
             try { localStorage.setItem('theme', next); } catch (e) { }
-            btn.setAttribute('aria-pressed', next === 'light');
+            syncLabel(next);
         });
     })();
 </script>

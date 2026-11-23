@@ -10,7 +10,7 @@ import { AuthService } from '../../../core/auth/auth.service';
   template: `
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
       <div class="container">
-        <a class="navbar-brand" routerLink="/">DAF Quiz</a>
+        <a class="navbar-brand" routerLink="/">TriviaRush</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
