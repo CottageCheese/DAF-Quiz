@@ -1,122 +1,113 @@
 @model LeaderboardViewModel
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = "Leaderboard";
+
+    string RankClass(int r) => r switch { 1 => "rank-1", 2 => "rank-2", 3 => "rank-3", _ => "" };
+
+    string ScoreTone(double pct) => pct switch
+    {
+        >= 70 => "is-success",
+        >= 50 => "is-warn",
+        _ => "is-danger"
+    };
+
+    string MonoClass(string s) =>
+        string.IsNullOrEmpty(s) ? "" : "m-" + char.ToLowerInvariant(s[0]);
+
+    string Initial(string s) =>
+        string.IsNullOrEmpty(s) ? "?" : char.ToUpperInvariant(s[0]).ToString();
+
+    string MaskEmail(string email)
+    {
+        var at = email.IndexOf('@');
+        if (at <= 3) return email;
+        return email[..3] + new string('*', Math.Min(at - 3, 5)) + email[at..];
+    }
 }
 
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
-    <h1 class="h2 mb-0">Dashboard</h1>
+<div class="lb-hero">
+    <div>
+        <h1>Leaderboard</h1>
+        <p>Top quizzes played. Top scorers across every round.</p>
+    </div>
     @if (User.Identity?.IsAuthenticated == true)
     {
-        <a asp-controller="Quiz" asp-action="Index" class="btn btn-primary">Browse quizzes</a>
+        <a asp-controller="Quiz" asp-action="Index" class="btn-neon" style="width: auto; padding-inline: 22px;">
+            Browse quizzes
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
     }
     else
     {
-        <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Get started</a>
+        <a asp-controller="Account" asp-action="Register" class="btn-neon" style="width: auto; padding-inline: 22px;">
+            Get started
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
     }
 </div>
 
-<div class="row g-4">
-    <!-- Most taken quizzes -->
-    <div class="col-lg-6">
-        <section aria-labelledby="top-quizzes-heading">
-            <div class="card h-100">
-                <div class="card-header bg-primary text-white">
-                    <h2 id="top-quizzes-heading" class="h5 mb-0">Most Taken Quizzes</h2>
-                </div>
-                <div class="card-body p-0">
-                    @if (Model.TopQuizzes.Any())
-                    {
-                        <div class="table-responsive" tabindex="0">
-                            <table class="table table-hover mb-0" aria-describedby="top-quizzes-heading">
-                                <caption class="visually-hidden">Ranking of quizzes by number of attempts</caption>
-                                <thead class="table-light">
-                                <tr>
-                                    <th scope="col" class="ps-3">#</th>
-                                    <th scope="col">Quiz</th>
-                                    <th scope="col" class="text-end pe-3">Attempts</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                @foreach (var quiz in Model.TopQuizzes)
-                                {
-                                    <tr>
-                                        <th scope="row" class="ps-3 text-muted fw-normal">@quiz.Rank</th>
-                                        <td>@quiz.QuizTitle</td>
-                                        <td class="text-end pe-3">
-                                            <span class="badge bg-primary rounded-pill">@quiz.AttemptCount</span>
-                                        </td>
-                                    </tr>
-                                }
-                                </tbody>
-                            </table>
-                        </div>
-                    }
-                    else
-                    {
-                        <p class="p-3 text-muted mb-0">No quiz attempts yet. Be the first!</p>
-                    }
-                </div>
-            </div>
-        </section>
-    </div>
+<div class="lb-grid">
+    <section class="lb-card" aria-labelledby="top-quizzes-heading">
+        <header class="lb-head">
+            <span class="lb-icon" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </span>
+            <h2 id="top-quizzes-heading">Most played</h2>
+        </header>
 
-    <!-- Top scorers -->
-    <div class="col-lg-6">
-        <section aria-labelledby="top-users-heading">
-            <div class="card h-100">
-                <div class="card-header bg-success text-white">
-                    <h2 id="top-users-heading" class="h5 mb-0">Top Scorers</h2>
-                </div>
-                <div class="card-body p-0">
-                    @if (Model.TopUsers.Any())
-                    {
-                        <div class="table-responsive" tabindex="0">
-                            <table class="table table-hover mb-0" aria-describedby="top-users-heading">
-                                <caption class="visually-hidden">Top users ranked by their best quiz score percentage
-                                </caption>
-                                <thead class="table-light">
-                                <tr>
-                                    <th scope="col" class="ps-3">#</th>
-                                    <th scope="col">User</th>
-                                    <th scope="col">Best on</th>
-                                    <th scope="col" class="text-end pe-3">Score</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                @foreach (var user in Model.TopUsers)
-                                {
-                                    <tr>
-                                        <th scope="row" class="ps-3 text-muted fw-normal">@user.Rank</th>
-                                        <td>
-                                            @{
-                                                var email = user.UserName;
-                                                var atIndex = email.IndexOf('@');
-                                                var maskedEmail = atIndex > 3
-                                                    ? email[..3] + new string('*', Math.Min(atIndex - 3, 5)) + email[atIndex..]
-                                                    : email;
-                                            }
-                                            @maskedEmail
-                                        </td>
-                                        <td class="text-truncate col-title-truncate"
-                                            title="@user.QuizTitle">@user.QuizTitle</td>
-                                        <td class="text-end pe-3">
-                                            <span
-                                                class="badge @(user.BestScorePercent >= 70 ? "bg-success" : user.BestScorePercent >= 50 ? "bg-warning text-dark" : "bg-danger") rounded-pill">
-                                                @user.BestScorePercent%
-                                            </span>
-                                        </td>
-                                    </tr>
-                                }
-                                </tbody>
-                            </table>
+        @if (Model.TopQuizzes.Any())
+        {
+            <ol class="lb-list" aria-describedby="top-quizzes-heading">
+                @foreach (var quiz in Model.TopQuizzes)
+                {
+                    <li class="lb-row">
+                        <span class="rank-chip @RankClass(quiz.Rank)" aria-label="Rank @quiz.Rank">@quiz.Rank</span>
+                        <span class="monogram @MonoClass(quiz.QuizTitle)" aria-hidden="true">@Initial(quiz.QuizTitle)</span>
+                        <div class="lb-primary">
+                            <span class="lb-name">@quiz.QuizTitle</span>
+                            <span class="lb-sub">@quiz.AttemptCount @(quiz.AttemptCount == 1 ? "attempt" : "attempts")</span>
                         </div>
-                    }
-                    else
-                    {
-                        <p class="p-3 text-muted mb-0">No scores yet. Take a quiz to get on the board!</p>
-                    }
-                </div>
-            </div>
-        </section>
-    </div>
+                        <span class="lb-metric" aria-label="@quiz.AttemptCount attempts">@quiz.AttemptCount</span>
+                    </li>
+                }
+            </ol>
+        }
+        else
+        {
+            <p class="lb-empty">No quiz attempts yet. Be the first!</p>
+        }
+    </section>
+
+    <section class="lb-card lb-card--scorers" aria-labelledby="top-users-heading">
+        <header class="lb-head">
+            <span class="lb-icon" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+            </span>
+            <h2 id="top-users-heading">Top scorers</h2>
+        </header>
+
+        @if (Model.TopUsers.Any())
+        {
+            <ol class="lb-list" aria-describedby="top-users-heading">
+                @foreach (var user in Model.TopUsers)
+                {
+                    var masked = MaskEmail(user.UserName);
+                    <li class="lb-row">
+                        <span class="rank-chip @RankClass(user.Rank)" aria-label="Rank @user.Rank">@user.Rank</span>
+                        <span class="monogram @MonoClass(user.UserName)" aria-hidden="true">@Initial(user.UserName)</span>
+                        <div class="lb-primary">
+                            <span class="lb-name">@masked</span>
+                            <span class="lb-sub" title="@user.QuizTitle">Best on @user.QuizTitle</span>
+                        </div>
+                        <span class="lb-metric @ScoreTone(user.BestScorePercent)"
+                              aria-label="Best score @user.BestScorePercent percent">@user.BestScorePercent%</span>
+                    </li>
+                }
+            </ol>
+        }
+        else
+        {
+            <p class="lb-empty">No scores yet. Take a quiz to get on the board!</p>
+        }
+    </section>
 </div>

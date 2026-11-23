@@ -1464,6 +1464,256 @@ footer.bg-light {
     .confetti { display: none; }
 }
 
+/* ---------- Leaderboard (#25) ---------- */
+.lb-hero {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--s-4);
+    margin-bottom: var(--s-6);
+}
+
+.lb-hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 var(--s-2);
+    background: linear-gradient(135deg, var(--text) 40%, var(--violet-hi) 80%, var(--cyan));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.lb-hero p {
+    color: var(--text-dim);
+    font-size: 15px;
+    margin: 0;
+}
+
+.lb-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-5);
+}
+
+@media (max-width: 860px) {
+    .lb-grid { grid-template-columns: 1fr; }
+}
+
+.lb-card {
+    background: linear-gradient(180deg, var(--surface-hi), var(--surface));
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    position: relative;
+}
+
+.lb-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--violet), var(--cyan));
+    opacity: 0.6;
+}
+
+.lb-card.lb-card--scorers::before {
+    background: linear-gradient(90deg, var(--success), var(--cyan));
+}
+
+.lb-head {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    padding: var(--s-5) var(--s-5) var(--s-4);
+}
+
+.lb-head .lb-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    background: color-mix(in oklab, var(--violet) 22%, var(--surface));
+    border: 1px solid color-mix(in oklab, var(--violet) 40%, var(--border));
+    color: var(--violet-hi);
+}
+
+.lb-card--scorers .lb-head .lb-icon {
+    background: color-mix(in oklab, var(--success) 22%, var(--surface));
+    border-color: color-mix(in oklab, var(--success) 40%, var(--border));
+    color: var(--success);
+}
+
+.lb-head h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 16px;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.lb-list {
+    display: flex;
+    flex-direction: column;
+    padding: 0 var(--s-4) var(--s-4);
+}
+
+.lb-row {
+    display: grid;
+    grid-template-columns: 40px 32px 1fr auto;
+    gap: var(--s-3);
+    align-items: center;
+    padding: var(--s-3) var(--s-3);
+    border-radius: var(--r-md);
+    animation: result-rise 460ms var(--ease-spring) both;
+    transition: background var(--t-fast);
+}
+
+.lb-row + .lb-row { border-top: 1px solid rgba(255, 255, 255, 0.04); }
+.lb-row:hover { background: rgba(255, 255, 255, 0.03); }
+
+.lb-row:nth-child(1) { animation-delay: 60ms; }
+.lb-row:nth-child(2) { animation-delay: 120ms; }
+.lb-row:nth-child(3) { animation-delay: 180ms; }
+.lb-row:nth-child(4) { animation-delay: 240ms; }
+.lb-row:nth-child(5) { animation-delay: 300ms; }
+.lb-row:nth-child(n+6) { animation-delay: 360ms; }
+
+.rank-chip {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    background: var(--bg-elev);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+}
+
+.rank-chip.rank-1 {
+    background: linear-gradient(135deg, #FFE27A, #F5A524);
+    color: #3a2a00;
+    border-color: color-mix(in oklab, #F5A524 50%, var(--border));
+    box-shadow: 0 0 20px -8px rgba(245, 165, 36, 0.7);
+}
+
+.rank-chip.rank-2 {
+    background: linear-gradient(135deg, #EAF0FA, #AEB8CC);
+    color: #22283a;
+    border-color: color-mix(in oklab, #AEB8CC 50%, var(--border));
+    box-shadow: 0 0 20px -10px rgba(174, 184, 204, 0.7);
+}
+
+.rank-chip.rank-3 {
+    background: linear-gradient(135deg, #E6A277, #A86B3C);
+    color: #2a1706;
+    border-color: color-mix(in oklab, #A86B3C 55%, var(--border));
+    box-shadow: 0 0 20px -10px rgba(168, 107, 60, 0.7);
+}
+
+.monogram {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--bg);
+    background: linear-gradient(135deg, var(--violet), var(--cyan));
+}
+
+.monogram.m-b { background: linear-gradient(135deg, var(--cyan), #5EEAD4); }
+.monogram.m-c { background: linear-gradient(135deg, var(--success), var(--cyan)); }
+.monogram.m-d { background: linear-gradient(135deg, var(--warn), #F97316); }
+.monogram.m-e { background: linear-gradient(135deg, var(--danger), var(--violet)); }
+
+.lb-primary {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.lb-primary .lb-name {
+    font-weight: 600;
+    color: var(--text);
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lb-primary .lb-sub {
+    color: var(--text-mute);
+    font-size: 12px;
+    font-family: var(--font-mono);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lb-metric {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    padding: 4px 10px;
+    border-radius: var(--r-pill);
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.03);
+    white-space: nowrap;
+}
+
+.lb-metric.is-success {
+    color: var(--correct);
+    border-color: color-mix(in oklab, var(--correct) 35%, var(--border));
+    background: color-mix(in oklab, var(--correct) 12%, transparent);
+}
+
+.lb-metric.is-warn {
+    color: var(--warn);
+    border-color: color-mix(in oklab, var(--warn) 35%, var(--border));
+    background: color-mix(in oklab, var(--warn) 12%, transparent);
+}
+
+.lb-metric.is-danger {
+    color: var(--danger);
+    border-color: color-mix(in oklab, var(--danger) 35%, var(--border));
+    background: color-mix(in oklab, var(--danger) 12%, transparent);
+}
+
+.lb-empty {
+    padding: var(--s-6) var(--s-5);
+    color: var(--text-dim);
+    font-size: 14px;
+    text-align: center;
+}
+
+@media (max-width: 480px) {
+    .lb-row {
+        grid-template-columns: 32px 28px 1fr auto;
+        gap: var(--s-2);
+    }
+
+    .rank-chip { width: 28px; height: 28px; font-size: 12px; }
+    .monogram { width: 28px; height: 28px; font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lb-row { animation: none; }
+}
+
 /* Print styles */
 @media print {
     nav, footer, .btn, form {
