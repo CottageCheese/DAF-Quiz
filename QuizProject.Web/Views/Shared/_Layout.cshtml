@@ -50,15 +50,17 @@
     </a>
 
     <nav class="topbar-nav" aria-label="Primary">
-        <a href="/" class="@(ctrl == "Home" ? "active" : "")"
-           aria-current="@(ctrl == "Home" ? "page" : null)">Dashboard</a>
         @if (User.Identity?.IsAuthenticated == true)
         {
+            <a href="/Dashboard" class="@(ctrl == "Dashboard" ? "active" : "")"
+               aria-current="@(ctrl == "Dashboard" ? "page" : null)">Dashboard</a>
             <a href="/Quiz" class="@(ctrl == "Quiz" ? "active" : "")"
                aria-current="@(ctrl == "Quiz" ? "page" : null)">Quizzes</a>
             <a href="/History" class="@(ctrl == "History" ? "active" : "")"
                aria-current="@(ctrl == "History" ? "page" : null)">History</a>
         }
+        <a href="/" class="@(ctrl == "Home" ? "active" : "")"
+           aria-current="@(ctrl == "Home" ? "page" : null)">Leaderboard</a>
     </nav>
 
     <div class="topbar-actions">

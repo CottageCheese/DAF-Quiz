@@ -1,0 +1,167 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+
+    var hour = DateTime.Now.Hour;
+    string greet = hour switch
+    {
+        < 5 => "Up late",
+        < 12 => "Good morning",
+        < 18 => "Good afternoon",
+        _ => "Good evening"
+    };
+
+    var nameShort = Model.UserName;
+    var atIndex = nameShort.IndexOf('@');
+    if (atIndex > 0) nameShort = nameShort[..atIndex];
+
+    string ScoreTone(double pct) => pct switch
+    {
+        >= 70 => "is-success",
+        >= 50 => "is-warn",
+        _ => "is-danger"
+    };
+
+    string RankClass(int r) => r switch { 1 => "rank-1", 2 => "rank-2", 3 => "rank-3", _ => "" };
+    string MonoClass(string s) => string.IsNullOrEmpty(s) ? "" : "m-" + char.ToLowerInvariant(s[0]);
+    string Initial(string s) => string.IsNullOrEmpty(s) ? "?" : char.ToUpperInvariant(s[0]).ToString();
+
+    string MaskEmail(string email)
+    {
+        var at = email.IndexOf('@');
+        if (at <= 3) return email;
+        return email[..3] + new string('*', Math.Min(at - 3, 5)) + email[at..];
+    }
+
+    var bestPct = (int)Math.Round(Model.BestPercent);
+    var passRate = (int)Math.Round(Model.PassRate);
+    var hasHistory = Model.TotalAttempts > 0;
+}
+
+<div class="dash-page">
+    <header class="dash-welcome">
+        <div>
+            <div class="eyebrow">Your dashboard</div>
+            <h1>@greet, @nameShort.</h1>
+            <p>
+                @if (hasHistory)
+                {
+                    <text>@Model.TotalAttempts @(Model.TotalAttempts == 1 ? "attempt" : "attempts") logged. Keep climbing.</text>
+                }
+                else
+                {
+                    <text>No attempts yet. Take your first quiz to get on the board.</text>
+                }
+            </p>
+        </div>
+        <a asp-controller="Quiz" asp-action="Index" class="btn-neon" style="width: auto; padding-inline: 22px;">
+            @(hasHistory ? "Take another" : "Start now")
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
+    </header>
+
+    <section class="dash-stats" aria-label="Your stats">
+        <div class="dash-stat accent-cyan">
+            <div class="label">Attempts</div>
+            <div class="value">@Model.TotalAttempts</div>
+            <div class="sub">total runs</div>
+        </div>
+        <div class="dash-stat accent-success">
+            <div class="label">Passed</div>
+            <div class="value">@Model.PassedCount<span class="unit">/@Model.TotalAttempts</span></div>
+            <div class="sub">@passRate% pass rate</div>
+        </div>
+        <div class="dash-stat">
+            <div class="label">Best score</div>
+            <div class="value">@bestPct<span class="unit">%</span></div>
+            <div class="sub" title="@Model.BestQuizTitle">
+                @(string.IsNullOrEmpty(Model.BestQuizTitle) ? "—" : Model.BestQuizTitle)
+            </div>
+        </div>
+        <div class="dash-stat accent-warn">
+            <div class="label">Streak</div>
+            <div class="value">
+                @{
+                    var streak = 0;
+                    foreach (var a in Model.RecentAttempts)
+                    {
+                        if (a.Percentage >= 50) streak++;
+                        else break;
+                    }
+                }
+                @streak
+            </div>
+            <div class="sub">recent passes in a row</div>
+        </div>
+    </section>
+
+    <div class="dash-split">
+        <section class="lb-card" aria-labelledby="dash-recent-heading">
+            <header class="lb-head">
+                <span class="lb-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
+                </span>
+                <h2 id="dash-recent-heading">Recent activity</h2>
+                <a asp-controller="History" asp-action="Index" class="filter-chip" style="margin-left: auto;">View all</a>
+            </header>
+
+            @if (!Model.RecentAttempts.Any())
+            {
+                <p class="lb-empty">No attempts yet. Your recent runs will land here.</p>
+            }
+            else
+            {
+                <ol class="lb-list" aria-describedby="dash-recent-heading">
+                    @foreach (var a in Model.RecentAttempts)
+                    {
+                        var pct = (int)Math.Round(a.Percentage);
+                        <li class="lb-row">
+                            <span class="monogram @MonoClass(a.QuizTitle)" aria-hidden="true">@Initial(a.QuizTitle)</span>
+                            <span></span>
+                            <div class="lb-primary">
+                                <a asp-controller="Quiz" asp-action="Results" asp-route-attemptId="@a.AttemptId"
+                                   class="lb-name" style="text-decoration: none; color: inherit;">@a.QuizTitle</a>
+                                <span class="lb-sub">@a.CompletedAt.ToLocalTime().ToString("MMM d · HH:mm") · @a.Score/@a.TotalQuestions</span>
+                            </div>
+                            <span class="lb-metric @ScoreTone(a.Percentage)" aria-label="Scored @pct percent">@pct%</span>
+                        </li>
+                    }
+                </ol>
+            }
+        </section>
+
+        <section class="lb-card lb-card--scorers" aria-labelledby="dash-top-heading">
+            <header class="lb-head">
+                <span class="lb-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                </span>
+                <h2 id="dash-top-heading">Top scorers</h2>
+                <a asp-controller="Home" asp-action="Index" class="filter-chip" style="margin-left: auto;">Full board</a>
+            </header>
+
+            @if (!Model.TopScorers.Any())
+            {
+                <p class="lb-empty">No scores yet. Be first on the board.</p>
+            }
+            else
+            {
+                <ol class="lb-list" aria-describedby="dash-top-heading">
+                    @foreach (var user in Model.TopScorers)
+                    {
+                        var pct = (int)Math.Round(user.BestScorePercent);
+                        var masked = MaskEmail(user.UserName);
+                        <li class="lb-row">
+                            <span class="rank-chip @RankClass(user.Rank)" aria-label="Rank @user.Rank">@user.Rank</span>
+                            <span class="monogram @MonoClass(user.UserName)" aria-hidden="true">@Initial(user.UserName)</span>
+                            <div class="lb-primary">
+                                <span class="lb-name">@masked</span>
+                                <span class="lb-sub" title="@user.QuizTitle">Best on @user.QuizTitle</span>
+                            </div>
+                            <span class="lb-metric @ScoreTone(user.BestScorePercent)">@pct%</span>
+                        </li>
+                    }
+                </ol>
+            }
+        </section>
+    </div>
+</div>
