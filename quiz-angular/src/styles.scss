@@ -53,4 +53,9 @@ a:not(.btn):not(.nav-link):not(.navbar-brand) {
     font-size: 0.75rem;
     color: currentColor;
   }
+
+  // AA-compliant amber for 50–69% band (Bootstrap text-warning #ffc107 fails 3:1 on white)
+  &.score-amber {
+    color: #8a6d00;
+  }
 }

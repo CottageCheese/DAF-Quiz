@@ -20,7 +20,7 @@ import { LoadingSpinnerComponent } from "../../../shared/components/loading-spin
               <div
                 class="score-circle mb-4"
                 [class.text-success]="r.percentage >= 70"
-                [class.text-warning]="r.percentage >= 50 && r.percentage < 70"
+                [class.score-amber]="r.percentage >= 50 && r.percentage < 70"
                 [class.text-danger]="r.percentage < 50"
               >
                 <span class="score-number"
