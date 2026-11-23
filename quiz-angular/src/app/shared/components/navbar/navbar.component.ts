@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 
@@ -6,6 +6,7 @@ import { AuthService } from '../../../core/auth/auth.service';
   selector: 'app-navbar',
   standalone: true,
   imports: [RouterLink, RouterLinkActive],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
       <div class="container">

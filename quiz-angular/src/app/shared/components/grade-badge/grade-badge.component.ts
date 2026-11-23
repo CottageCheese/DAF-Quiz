@@ -1,10 +1,11 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, input, ChangeDetectionStrategy } from '@angular/core';
 import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-grade-badge',
   standalone: true,
   imports: [NgClass],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `<span class="badge" [ngClass]="badgeClass()">{{ grade() }}</span>`
 })
 export class GradeBadgeComponent {

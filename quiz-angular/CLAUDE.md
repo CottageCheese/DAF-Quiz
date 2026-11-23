@@ -1,6 +1,6 @@
 # quiz-angular — CLAUDE.md
 
-Angular 19 SPA frontend for the DAF-Quiz application. Communicates exclusively with the ASP.NET Core API (`QuizProject.Api`) on port 7001. No server-side rendering, no lazy-loaded modules, no NgRx.
+Angular 22 SPA frontend for the DAF-Quiz application. Communicates exclusively with the ASP.NET Core API (`QuizProject.Api`) on port 7001. No server-side rendering, no lazy-loaded modules, no NgRx.
 
 ---
 
@@ -8,7 +8,7 @@ Angular 19 SPA frontend for the DAF-Quiz application. Communicates exclusively w
 
 | Concern | Library / Version |
 |---|---|
-| Framework | Angular 19 (standalone components) |
+| Framework | Angular 22 (standalone components) |
 | Language | TypeScript ~5.6 |
 | Reactivity | RxJS ~7.8 + Angular Signals |
 | Styling | Bootstrap 5.3 (CSS only — no `bootstrap.js`) |
