@@ -44,6 +44,229 @@
     --transition-speed: 0.2s;
 }
 
+/* ============================================================
+   Neon Arcade design tokens (P0.1)
+   Shared palette + brand + semantic + answer tiles + glows +
+   radii + spacing + type stacks + motion.
+   Theme toggle (dark/light) wired up in P0.3.
+   ============================================================ */
+:root {
+    /* palette */
+    --bg: #0B1020;
+    --bg-elev: #151B2E;
+    --surface: #1B2238;
+    --surface-hi: #242C47;
+    --border: #2A3350;
+    --text: #E7ECF5;
+    --text-dim: #9AA4C0;
+    --text-mute: #6B7498;
+
+    /* brand */
+    --violet: #7C5CFF;
+    --violet-hi: #9B82FF;
+    --cyan: #22D3EE;
+
+    /* answer tiles (Kahoot-inspired) */
+    --ans-red: #FB5A6B;
+    --ans-blue: #4C7CFF;
+    --ans-amber: #FBBF24;
+    --ans-green: #34D399;
+
+    /* semantic */
+    --success: #A3E635;
+    --warn: #FBBF24;
+    --danger: #FB7185;
+    --correct: #34D399;
+    --wrong: #FB5A6B;
+
+    /* glows / shadows */
+    --glow-violet: 0 10px 40px -10px rgba(124, 92, 255, .55), 0 0 0 1px rgba(124, 92, 255, .25);
+    --glow-cyan: 0 10px 40px -10px rgba(34, 211, 238, .45);
+    --shadow-card: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 20px 50px -20px rgba(0, 0, 0, .6);
+
+    /* radii */
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 16px;
+    --r-xl: 24px;
+    --r-pill: 999px;
+
+    /* spacing scale */
+    --s-1: 4px;
+    --s-2: 8px;
+    --s-3: 12px;
+    --s-4: 16px;
+    --s-5: 24px;
+    --s-6: 32px;
+    --s-7: 48px;
+    --s-8: 64px;
+
+    /* type stacks */
+    --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+    --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+    /* motion */
+    --ease-out: cubic-bezier(.22, .61, .36, 1);
+    --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+    --t-fast: 120ms;
+    --t-mid: 220ms;
+}
+
+/* Light theme overrides (P0.3) */
+[data-theme="light"] {
+    --bg: #F7F8FC;
+    --bg-elev: #FFFFFF;
+    --surface: #FFFFFF;
+    --surface-hi: #F0F2F8;
+    --border: #D9DDE8;
+    --text: #0B1020;
+    --text-dim: #4A5272;
+    --text-mute: #5A6484;
+    --shadow-card: 0 1px 0 rgba(0, 0, 0, .02) inset, 0 12px 30px -18px rgba(11, 16, 32, .18);
+}
+
+/* ============================================================
+   Neon Arcade topbar (P0.4)
+   ============================================================ */
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    padding: var(--s-4) var(--s-6);
+    border-bottom: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: color-mix(in oklab, var(--bg) 70%, transparent);
+    font-family: var(--font-body);
+    color: var(--text);
+}
+
+.topbar .brand {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -.01em;
+    font-size: 18px;
+    color: var(--text);
+    text-decoration: none;
+}
+
+.topbar .brand-mark {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: conic-gradient(from 210deg, var(--violet), var(--cyan), var(--violet));
+    box-shadow: var(--glow-violet);
+    flex-shrink: 0;
+}
+
+.topbar .topbar-nav {
+    display: flex;
+    gap: var(--s-2);
+    flex-wrap: wrap;
+}
+
+.topbar .topbar-nav a {
+    color: var(--text-dim);
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: var(--r-pill);
+    font-size: 14px;
+    font-weight: 500;
+    transition: color var(--t-fast), background var(--t-fast);
+}
+
+.topbar .topbar-nav a:hover,
+.topbar .topbar-nav a:focus-visible {
+    color: var(--text);
+    background: color-mix(in oklab, var(--text) 6%, transparent);
+}
+
+.topbar .topbar-nav a.active {
+    color: var(--text);
+    background: color-mix(in oklab, var(--violet) 18%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--violet) 40%, transparent);
+}
+
+.topbar .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+}
+
+.topbar .user-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    padding: 6px 12px 6px 6px;
+    border-radius: var(--r-pill);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text-dim);
+    text-decoration: none;
+}
+
+.topbar .avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--violet), var(--cyan));
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 12px;
+    color: #0B1020;
+}
+
+.topbar .theme-toggle,
+.topbar .topbar-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: var(--r-pill);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color var(--t-fast), background var(--t-fast), border-color var(--t-fast);
+}
+
+.topbar .theme-toggle:hover,
+.topbar .topbar-link:hover,
+.topbar .theme-toggle:focus-visible,
+.topbar .topbar-link:focus-visible {
+    color: var(--text);
+    border-color: color-mix(in oklab, var(--violet) 40%, var(--border));
+}
+
+.topbar .theme-toggle .icon-sun { display: none; }
+.topbar .theme-toggle .icon-moon { display: inline; }
+[data-theme="light"] .topbar .theme-toggle .icon-sun { display: inline; }
+[data-theme="light"] .topbar .theme-toggle .icon-moon { display: none; }
+
+/* Admin topbar — subdued variant hook (P4.1 will extend) */
+.topbar.topbar-admin .brand-mark {
+    background: conic-gradient(from 210deg, var(--text-mute), var(--text-dim), var(--text-mute));
+    box-shadow: none;
+}
+
+@media (max-width: 640px) {
+    .topbar { flex-wrap: wrap; padding: var(--s-3) var(--s-4); }
+    .topbar .topbar-nav { order: 3; width: 100%; justify-content: center; }
+}
+
 /* Skip link */
 .skip-link:focus {
     position: fixed;
