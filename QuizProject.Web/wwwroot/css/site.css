@@ -2287,6 +2287,135 @@ footer.bg-light {
     font-weight: 600;
 }
 
+/* ---------- UI State library (#35): empty / error / skeleton / offline ---------- */
+.ui-empty,
+.ui-error {
+    display: grid;
+    place-items: center;
+    gap: var(--s-3);
+    text-align: center;
+    padding: var(--s-7) var(--s-4);
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: var(--r-lg);
+    color: var(--text-dim);
+}
+
+.ui-empty__icon,
+.ui-error__icon {
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: color-mix(in oklab, var(--violet) 10%, var(--surface));
+    color: var(--violet-hi);
+    border: 1px solid color-mix(in oklab, var(--violet) 25%, var(--border));
+}
+
+.ui-error__icon {
+    background: color-mix(in oklab, var(--danger) 10%, var(--surface));
+    color: var(--danger);
+    border-color: color-mix(in oklab, var(--danger) 30%, var(--border));
+}
+
+.ui-empty__title,
+.ui-error__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 20px;
+    color: var(--text);
+}
+
+.ui-empty__msg,
+.ui-error__msg {
+    margin: 0;
+    max-width: 48ch;
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.ui-skel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: var(--s-4);
+    display: grid;
+    gap: var(--s-3);
+}
+
+.ui-skel__row {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: var(--s-4);
+    align-items: center;
+    padding-bottom: var(--s-3);
+    border-bottom: 1px solid var(--border);
+}
+
+.ui-skel__row:last-child { border-bottom: 0; padding-bottom: 0; }
+
+.ui-skel__bar {
+    height: 14px;
+    border-radius: 6px;
+    background: linear-gradient(
+            90deg,
+            color-mix(in oklab, var(--text) 6%, var(--surface)) 0%,
+            color-mix(in oklab, var(--text) 14%, var(--surface)) 50%,
+            color-mix(in oklab, var(--text) 6%, var(--surface)) 100%
+    );
+    background-size: 200% 100%;
+    animation: ui-shimmer 1400ms linear infinite;
+}
+
+.ui-skel__bar--sm { height: 10px; width: 60%; }
+.ui-skel__bar--lg { height: 22px; width: 70%; }
+
+@keyframes ui-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.ui-skel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--s-4);
+}
+
+.ui-skel-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: var(--s-4);
+    display: grid;
+    gap: var(--s-3);
+}
+
+.ui-offline {
+    position: fixed;
+    left: 50%;
+    bottom: 20px;
+    transform: translateX(-50%);
+    display: inline-flex;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #0b0813;
+    background: var(--warn);
+    border-radius: 999px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    z-index: 1000;
+}
+
+.ui-offline[hidden] { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    .ui-skel__bar { animation: none; background: color-mix(in oklab, var(--text) 10%, var(--surface)); }
+}
+
 /* Mobile 375px pass (P5.5) */
 @media (hover: none) and (pointer: coarse) {
     /* WCAG 2.5.5 — ensure touch targets >=44px */
