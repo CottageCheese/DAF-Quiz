@@ -946,6 +946,199 @@ body.admin-body {
 
 .a-empty p { margin: 0 0 var(--s-4); font-size: 14px; }
 
+/* ---------- Admin forms (#31) ---------- */
+.a-form-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.a-form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: var(--s-5) var(--s-6);
+    position: relative;
+}
+
+.a-form-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 2px;
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    background: linear-gradient(90deg, var(--warn), #F97316);
+    opacity: 0.55;
+}
+
+.a-fieldset {
+    border: 0;
+    margin: 0 0 var(--s-5);
+    padding: 0;
+}
+
+.a-fieldset + .a-fieldset {
+    margin-top: var(--s-5);
+    padding-top: var(--s-5);
+    border-top: 1px solid var(--border);
+}
+
+.a-legend {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    padding: 0;
+    margin-bottom: var(--s-3);
+}
+
+.a-field {
+    margin-bottom: var(--s-4);
+}
+
+.a-field:last-child { margin-bottom: 0; }
+
+.a-label {
+    display: block;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.a-label .req { color: var(--danger); margin-left: 2px; }
+
+.a-input,
+.a-textarea,
+.a-select {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.4;
+    transition: border-color var(--t-fast), box-shadow var(--t-fast), background var(--t-fast);
+}
+
+.a-textarea { resize: vertical; min-height: 72px; }
+
+.a-input:hover,
+.a-textarea:hover,
+.a-select:hover { border-color: color-mix(in oklab, var(--warn) 30%, var(--border)); }
+
+.a-input:focus,
+.a-textarea:focus,
+.a-select:focus {
+    outline: none;
+    border-color: var(--warn);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--warn) 25%, transparent);
+    background: var(--surface);
+}
+
+.a-input.input-error,
+.a-textarea.input-error {
+    border-color: color-mix(in oklab, var(--danger) 60%, var(--border));
+}
+
+.a-input.input-error:focus,
+.a-textarea.input-error:focus {
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--danger) 25%, transparent);
+}
+
+.a-input[type="number"] { max-width: 120px; }
+
+.a-help {
+    display: block;
+    color: var(--text-mute);
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+.a-err {
+    display: block;
+    color: var(--danger);
+    font-size: 12px;
+    margin-top: 6px;
+    min-height: 0;
+}
+
+.a-err:empty { display: none; }
+
+/* Answer row: radio + text */
+.a-answer {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--s-3);
+    align-items: center;
+    padding: 10px 12px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    transition: border-color var(--t-fast), background var(--t-fast);
+}
+
+.a-answer:has(input[type="radio"]:checked) {
+    border-color: color-mix(in oklab, var(--correct) 50%, var(--border));
+    background: color-mix(in oklab, var(--correct) 8%, var(--bg-elev));
+}
+
+.a-answer + .a-answer { margin-top: 8px; }
+
+.a-answer input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--correct);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.a-answer input[type="text"] {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    outline: none;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    padding: 2px 0;
+}
+
+.a-answer input[type="text"]::placeholder { color: var(--text-mute); }
+
+.a-answer:focus-within {
+    border-color: color-mix(in oklab, var(--warn) 50%, var(--border));
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--warn) 20%, transparent);
+}
+
+/* Error summary at top */
+.a-summary {
+    background: color-mix(in oklab, var(--danger) 12%, var(--surface));
+    border: 1px solid color-mix(in oklab, var(--danger) 45%, var(--border));
+    color: var(--danger);
+    padding: var(--s-3) var(--s-4);
+    border-radius: var(--r-md);
+    font-size: 13px;
+    margin-bottom: var(--s-4);
+}
+
+.a-summary:empty,
+.a-summary ul:empty { display: none; }
+
+.a-summary ul { margin: 0; padding-left: var(--s-4); }
+
+.a-form-actions {
+    display: flex;
+    gap: var(--s-2);
+    margin-top: var(--s-5);
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+}
+
 /* Print styles */
 @media print {
     nav, footer, .btn, form {
