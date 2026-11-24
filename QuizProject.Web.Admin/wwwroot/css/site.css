@@ -742,7 +742,9 @@ body.admin-body {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--r-lg);
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
 }
 
 .a-table {
@@ -1137,6 +1139,45 @@ body.admin-body {
     padding-top: var(--s-4);
     border-top: 1px solid var(--border);
     flex-wrap: wrap;
+}
+
+/* Mobile 375px pass (P5.5) — admin shell */
+@media (max-width: 640px) {
+    .admin-page { padding: 0 var(--s-3); }
+
+    .admin-page .page-head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--s-3);
+    }
+
+    .admin-page .page-head h1 { font-size: 22px; }
+
+    .a-table { font-size: 12px; min-width: 640px; }
+    .a-table th, .a-table td { padding: 10px 12px; }
+
+    .a-table .cell-actions { white-space: nowrap; }
+
+    .a-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--s-2);
+    }
+
+    .a-toolbar .a-btn { width: 100%; justify-content: center; }
+
+    .a-form-card { padding: var(--s-4); }
+    .a-form-actions .a-btn { flex: 1 1 140px; justify-content: center; }
+
+    .a-pagination { flex-wrap: wrap; }
+
+    .admin-banner .env { display: none; }
+}
+
+@media (hover: none) and (pointer: coarse) {
+    /* WCAG 2.5.5 — enlarge icon buttons on touch devices */
+    .a-icon-btn { width: 44px; height: 44px; }
+    .a-btn { min-height: 44px; }
 }
 
 /* Reduced-motion global safety net (P5.3) */

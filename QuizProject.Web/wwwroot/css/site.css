@@ -2287,6 +2287,26 @@ footer.bg-light {
     font-weight: 600;
 }
 
+/* Mobile 375px pass (P5.5) */
+@media (hover: none) and (pointer: coarse) {
+    /* WCAG 2.5.5 — ensure touch targets >=44px */
+    .btn-neon, .btn-ghost, .btn-cyan, .auth-cta, .filter-chip, .topbar-nav a, .topbar-link {
+        min-height: 44px;
+    }
+}
+
+@media (max-width: 420px) {
+    .container { padding-left: var(--s-3); padding-right: var(--s-3); }
+    main.container { padding-left: var(--s-3); padding-right: var(--s-3); }
+
+    /* Tighter display hierarchy */
+    h1 { font-size: 26px; }
+
+    /* Form actions stack & stretch */
+    .auth-cta { width: 100%; }
+    .filter-chip { flex: 1 1 100px; justify-content: center; }
+}
+
 /* Reduced-motion global safety net — catches any animation not explicitly guarded above (P5.3) */
 @media (prefers-reduced-motion: reduce) {
     *,
