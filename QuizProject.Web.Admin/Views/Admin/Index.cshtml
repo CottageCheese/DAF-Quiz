@@ -1,124 +1,152 @@
 @model PagedResult<AdminQuizListViewModel>
 @{
-    ViewData["Title"] = "Admin — Quiz Management";
+    ViewData["Title"] = "Quiz management";
 }
 
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
-    <h1 class="h3 mb-0">Quiz Management</h1>
-    <a asp-action="Create" class="btn btn-dark">+ New Quiz</a>
+<div class="admin-page">
+    <header class="page-head">
+        <div>
+            <h1>Quiz management</h1>
+            <p class="sub">@Model.TotalCount @(Model.TotalCount == 1 ? "quiz" : "quizzes") total · page @Model.Page of @Math.Max(1, Model.TotalPages)</p>
+        </div>
+        <a asp-action="Create" class="a-btn a-btn--primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            New quiz
+        </a>
+    </header>
+
+    @if (!Model.Items.Any())
+    {
+        <div class="a-empty" role="status">
+            <h2>No quizzes yet</h2>
+            <p>Create your first quiz to get started.</p>
+            <a asp-action="Create" class="a-btn a-btn--primary">Create quiz</a>
+        </div>
+    }
+    else
+    {
+        <div class="a-table-wrap">
+            <table class="a-table" aria-label="Quizzes">
+                <thead>
+                <tr>
+                    <th scope="col" class="sortable" aria-sort="none">Title</th>
+                    <th scope="col">Questions</th>
+                    <th scope="col">Created by</th>
+                    <th scope="col" class="sortable" aria-sort="descending">Created</th>
+                    <th scope="col">Publish date</th>
+                    <th scope="col">Status</th>
+                    <th scope="col" class="cell-actions">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var quiz in Model.Items)
+                {
+                    <tr>
+                        <td>
+                            <span class="cell-title">@quiz.Title</span>
+                            @if (!string.IsNullOrEmpty(quiz.Description))
+                            {
+                                <span class="cell-sub">@quiz.Description</span>
+                            }
+                        </td>
+                        <td class="cell-num">@quiz.QuestionCount</td>
+                        <td class="cell-mono">@(quiz.CreatedByEmail ?? "—")</td>
+                        <td class="cell-mono">@quiz.CreatedAt.ToString("dd MMM yyyy")</td>
+                        <td class="cell-mono">
+                            @if (quiz.PublishedAt.HasValue)
+                            {
+                                @quiz.PublishedAt.Value.ToString("dd MMM yyyy HH:mm")
+                            }
+                            else
+                            {
+                                <span style="color: var(--text-mute);">—</span>
+                            }
+                        </td>
+                        <td>
+                            @if (quiz.IsPublished)
+                            {
+                                <span class="status-pill is-published">Published</span>
+                            }
+                            else if (quiz.PublishedAt.HasValue)
+                            {
+                                <span class="status-pill is-scheduled">Scheduled</span>
+                            }
+                            else
+                            {
+                                <span class="status-pill is-draft">Draft</span>
+                            }
+                        </td>
+                        <td class="cell-actions">
+                            <div class="actions-inline">
+                                <a asp-action="Details" asp-route-id="@quiz.Id"
+                                   class="a-icon-btn cyan" title="View" aria-label="View @quiz.Title">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@quiz.Id"
+                                   class="a-icon-btn" title="Edit" aria-label="Edit @quiz.Title">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                                </a>
+                                <form asp-action="DeleteQuiz" method="post" class="d-inline m-0"
+                                      data-confirm="Delete quiz '@quiz.Title'? This cannot be undone.">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@quiz.Id"/>
+                                    <button type="submit" class="a-icon-btn danger" title="Delete" aria-label="Delete @quiz.Title">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+
+            @if (Model.TotalPages > 1)
+            {
+                <nav class="a-pagination" aria-label="Quiz list pagination">
+                    @if (Model.Page > 1)
+                    {
+                        <a asp-action="Index" asp-route-page="@(Model.Page - 1)" asp-route-pageSize="@Model.PageSize"
+                           aria-label="Previous page">‹</a>
+                    }
+                    @for (var i = 1; i <= Model.TotalPages; i++)
+                    {
+                        if (i == Model.Page)
+                        {
+                            <span class="active" aria-current="page">@i</span>
+                        }
+                        else
+                        {
+                            <a asp-action="Index" asp-route-page="@i" asp-route-pageSize="@Model.PageSize"
+                               aria-label="Page @i">@i</a>
+                        }
+                    }
+                    @if (Model.Page < Model.TotalPages)
+                    {
+                        <a asp-action="Index" asp-route-page="@(Model.Page + 1)" asp-route-pageSize="@Model.PageSize"
+                           aria-label="Next page">›</a>
+                    }
+                </nav>
+            }
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <p class="a-pagination-summary">
+                @((Model.Page - 1) * Model.PageSize + 1)–@(Math.Min(Model.Page * Model.PageSize, Model.TotalCount)) of @Model.TotalCount
+            </p>
+        }
+    }
 </div>
 
-@if (!Model.Items.Any())
-{
-    <div class="alert alert-info">No quizzes yet. Create one to get started.</div>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead class="table-dark">
-            <tr>
-                <th>Title</th>
-                <th class="d-none d-sm-table-cell">Questions</th>
-                <th class="d-none d-md-table-cell">Created By</th>
-                <th class="d-none d-md-table-cell">Created</th>
-                <th class="d-none d-lg-table-cell">Publish Date</th>
-                <th>Status</th>
-                <th class="text-end">Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            @foreach (var quiz in Model.Items)
-            {
-                <tr>
-                    <td>
-                        <strong>@quiz.Title</strong>
-                        @if (!string.IsNullOrEmpty(quiz.Description))
-                        {
-                            <br/>
-                            <small class="text-muted">@quiz.Description</small>
-                        }
-                    </td>
-                    <td class="d-none d-sm-table-cell">@quiz.QuestionCount</td>
-                    <td class="d-none d-md-table-cell">@(quiz.CreatedByEmail ?? "—")</td>
-                    <td class="d-none d-md-table-cell">@quiz.CreatedAt.ToString("dd MMM yyyy")</td>
-                    <td class="d-none d-lg-table-cell">
-                        @if (quiz.PublishedAt.HasValue)
-                        {
-                            @quiz.PublishedAt.Value.ToString("dd MMM yyyy HH:mm")
-                            <span class="text-muted">UTC</span>
-                        }
-                        else
-                        {
-                            <span class="text-muted fst-italic">Not set</span>
-                        }
-                    </td>
-                    <td>
-                        @if (quiz.IsPublished)
-                        {
-                            <span class="badge bg-success">Published</span>
-                        }
-                        else if (quiz.PublishedAt.HasValue)
-                        {
-                            <span class="badge bg-warning text-dark">Scheduled</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-secondary">Draft</span>
-                        }
-                    </td>
-                    <td>
-                        <div class="d-flex flex-wrap justify-content-end gap-1">
-                            <a asp-action="Details" asp-route-id="@quiz.Id"
-                               class="btn btn-sm btn-outline-primary">View</a>
-                            <a asp-action="Edit" asp-route-id="@quiz.Id"
-                               class="btn btn-sm btn-outline-secondary">Edit</a>
-                            <form asp-action="DeleteQuiz" method="post"
-                                  onsubmit="return confirm('Delete quiz \'@quiz.Title\'? This cannot be undone.');">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@quiz.Id"/>
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-            }
-            </tbody>
-        </table>
-    </div>
-
-    @if (Model.TotalPages > 1)
-    {
-        <nav aria-label="Quiz list pagination">
-            <ul class="pagination justify-content-center">
-                @if (Model.Page > 1)
-                {
-                    <li class="page-item">
-                        <a class="page-link" asp-action="Index"
-                           asp-route-page="@(Model.Page - 1)"
-                           asp-route-pageSize="@Model.PageSize">Previous</a>
-                    </li>
-                }
-                @for (var i = 1; i <= Model.TotalPages; i++)
-                {
-                    <li class="page-item @(i == Model.Page ? "active" : "")">
-                        <a class="page-link" asp-action="Index"
-                           asp-route-page="@i"
-                           asp-route-pageSize="@Model.PageSize">@i</a>
-                    </li>
-                }
-                @if (Model.Page < Model.TotalPages)
-                {
-                    <li class="page-item">
-                        <a class="page-link" asp-action="Index"
-                           asp-route-page="@(Model.Page + 1)"
-                           asp-route-pageSize="@Model.PageSize">Next</a>
-                    </li>
-                }
-            </ul>
-        </nav>
-        <p class="text-center text-muted small">
-            Showing @((Model.Page - 1) * Model.PageSize + 1)–@(Math.Min(Model.Page * Model.PageSize, Model.TotalCount)) of @Model.TotalCount quizzes
-        </p>
-    }
+@section Scripts {
+    <script>
+        (function () {
+            document.querySelectorAll('form[data-confirm]').forEach(function (f) {
+                f.addEventListener('submit', function (e) {
+                    if (!confirm(f.dataset.confirm)) e.preventDefault();
+                });
+            });
+        })();
+    </script>
 }

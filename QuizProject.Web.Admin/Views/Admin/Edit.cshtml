@@ -1,55 +1,78 @@
 @model EditQuizFormModel
 @{
-    ViewData["Title"] = "Edit Quiz";
+    ViewData["Title"] = "Edit quiz";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-7">
-        <h1 class="h3 mb-4">Edit Quiz</h1>
-
-        <div class="card">
-            <div class="card-body">
-                <form asp-action="Edit" method="post">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" asp-for="Id"/>
-
-                    <div class="mb-3">
-                        <label asp-for="Title" class="form-label fw-semibold"></label>
-                        <input asp-for="Title" class="form-control" autofocus aria-required="true"/>
-                        <span asp-validation-for="Title" class="text-danger small" role="alert"
-                              aria-live="polite"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="Description" class="form-label fw-semibold"></label>
-                        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-                        <span asp-validation-for="Description" class="text-danger small" role="alert"
-                              aria-live="polite"></span>
-                    </div>
-
-                    <div class="mb-4">
-                        <label asp-for="PublishedAt" class="form-label fw-semibold"></label>
-                        <input asp-for="PublishedAt" type="datetime-local" class="form-control"
-                               value="@(Model.PublishedAt.HasValue ? Model.PublishedAt.Value.ToString("yyyy-MM-ddTHH:mm") : "")"
-                               aria-describedby="publishedat-hint"/>
-                        <div id="publishedat-hint" class="form-text">
-                            Leave blank to keep as a draft. Set to a future date/time (UTC) to schedule publication.
-                            Set to now or a past date/time to publish immediately.
-                        </div>
-                        <span asp-validation-for="PublishedAt" class="text-danger small" role="alert"
-                              aria-live="polite"></span>
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-dark">Save Changes</button>
-                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Cancel</a>
-                    </div>
-                </form>
-            </div>
+<div class="admin-page">
+    <header class="page-head">
+        <div>
+            <h1>Edit quiz</h1>
+            <p class="sub">Update details or schedule publication.</p>
         </div>
+    </header>
+
+    <div class="a-form-wrap">
+        <div asp-validation-summary="ModelOnly" class="a-summary" role="alert" aria-live="assertive"></div>
+
+        <form asp-action="Edit" method="post" class="a-form-card" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id"/>
+
+            <fieldset class="a-fieldset">
+                <legend class="a-legend">Quiz details</legend>
+
+                <div class="a-field">
+                    <label asp-for="Title" class="a-label req">Title</label>
+                    <input asp-for="Title" class="a-input" autofocus aria-required="true"/>
+                    <span asp-validation-for="Title" class="a-err" role="alert" aria-live="polite"></span>
+                </div>
+
+                <div class="a-field">
+                    <label asp-for="Description" class="a-label">Description</label>
+                    <textarea asp-for="Description" class="a-textarea" rows="3"></textarea>
+                    <span asp-validation-for="Description" class="a-err" role="alert" aria-live="polite"></span>
+                </div>
+            </fieldset>
+
+            <fieldset class="a-fieldset">
+                <legend class="a-legend">Publication</legend>
+
+                <div class="a-field">
+                    <label asp-for="PublishedAt" class="a-label">Publish date (UTC)</label>
+                    <input asp-for="PublishedAt" type="datetime-local" class="a-input"
+                           value="@(Model.PublishedAt.HasValue ? Model.PublishedAt.Value.ToString("yyyy-MM-ddTHH:mm") : "")"
+                           aria-describedby="publishedat-hint"/>
+                    <span id="publishedat-hint" class="a-help">
+                        Leave blank to keep as a draft. Future date = scheduled. Now or past = published immediately.
+                    </span>
+                    <span asp-validation-for="PublishedAt" class="a-err" role="alert" aria-live="polite"></span>
+                </div>
+            </fieldset>
+
+            <div class="a-form-actions">
+                <button type="submit" class="a-btn a-btn--primary">Save changes</button>
+                <a asp-action="Details" asp-route-id="@Model.Id" class="a-btn">Cancel</a>
+            </div>
+        </form>
     </div>
 </div>
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script>
+        (function () {
+            var form = document.querySelector('form.a-form-card');
+            if (!form) return;
+            form.addEventListener('submit', function () {
+                setTimeout(function () {
+                    var bad = form.querySelector('.a-err.field-validation-error, .input-validation-error');
+                    if (bad) {
+                        var focusable = bad.closest('.a-field')?.querySelector('input,textarea,select');
+                        (focusable || bad).focus?.();
+                        (focusable || bad).scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    }
+                }, 0);
+            });
+        })();
+    </script>
 }

@@ -2,10 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>DAF Quiz</title>
+  <title>TriviaRush</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="TriviaRush — test your knowledge and compete on the leaderboard.">
+  <meta name="color-scheme" content="dark light">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+  <!-- Theme bootstrap — set data-theme + color-scheme meta before paint to prevent FOUC -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('theme');
+        if (!t) {
+          t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+        var meta = document.querySelector('meta[name="color-scheme"]');
+        if (meta) meta.setAttribute('content', t);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
 </head>
 <body>
   <app-root></app-root>

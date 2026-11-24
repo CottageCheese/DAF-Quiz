@@ -6,6 +6,8 @@
     "test": "playwright test",
     "test:mvc": "playwright test --project=mvc",
     "test:angular": "playwright test --project=angular",
+    "test:visual": "playwright test visual --project=mvc",
+    "test:visual:update": "playwright test visual --project=mvc --update-snapshots",
     "report": "playwright show-report"
   },
   "devDependencies": {

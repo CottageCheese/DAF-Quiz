@@ -40,6 +40,15 @@ public class PublicApiClient(
         return await response.Content.ReadFromJsonAsync<QuizResultViewModel>(JsonOpts);
     }
 
+    // History
+
+    public async Task<List<UserAttemptHistoryViewModel>> GetMyHistoryAsync()
+    {
+        var response = await SendWithAuthAsync(HttpMethod.Get, "api/quizzes/my-history");
+        if (response is null || !response.IsSuccessStatusCode) return [];
+        return await response.Content.ReadFromJsonAsync<List<UserAttemptHistoryViewModel>>(JsonOpts) ?? [];
+    }
+
     // Leaderboard (public — no auth needed)
 
     public async Task<LeaderboardViewModel> GetLeaderboardAsync()

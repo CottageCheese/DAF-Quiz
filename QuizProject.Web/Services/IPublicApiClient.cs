@@ -13,6 +13,9 @@ public interface IPublicApiClient : IAuthApiClient
     Task<QuizResultViewModel?> SubmitAttemptAsync(int attemptId, List<QuestionAnswerSelection> selections);
     Task<QuizResultViewModel?> GetResultAsync(int attemptId);
 
+    // History
+    Task<List<UserAttemptHistoryViewModel>> GetMyHistoryAsync();
+
     // Leaderboard
     Task<LeaderboardViewModel> GetLeaderboardAsync();
 }

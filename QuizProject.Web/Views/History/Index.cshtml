@@ -1,0 +1,107 @@
+@model List<UserAttemptHistoryViewModel>
+@{
+    ViewData["Title"] = "History";
+    var filter = (ViewBag.Filter as string) ?? "all";
+    var total = (int)(ViewBag.TotalCount ?? 0);
+    var passed = (int)(ViewBag.PassedCount ?? 0);
+    var failed = (int)(ViewBag.FailedCount ?? 0);
+
+    string ScoreTone(double pct) => pct switch
+    {
+        >= 70 => "is-success",
+        >= 50 => "is-warn",
+        _ => "is-danger"
+    };
+
+    string GradeTone(double pct) => pct switch
+    {
+        >= 70 => "",
+        >= 50 => "is-warn",
+        _ => "is-danger"
+    };
+
+    string GradeInitial(string g) => g switch
+    {
+        "Excellent" => "A",
+        "Good" => "B",
+        "Pass" => "C",
+        _ => "D"
+    };
+}
+
+<div class="history-page">
+    <div class="lb-hero">
+        <div>
+            <h1>Your history</h1>
+            <p>Every attempt you've made. Jump back into any result.</p>
+        </div>
+        <a asp-controller="Quiz" asp-action="Index" class="btn-neon" style="width: auto; padding-inline: 22px;">
+            Take another
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
+    </div>
+
+    <nav class="history-filters" aria-label="Filter attempts">
+        <a asp-action="Index"
+           class="filter-chip"
+           aria-pressed="@(filter == "all" ? "true" : "false")">
+            All <span class="count">@total</span>
+        </a>
+        <a asp-action="Index" asp-route-filter="passed"
+           class="filter-chip"
+           aria-pressed="@(filter == "passed" ? "true" : "false")">
+            Passed <span class="count">@passed</span>
+        </a>
+        <a asp-action="Index" asp-route-filter="failed"
+           class="filter-chip"
+           aria-pressed="@(filter == "failed" ? "true" : "false")">
+            Failed <span class="count">@failed</span>
+        </a>
+    </nav>
+
+    @if (!Model.Any())
+    {
+        <div class="history-empty" role="status">
+            @if (total == 0)
+            {
+                <h2>No attempts yet</h2>
+                <p>Take a quiz to start your streak.</p>
+                <a asp-controller="Quiz" asp-action="Index" class="btn-neon" style="width: auto; padding-inline: 22px;">Browse quizzes</a>
+            }
+            else
+            {
+                <h2>Nothing in this filter</h2>
+                <p>Try a different filter to see attempts.</p>
+                <a asp-action="Index" class="btn-ghost">Show all</a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="history-list" aria-label="Attempt history">
+            @foreach (var attempt in Model.OrderByDescending(a => a.CompletedAt))
+            {
+                var pct = (int)Math.Round(attempt.Percentage);
+                <a asp-controller="Quiz" asp-action="Results" asp-route-attemptId="@attempt.AttemptId"
+                   class="history-row"
+                   aria-label="@attempt.QuizTitle on @attempt.CompletedAt.ToLocalTime().ToString("MMM d, yyyy"), scored @pct percent">
+                    <div class="h-date" aria-hidden="true">
+                        <span class="h-day">@attempt.CompletedAt.ToLocalTime().ToString("MMM d")</span>
+                        <span class="h-time">@attempt.CompletedAt.ToLocalTime().ToString("yyyy · HH:mm")</span>
+                    </div>
+                    <div class="h-quiz">
+                        <span class="h-title">@attempt.QuizTitle</span>
+                        <span class="h-ratio">@attempt.Score / @attempt.TotalQuestions correct</span>
+                    </div>
+                    <span class="lb-metric @ScoreTone(attempt.Percentage)">@pct%</span>
+                    <span class="grade-pill @GradeTone(attempt.Percentage)" aria-hidden="true" style="margin: 0;">
+                        <span class="pill"><span>@GradeInitial(attempt.Grade)</span></span> @attempt.Grade
+                    </span>
+                    <span class="h-arrow" aria-hidden="true">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                    </span>
+                </a>
+            }
+        </div>
+    }
+</div>

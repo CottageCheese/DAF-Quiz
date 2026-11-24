@@ -1,43 +1,65 @@
 @model CreateQuizFormModel
 @{
-    ViewData["Title"] = "Create Quiz";
+    ViewData["Title"] = "Create quiz";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-7">
-        <h1 class="h3 mb-4">Create New Quiz</h1>
-
-        <div class="card">
-            <div class="card-body">
-                <form asp-action="Create" method="post">
-                    @Html.AntiForgeryToken()
-
-                    <div class="mb-3">
-                        <label asp-for="Title" class="form-label fw-semibold"></label>
-                        <input asp-for="Title" class="form-control" placeholder="e.g. World Geography" autofocus
-                               aria-required="true"/>
-                        <span asp-validation-for="Title" class="text-danger small" role="alert"
-                              aria-live="polite"></span>
-                    </div>
-
-                    <div class="mb-4">
-                        <label asp-for="Description" class="form-label fw-semibold"></label>
-                        <textarea asp-for="Description" class="form-control" rows="3"
-                                  placeholder="Optional — shown to users on the quiz list."></textarea>
-                        <span asp-validation-for="Description" class="text-danger small" role="alert"
-                              aria-live="polite"></span>
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-dark">Create & Add Questions</button>
-                        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
-                    </div>
-                </form>
-            </div>
+<div class="admin-page">
+    <header class="page-head">
+        <div>
+            <h1>Create quiz</h1>
+            <p class="sub">Add a new quiz. You'll be able to add questions next.</p>
         </div>
+    </header>
+
+    <div class="a-form-wrap">
+        <div asp-validation-summary="ModelOnly" class="a-summary" role="alert" aria-live="assertive"></div>
+
+        <form asp-action="Create" method="post" class="a-form-card" novalidate>
+            @Html.AntiForgeryToken()
+
+            <fieldset class="a-fieldset">
+                <legend class="a-legend">Quiz details</legend>
+
+                <div class="a-field">
+                    <label asp-for="Title" class="a-label req">Title</label>
+                    <input asp-for="Title" class="a-input" placeholder="e.g. World Geography" autofocus
+                           aria-required="true"/>
+                    <span asp-validation-for="Title" class="a-err" role="alert" aria-live="polite"></span>
+                </div>
+
+                <div class="a-field">
+                    <label asp-for="Description" class="a-label">Description</label>
+                    <textarea asp-for="Description" class="a-textarea" rows="3"
+                              placeholder="Optional — shown to users on the quiz list."></textarea>
+                    <span class="a-help">Optional short summary. Visible on the public quiz list.</span>
+                    <span asp-validation-for="Description" class="a-err" role="alert" aria-live="polite"></span>
+                </div>
+            </fieldset>
+
+            <div class="a-form-actions">
+                <button type="submit" class="a-btn a-btn--primary">Create &amp; add questions</button>
+                <a asp-action="Index" class="a-btn">Cancel</a>
+            </div>
+        </form>
     </div>
 </div>
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script>
+        (function () {
+            var form = document.querySelector('form.a-form-card');
+            if (!form) return;
+            form.addEventListener('submit', function () {
+                setTimeout(function () {
+                    var bad = form.querySelector('.a-err.field-validation-error, .input-validation-error');
+                    if (bad) {
+                        var focusable = bad.closest('.a-field')?.querySelector('input,textarea,select');
+                        (focusable || bad).focus?.();
+                        (focusable || bad).scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    }
+                }, 0);
+            });
+        })();
+    </script>
 }

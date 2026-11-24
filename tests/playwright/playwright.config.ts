@@ -12,6 +12,17 @@ export default defineConfig({
   workers: 1,
   reporter: [['html', { open: 'never' }], ['list']],
 
+  // Visual regression baselines live next to the specs.
+  // Chromium rendering can differ slightly by platform — tolerance below
+  // combined with per-test maxDiffPixelRatio keeps CI stable.
+  expect: {
+    toHaveScreenshot: {
+      maxDiffPixelRatio: 0.01,
+      animations: 'disabled',
+      caret: 'hide',
+    },
+  },
+
   projects: [
     {
       name: 'setup',

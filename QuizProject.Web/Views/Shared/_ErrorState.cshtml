@@ -1,0 +1,21 @@
+@model QuizProject.Web.Models.ViewModels.ErrorStateModel
+
+<div class="ui-error" role="alert" aria-live="assertive">
+    <div class="ui-error__icon" aria-hidden="true">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <path d="M12 9v4"/>
+            <path d="M12 17h.01"/>
+        </svg>
+    </div>
+    <h2 class="ui-error__title">@(Model.Title ?? "Something went wrong")</h2>
+    @if (!string.IsNullOrEmpty(Model.Message))
+    {
+        <p class="ui-error__msg">@Model.Message</p>
+    }
+    @if (!string.IsNullOrEmpty(Model.RetryHref))
+    {
+        <a href="@Model.RetryHref" class="btn-neon">@(Model.RetryText ?? "Try again")</a>
+    }
+</div>
