@@ -4,9 +4,10 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="TriviaRush Admin — manage quizzes and questions."/>
+    <meta name="color-scheme" content="dark light"/>
     <title>@ViewData["Title"] — TriviaRush Admin</title>
 
-    <!-- Theme bootstrap: set data-theme before paint to prevent FOUC (P0.3) -->
+    <!-- Theme bootstrap: set data-theme + color-scheme meta before paint to prevent FOUC (P0.3) -->
     <script>
         (function () {
             try {
@@ -15,6 +16,8 @@
                     t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
                 }
                 document.documentElement.setAttribute('data-theme', t);
+                var meta = document.querySelector('meta[name="color-scheme"]');
+                if (meta) meta.setAttribute('content', t);
             } catch (e) {
                 document.documentElement.setAttribute('data-theme', 'dark');
             }
@@ -133,6 +136,8 @@
             var cur = document.documentElement.getAttribute('data-theme');
             var next = cur === 'light' ? 'dark' : 'light';
             document.documentElement.setAttribute('data-theme', next);
+            var meta = document.querySelector('meta[name="color-scheme"]');
+            if (meta) meta.setAttribute('content', next);
             try { localStorage.setItem('theme', next); } catch (e) { }
             syncLabel(next);
         });

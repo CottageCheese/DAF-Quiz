@@ -6,9 +6,10 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="TriviaRush — test your knowledge and compete on the leaderboard.">
+  <meta name="color-scheme" content="dark light">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 
-  <!-- Theme bootstrap — set data-theme before paint to prevent FOUC -->
+  <!-- Theme bootstrap — set data-theme + color-scheme meta before paint to prevent FOUC -->
   <script>
     (function () {
       try {
@@ -17,6 +18,8 @@
           t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
         }
         document.documentElement.setAttribute('data-theme', t);
+        var meta = document.querySelector('meta[name="color-scheme"]');
+        if (meta) meta.setAttribute('content', t);
       } catch (e) {
         document.documentElement.setAttribute('data-theme', 'dark');
       }

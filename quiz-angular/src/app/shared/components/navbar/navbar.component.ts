@@ -66,6 +66,8 @@ export class NavbarComponent {
     const next = this.theme() === 'light' ? 'dark' : 'light';
     this.theme.set(next);
     document.documentElement.setAttribute('data-theme', next);
+    const meta = document.querySelector('meta[name="color-scheme"]');
+    meta?.setAttribute('content', next);
     try { localStorage.setItem('theme', next); } catch { /* ignore */ }
   }
 

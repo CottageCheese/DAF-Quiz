@@ -1287,14 +1287,20 @@ footer.bg-light {
     border-color: var(--surface-hi);
 }
 
-.result-row:nth-child(1) { animation-delay: 200ms; }
-.result-row:nth-child(2) { animation-delay: 260ms; }
-.result-row:nth-child(3) { animation-delay: 320ms; }
-.result-row:nth-child(4) { animation-delay: 380ms; }
-.result-row:nth-child(5) { animation-delay: 440ms; }
-.result-row:nth-child(6) { animation-delay: 500ms; }
-.result-row:nth-child(7) { animation-delay: 560ms; }
-.result-row:nth-child(n+8) { animation-delay: 620ms; }
+/* Modern: sibling-index() stagger. Literal time unit in @supports — var() inside @supports always parses as valid. */
+@supports (animation-delay: calc(sibling-index() * 0.1s)) {
+    .result-row { animation-delay: calc(140ms + min(sibling-index(), 8) * 60ms); }
+}
+@supports not (animation-delay: calc(sibling-index() * 0.1s)) {
+    .result-row:nth-child(1) { animation-delay: 200ms; }
+    .result-row:nth-child(2) { animation-delay: 260ms; }
+    .result-row:nth-child(3) { animation-delay: 320ms; }
+    .result-row:nth-child(4) { animation-delay: 380ms; }
+    .result-row:nth-child(5) { animation-delay: 440ms; }
+    .result-row:nth-child(6) { animation-delay: 500ms; }
+    .result-row:nth-child(7) { animation-delay: 560ms; }
+    .result-row:nth-child(n+8) { animation-delay: 620ms; }
+}
 
 .result-row .idx {
     width: 32px;
@@ -1576,12 +1582,17 @@ footer.bg-light {
 .lb-row + .lb-row { border-top: 1px solid rgba(255, 255, 255, 0.04); }
 .lb-row:hover { background: rgba(255, 255, 255, 0.03); }
 
-.lb-row:nth-child(1) { animation-delay: 60ms; }
-.lb-row:nth-child(2) { animation-delay: 120ms; }
-.lb-row:nth-child(3) { animation-delay: 180ms; }
-.lb-row:nth-child(4) { animation-delay: 240ms; }
-.lb-row:nth-child(5) { animation-delay: 300ms; }
-.lb-row:nth-child(n+6) { animation-delay: 360ms; }
+@supports (animation-delay: calc(sibling-index() * 0.1s)) {
+    .lb-row { animation-delay: calc(min(sibling-index(), 6) * 60ms); }
+}
+@supports not (animation-delay: calc(sibling-index() * 0.1s)) {
+    .lb-row:nth-child(1) { animation-delay: 60ms; }
+    .lb-row:nth-child(2) { animation-delay: 120ms; }
+    .lb-row:nth-child(3) { animation-delay: 180ms; }
+    .lb-row:nth-child(4) { animation-delay: 240ms; }
+    .lb-row:nth-child(5) { animation-delay: 300ms; }
+    .lb-row:nth-child(n+6) { animation-delay: 360ms; }
+}
 
 .rank-chip {
     width: 32px;
@@ -1811,13 +1822,18 @@ footer.bg-light {
     outline-offset: 2px;
 }
 
-.history-row:nth-child(1) { animation-delay: 40ms; }
-.history-row:nth-child(2) { animation-delay: 100ms; }
-.history-row:nth-child(3) { animation-delay: 160ms; }
-.history-row:nth-child(4) { animation-delay: 220ms; }
-.history-row:nth-child(5) { animation-delay: 280ms; }
-.history-row:nth-child(6) { animation-delay: 340ms; }
-.history-row:nth-child(n+7) { animation-delay: 400ms; }
+@supports (animation-delay: calc(sibling-index() * 0.1s)) {
+    .history-row { animation-delay: calc(min(sibling-index(), 7) * 60ms - 20ms); }
+}
+@supports not (animation-delay: calc(sibling-index() * 0.1s)) {
+    .history-row:nth-child(1) { animation-delay: 40ms; }
+    .history-row:nth-child(2) { animation-delay: 100ms; }
+    .history-row:nth-child(3) { animation-delay: 160ms; }
+    .history-row:nth-child(4) { animation-delay: 220ms; }
+    .history-row:nth-child(5) { animation-delay: 280ms; }
+    .history-row:nth-child(6) { animation-delay: 340ms; }
+    .history-row:nth-child(n+7) { animation-delay: 400ms; }
+}
 
 .history-row .h-date {
     display: flex;
@@ -1992,10 +2008,15 @@ footer.bg-light {
 .dash-stat.accent-warn::before { background: linear-gradient(90deg, var(--warn), var(--danger)); }
 .dash-stat.accent-cyan::before { background: linear-gradient(90deg, var(--cyan), var(--violet-hi)); }
 
-.dash-stat:nth-child(1) { animation-delay: 60ms; }
-.dash-stat:nth-child(2) { animation-delay: 120ms; }
-.dash-stat:nth-child(3) { animation-delay: 180ms; }
-.dash-stat:nth-child(4) { animation-delay: 240ms; }
+@supports (animation-delay: calc(sibling-index() * 0.1s)) {
+    .dash-stat { animation-delay: calc(sibling-index() * 60ms); }
+}
+@supports not (animation-delay: calc(sibling-index() * 0.1s)) {
+    .dash-stat:nth-child(1) { animation-delay: 60ms; }
+    .dash-stat:nth-child(2) { animation-delay: 120ms; }
+    .dash-stat:nth-child(3) { animation-delay: 180ms; }
+    .dash-stat:nth-child(4) { animation-delay: 240ms; }
+}
 
 .dash-stat .label {
     font-size: 11px;
