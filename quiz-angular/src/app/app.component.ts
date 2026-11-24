@@ -9,7 +9,7 @@ import { NavbarComponent } from './shared/components/navbar/navbar.component';
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <app-navbar />
-    <main class="container py-4">
+    <main>
       <router-outlet />
     </main>
   `
